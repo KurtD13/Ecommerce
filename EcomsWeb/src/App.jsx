@@ -1,11 +1,15 @@
 import { useState } from 'react'
+import Navsbar from './Navbar'
 import Landingpage from './Landingpage'
 
 function App() {
 
   return (
-    <Landingpage/>
-  )
+    <>
+      <Navsbar />
+      <Landingpage/>
+    </>
+      )
 }
 
 export default App
