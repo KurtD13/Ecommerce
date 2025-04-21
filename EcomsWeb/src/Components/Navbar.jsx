@@ -12,7 +12,7 @@ export function Navbar(){
               </li>
               <form class="d-flex" role="search">
                 <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"></input>
-                <Link to="/resultpage" class="btn btn-primary">Search</Link>
+                <Link to="/resultpage" class="btn btn-primary" type="submit">Search</Link>
               </form>
             </ul>
             <Link to="/Cartpage" class="btn btn-outline-danger me-2">Cart</Link>
