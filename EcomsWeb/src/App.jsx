@@ -1,13 +1,25 @@
 import { useState } from 'react'
-import Navsbar from './Navbar'
-import Landingpage from './Landingpage'
+import { HashRouter as Router, Routes, Route } from 'react-router-dom'
+import { Landingpage } from './Pages/Landingpage'
+import { Loginpage } from './Pages/Loginpage' 
+import { Cartpage } from './Pages/Cartpage'
+import { Resultpage } from './Pages/Resultpage'
 
 function App() {
 
   return (
     <>
-      <Navsbar />
-      <Landingpage/>
+      
+      <Router>
+        <Routes>
+          <Route path="/" element={<Landingpage/>}/>
+          <Route path="/loginpage" element={<Loginpage/>}/>
+          <Route path="/cartpage" element={<Cartpage/>}/>
+          <Route path="/resultpage" element={<Resultpage/>}/>
+        </Routes>
+      </Router>
+     
+      
     </>
       )
 }
