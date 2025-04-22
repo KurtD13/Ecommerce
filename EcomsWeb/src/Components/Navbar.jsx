@@ -1,22 +1,41 @@
 import { Link } from "react-router-dom"
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export function Navbar(){
+
+    const [inputText, setInputText] = useState('');
+    const navigate = useNavigate();
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      navigate('/resultpage', { state: { inputText } }); 
+    };
+
+
     return(
-        <nav class="navbar navbar-expand-lg bg-body-tertiary">
-        <div class="container-fluid">
-          <a class="navbar-brand" href="#">Shop</a>
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-              <li class="nav-item">
-                <Link to="/" class="nav-link active" aria-current="page" href="#">Home</Link>
-              </li>
-              <form class="d-flex" role="search">
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"></input>
-                <Link to="/resultpage" class="btn btn-primary">Search</Link>
+        <nav className="navbar navbar-expand-lg py-3 "  style={{backgroundColor:'#273F4F'}}>
+        <div className="container">
+          <a className="navbar-brand fw-bolder" style={{color:'#FE7743'}} href="/">EXOtique</a>
+          <div className="collapse navbar-collapse" id="navbarSupportedContent">
+
+              <form className="d-flex input-group" onSubmit={handleSubmit} style={{
+                width: '100%',
+                fontSize: '16px',
+                boxSizing: 'border-box',
+              }} role="search">
+                <span class="input-group-text">Search</span>
+                <input className="form-control" 
+                type="text" 
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                aria-label="Search"></input>
+                <button to="/resultpage" className="btn input-group-text me-2" type="submit" style={{background:"#FE7743", color:'#EFEEEA'}}><i className="bi bi-search"></i></button>
               </form>
-            </ul>
-            <Link to="/Cartpage" class="btn btn-outline-danger me-2">Cart</Link>
-            <Link to="/loginpage" class="btn btn-outline-success">Login</Link>
+
+            <Link to="/Cartpage" style={{background:"#FE7743", color:'#EFEEEA'}} className="btn me-2"><i className="bi bi-cart-fill"></i></Link>
+            <Link to="/loginpage" style={{background:"#FE7743", color:'#EFEEEA'}} className="btn me-2">Login</Link>
+            <Link to="/profilepage" style={{background:"#FE7743", color:'#EFEEEA'}} className="btn"><i className="bi bi-person-fill"></i></Link>
           </div>
         </div>
       </nav>
