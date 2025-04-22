@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Carouselprods } from "../Components/Carouselprods";
 import { Categorycard } from "../Components/CategoryCard"; 
 import { Productpreview } from "../Components/Productpreview";
+import { Footer } from "../Components/Footer";
 import Iph from "../assets/Iphonephoto.png";
 import GPU from "../assets/GPU.png";
 import '../index.css';
@@ -115,7 +116,7 @@ export function Landingpage(){
                 
             </div>
         </div>
-
+        <Footer/>
         </>
         
     );
