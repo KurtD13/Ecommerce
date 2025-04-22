@@ -71,7 +71,7 @@ export function Landingpage(){
                 
             </div>
             <div className="row ">
-                <h3 className="col text-center bg-secondary rounded-1 p-4 m-2">
+                <h3 className="col text-center bg-secondary rounded-1 p-4 m-2 mb-3 shadow-lg">
                     R a n d o m P r o d u c t s
                 </h3>
             </div>

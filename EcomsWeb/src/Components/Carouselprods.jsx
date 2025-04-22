@@ -1,4 +1,5 @@
 
+
 export function Carouselprods(){
     return(
         <>
@@ -9,22 +10,22 @@ export function Carouselprods(){
                 <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2" aria-label="Slide 3"></button>
             </div>
             <div className="carousel-inner" >
-                <div className="carousel-item active slidesheet" style={{  }}>
-                <img src="https://pulsephotography.com.au/wp-content/uploads/2017/10/16x9-placeholder.jpg" style={{maxHeight:'400px', display:''}} className="d-block w-100" alt="..."></img>
+                <div className="carousel-item active">
+                <img src="https://pulsephotography.com.au/wp-content/uploads/2017/10/16x9-placeholder.jpg" style={{maxHeight:'400px', objectFit:"cover"}} className="d-block w-100" alt="..."></img>
                 <div className="carousel-caption d-none d-md-block">
                     <h5>First slide label</h5>
                     <p>Some representative placeholder content for the first slide.</p>
                 </div>
                 </div>
                 <div className="carousel-item">
-                <img src="https://pulsephotography.com.au/wp-content/uploads/2017/10/16x9-placeholder.jpg" style={{maxHeight:'400px', display:''}} className="d-block w-100" alt="..."></img>
+                <img src="https://pulsephotography.com.au/wp-content/uploads/2017/10/16x9-placeholder.jpg" style={{maxHeight:'400px', objectFit:"cover"}} className="d-block w-100" alt="..."></img>
                 <div className="carousel-caption d-none d-md-block">
                     <h5>Second slide label</h5>
                     <p>Some representative placeholder content for the second slide.</p>
                 </div>
                 </div>
                 <div className="carousel-item">
-                <img src="https://pulsephotography.com.au/wp-content/uploads/2017/10/16x9-placeholder.jpg" style={{maxHeight:'400px', display:''}} className="d-block w-100" alt="..."></img>
+                <img src="https://pulsephotography.com.au/wp-content/uploads/2017/10/16x9-placeholder.jpg" style={{maxHeight:'400px',  objectFit:"cover"}} className="d-block w-100" alt="..."></img>
                 <div className="carousel-caption d-none d-md-block">
                     <h5>Third slide label</h5>
                     <p>Some representative placeholder content for the third slide.</p>
