@@ -6,7 +6,7 @@ export function Loginpage(){
     return(
        <>
        <Navbar/>
-       <h1>This is the Loginpages</h1>
+       
        </>
         
         
