@@ -5,6 +5,7 @@ import { Loginpage } from './Pages/Loginpage'
 import { Cartpage } from './Pages/Cartpage'
 import { Resultpage } from './Pages/Resultpage'
 import { Profilepage } from './Pages/Profilepage'
+import { Signup } from './Pages/Signup'
 
 function App() {
 
@@ -12,6 +13,7 @@ function App() {
     <>
 
       <Router>
+      <Loginpage />
         <Routes>
           <Route path="/" element={<Landingpage/>}/>
           <Route path="/loginpage" element={<Loginpage/>}/>

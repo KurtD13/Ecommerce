@@ -34,7 +34,13 @@ export function Navbar(){
               </form>
 
             <Link to="/Cartpage" style={{background:"#FE7743", color:'#EFEEEA'}} className="btn me-2"><i className="bi bi-cart-fill"></i></Link>
-            <Link to="/loginpage" style={{background:"#FE7743", color:'#EFEEEA'}} className="btn me-2">Login</Link>
+
+            <button
+                className="btn me-2"
+                style={{ background: "#FE7743", color: "#EFEEEA" }}
+                data-bs-toggle="modal"
+                data-bs-target="#loginModal">Login</button>
+
             <Link to="/profilepage" style={{background:"#FE7743", color:'#EFEEEA'}} className="btn"><i className="bi bi-person-fill"></i></Link>
           </div>
         </div>
