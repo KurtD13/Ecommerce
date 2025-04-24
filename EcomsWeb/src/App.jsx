@@ -20,6 +20,7 @@ function App() {
           <Route path="/cartpage" element={<Cartpage/>}/>
           <Route path="/resultpage" element={<Resultpage/>}/>
           <Route path="/profilepage" element={<Profilepage/>}/>
+          <Route path="/signup" element={<Signup/>}/>
         </Routes>
       </Router>
      
