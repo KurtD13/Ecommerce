@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom"
 import { Signup } from "./Signup";
+import { useNavigate } from 'react-router-dom';
 import "../login.css";
-
 
 export function Loginpage(){
     return(
@@ -60,7 +60,7 @@ export function Loginpage(){
             </div>
 
             <div className="register-link">
-              Don't have an account? <a href="#" className="text-decoration-none">Register now</a>
+              Don't have an account? <Link to="/Signup" href="#" className="text-decoration-none">Register now</Link>
             </div>
           </form>
         </div>
