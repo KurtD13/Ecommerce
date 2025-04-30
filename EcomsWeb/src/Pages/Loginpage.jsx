@@ -59,7 +59,7 @@ export function Loginpage(){
                 </button>
             </div>
 
-            <div className="register-link">
+            <div className="register-link" data-bs-dismiss="modal">
               Don't have an account? <Link to="/Signup"  href="#" className="text-decoration-none">Register now</Link>
             </div>
           </form>
