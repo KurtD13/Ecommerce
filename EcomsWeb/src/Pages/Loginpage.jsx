@@ -60,7 +60,7 @@ export function Loginpage(){
             </div>
 
             <div className="register-link">
-              Don't have an account? <Link to="/Signup" href="#" className="text-decoration-none">Register now</Link>
+              Don't have an account? <Link to="/Signup"  href="#" className="text-decoration-none">Register now</Link>
             </div>
           </form>
         </div>

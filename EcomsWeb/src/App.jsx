@@ -6,6 +6,9 @@ import { Cartpage } from './Pages/Cartpage'
 import { Resultpage } from './Pages/Resultpage'
 import { Profilepage } from './Pages/Profilepage'
 import { Signup } from './Pages/Signup'
+import { Products } from './Pages/products'
+import { Productpreview } from './Components/Productpreview'
+
 
 function App() {
 
@@ -13,7 +16,7 @@ function App() {
     <>
 
       <Router>
-      <Loginpage />
+      <Loginpage  />
         <Routes>
           <Route path="/" element={<Landingpage/>}/>
           <Route path="/loginpage" element={<Loginpage/>}/>
@@ -21,6 +24,7 @@ function App() {
           <Route path="/resultpage" element={<Resultpage/>}/>
           <Route path="/profilepage" element={<Profilepage/>}/>
           <Route path="/signup" element={<Signup/>}/>
+          <Route path="/products" element={<Products/>}/>
         </Routes>
       </Router>
      

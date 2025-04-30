@@ -39,48 +39,7 @@ export function Resultpage(){
                         </div>
                         <div className="card mt-2 p-2 d-flex">
                             <div className="row ms-1">
-                                <Productpreview 
-                                imagepreview={Iph} 
-                                productname={"Iphone 16 Pro Max"} 
-                                price={"₱ " + 100000}
-                                sold={2.5 + "k sold"}
-                                ></Productpreview>
-                                <Productpreview 
-                                imagepreview={Iph} 
-                                productname={"Iphone 16 Pro Max"} 
-                                price={"₱ " + 100000}
-                                sold={2.5 + "k sold"}
-                                ></Productpreview>
-                                <Productpreview 
-                                imagepreview={Iph} 
-                                productname={"Iphone 16 Pro Max"} 
-                                price={"₱ " + 100000}
-                                sold={2.5 + "k sold"}
-                                ></Productpreview>
-                                <Productpreview 
-                                imagepreview={Iph} 
-                                productname={"Iphone 16 Pro Max"} 
-                                price={"₱ " + 100000}
-                                sold={2.5 + "k sold"}
-                                ></Productpreview>
-                                <Productpreview 
-                                imagepreview={Iph} 
-                                productname={"Iphone 16 Pro Max"} 
-                                price={"₱ " + 100000}
-                                sold={2.5 + "k sold"}
-                                ></Productpreview>
-                                <Productpreview 
-                                imagepreview={Iph} 
-                                productname={"Iphone 16 Pro Max"} 
-                                price={"₱ " + 100000}
-                                sold={2.5 + "k sold"}
-                                ></Productpreview>
-                                <Productpreview 
-                                imagepreview={Iph} 
-                                productname={"Iphone 16 Pro Max"} 
-                                price={"₱ " + 100000}
-                                sold={2.5 + "k sold"}
-                                ></Productpreview>
+                                <Productpreview/>
                             </div>
                            
                             
