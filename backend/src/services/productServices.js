@@ -22,3 +22,27 @@ export const updateProduct = async(productId, productInfo) => {
     );
     return rows[0];
 }
+
+export const deleteProduct = async (productId) => {
+    const { rowCount } = await query (
+        'DELETE FROM products_info WHERE pid = $1', [productId]
+    );
+        return rowCount > 0;
+    
+}
+
+
+export const searchProduct = async (searchTerm) => {
+    const isNumeric = !isNaN(searchTerm);  // Check if search term is a number
+    const queryText = isNumeric
+        ? 'SELECT * FROM products_info WHERE pid = $1 OR pname ILIKE $2 OR pdesc ILIKE $2'
+        : 'SELECT * FROM products_info WHERE pname ILIKE $1 OR pdesc ILIKE $1';
+
+    const values = isNumeric
+        ? [parseInt(searchTerm), `%${searchTerm}%`]
+        : [`%${searchTerm}%`];
+
+    const { rows } = await query(queryText, values);
+    return rows;
+};  
+
