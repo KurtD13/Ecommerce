@@ -1,32 +1,44 @@
 import { Link } from "react-router-dom";   
+import axios from 'axios';
 import Iph from "../assets/Iphonephoto.png";
 import '../index.css';
+import { useState, useEffect } from 'react';
 
 
 
 export function Productpreview({}){
-    const productInfo = [
-        {pId:"1", pName:"Iphone 16 Pro Max", pPrice:100000, pSold:1, imagepreview:Iph},
-        {pId:"2", pName:"Iphone 16 Pro Max", pPrice:100000, pSold:1, imagepreview:Iph },
-        {pId:"3", pName:"Iphone 16 Pro Max", pPrice:100000, pSold:1, imagepreview:Iph }
-    ]
+    const [productData, setProductData] = useState([]);
+
+    useEffect (() =>{
+        const fetchData = async () => {
+            try {
+                 const response = await axios.get('http://localhost:3000/api/product');
+                 setProductData(response.data); //set the data from the local host
+            } catch (err){
+                setError(err.message);
+            }
+        };
+
+        fetchData();
+    }, []);
+
     return(
         <>
-        {productInfo.map((productInfo) => (
+        {productData.map((productInfo) => (
         <div className="col-sm-2 px-1 py-1 ">
         <Link to='/products' className="card btn btn-outline-secondary me-2" style={{boxShadow:'0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)'}}>
-                <img src={productInfo.imagepreview} />
+                <img src={productInfo.pimageurl} style={{minHeight:"10rem", maxHeight:"10rem"}} />
                 <div className="card-body">
                     <div className="row">
-                        <div className="card-title text-start px-0 ellipsis" style={{fontSize:"20px"}}>{productInfo.pName}</div>    
+                        <div className="card-title text-start px-0 ellipsis" style={{fontSize:"20px"}}>{productInfo.pname}</div>    
                             </div>
                             <div className="row">
                                 <div className="col px-0">
-                                    <div className="card-text text-start" style={{fontSize:"15px"}}>{productInfo.pPrice}</div>
+                                    <div className="card-text text-start" style={{fontSize:"15px"}}>{productInfo.pprice}</div>
 
                                 </div>
                                 <div className="col px-0">
-                                    <div className="card-text text-end" style={{fontSize:"15px"}}>Sold: {productInfo.pSold}</div>
+                                    <div className="card-text text-end" style={{fontSize:"15px"}}>Sold: {productInfo.stock}</div>
                                 </div>
                                 
                             </div>

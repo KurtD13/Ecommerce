@@ -6,6 +6,7 @@ import { useLocation } from 'react-router-dom';
 import { Productpreview } from "../Components/Productpreview";
 import Iph from "../assets/Iphonephoto.png"
 import { Pricerange } from "../Components/Pricerange";
+import axios from 'axios';
 
 export function Resultpage(){
     const location = useLocation();
