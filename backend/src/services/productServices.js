@@ -14,11 +14,11 @@ export const createProducts = async(productInfo) => {
     return rows[0];
 }
 
-export const updateProducts = async(productInfo, productId) => {
+export const updateProduct = async(productId, productInfo) => {
     const{ pname, pprice, pdesc, pimageurl, stock, is_available } = productInfo;
     const { rows } = await query (
         'UPDATE products_info SET pname = $1, pprice = $2, pdesc = $3, pimageurl = $4, stock = $5, is_available = $6 WHERE pid = $7 RETURNING *',
-        [pname, pprice, pdesc, pimageurl, stock, is_available, productId]
+        [ pname, pprice, pdesc, pimageurl, stock, is_available, productId ]
     );
     return rows[0];
 }

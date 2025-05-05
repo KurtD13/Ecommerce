@@ -1,4 +1,4 @@
-import * as Service from "../services/Services.js"
+import * as Service from "../services/productServices.js"
 
 export const getProducts = async (req, res) =>{
     try{
@@ -26,15 +26,16 @@ export const createProducts = async (req, res) => {
 export const updateProduct = async (req, res) => {
     try{
         console.log("REQ BODY:", req.body);
-        const productId = req.params.id;
-        const productInfo = req.body;
-        const updatedProduct = await Service.updateProducts(productId, productInfo)
+        const productId = req.params.pid;
+        const productInfo = req.body;   
+        const updatedProduct = await Service.updateProduct(productId, productInfo)
         if(!updatedProduct){
             return res.status(404).json({message: 'Product not found'});
         }
         res.status(200).json(updatedProduct);
 
     }catch(err){
+        
         console.error("Error Fetching clients: ", err);
         res.status(500).json({message: 'Internal Server Error'});
     }
