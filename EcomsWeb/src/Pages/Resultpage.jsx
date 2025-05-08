@@ -7,10 +7,11 @@ import { Productpreview } from "../Components/Productpreview";
 import Iph from "../assets/Iphonephoto.png"
 import { Pricerange } from "../Components/Pricerange";
 import axios from 'axios';
+import { useSearchParams } from 'react-router-dom';
 
 export function Resultpage(){
-    const location = useLocation();
-    const inputText = location.state?.inputText || 'No input received';
+    const [searchParams] = useSearchParams();
+    const query = searchParams.get('q') || '';
     return(
         <>
             <Navbar/>
@@ -29,7 +30,7 @@ export function Resultpage(){
                     <div className="col-md-10">
                          <div className="card p-2">
                             <div className="container">
-                                <p className="">Search Results for:  {inputText}</p>
+                                <p className="">Search Results for:  {query}</p>
                             </div>
                             <div className="container">
                                     Sort by:
@@ -40,7 +41,7 @@ export function Resultpage(){
                         </div>
                         <div className="card mt-2 p-2 d-flex">
                             <div className="row ms-1">
-                                <Productpreview/>
+                                <Productpreview filterTerm={query}/>
                             </div>
                            
                             
