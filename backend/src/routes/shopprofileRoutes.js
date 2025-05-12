@@ -1,0 +1,11 @@
+import express from 'express';
+import * as controller from '../controllers/shopprofileController.js';
+
+const router = express.Router();
+
+router.get('/shop', controller.getShop);
+router.post('/shop', controller.createShop);
+router.put('/shop/:shopid', controller.updateShop);
+router.delete('/shop/:shopid', controller.deleteShop);
+
+export default router;

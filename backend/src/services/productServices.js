@@ -31,7 +31,6 @@ export const deleteProduct = async (productId) => {
     
 }
 
-
 export const searchProduct = async (searchTerm) => {
     const isNumeric = !isNaN(searchTerm);  // Check if search term is a number
     const queryText = isNumeric
