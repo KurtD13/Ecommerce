@@ -1,8 +1,10 @@
 import { Navbar } from "../Components/Navbar";
 import { Footer } from "../Components/Footer";
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 export function Profilepage(){
+
     return(
         <>
         
@@ -10,45 +12,80 @@ export function Profilepage(){
         <div className="container">
             <ProfilePage />
         </div>
-        
+
         <Footer/>
         </>
     );
 }
 
 
-const ProfileSection = ({ onEdit }) => (
-  <section>
-    <h2>My Profile</h2>
-    <div className="card p-4">
-      <div className="d-flex justify-content-between mb-4">
-        <div className="profile-info">
-          <div className="d-flex align-items-center mb-4">
-            <img
-              src="https://i.redd.it/bcyq3rjk2w071.png"
-              className="rounded-circle me-3"
-              width="100"
-              height="100"
-              alt="Profile"
-            />
-            <div>
-              <h5 className="mb-0 fw-bold">user123</h5>
+const ProfileSection = ({ onEdit, userKey }) => {
+  const [userData, setUserdata] = useState([]);
+  let userkey = userKey;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/user');
+        setUserdata(response.data); // Set the data from the local host
+      } catch (err) {
+        console.error(err.message);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const filtered = userData.filter((u) =>
+    u.consumerid.toString().includes(userkey?.toString())
+  );
+
+  if (!userkey || filtered.length === 0) {
+    return (
+      <section>
+        <h2>My Profile</h2>
+        <div className="card p-4">
+          <p>Please Login</p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <>
+      {filtered.map((userInfo) => (
+        <section key={userInfo.consumerid}>
+          <h2>My Profile</h2>
+          <div className="card p-4">
+            <div className="d-flex justify-content-between mb-4">
+              <div className="profile-info">
+                <div className="d-flex align-items-center mb-4">
+                  <img
+                    src="https://i.redd.it/bcyq3rjk2w071.png"
+                    className="rounded-circle me-3"
+                    width="100"
+                    height="100"
+                    alt="Profile"
+                  />
+                  <div>
+                    <h5 className="mb-0 fw-bold">{userInfo.consumerfirstname}</h5>
+                  </div>
+                </div>
+                <p><strong>Username:</strong> {userInfo.consumerusername}</p>
+                <p><strong>Email:</strong> {userInfo.consumeremail}</p>
+                <p><strong>Birthdate:</strong> {userInfo.consumerbirthdate.substring(0, 10)}</p>
+                <p><strong>Phone Number:</strong> {userInfo.consumerphone}</p>
+              </div>
+              <div>
+                <button onClick={onEdit} className="btn btn-warning">Edit Profile</button>
+              </div>
             </div>
           </div>
-          <p><strong>Username:</strong> user123</p>
-          <p><strong>Email:</strong> user@example.com</p>
-          <p><strong>Birthdate:</strong> 2000-01-01</p>
-          <p><strong>Phone Number:</strong> 09123456789</p>
-          <p><strong>Gender:</strong> Other</p>
-        </div>
-
-        <div>
-          <button onClick={onEdit} className="btn btn-warning">Edit Profile</button>
-        </div>
-      </div>
-    </div>
-  </section>
-);
+        </section>
+      ))}
+    </>
+  );
+};
 
 const EditProfileSection = () => (
   <section>
@@ -68,89 +105,271 @@ const EditProfileSection = () => (
   </section>
 );
 
-const AddressSection = () => (
-  <section>
-    <h2>My Addresses</h2>
-    <div className="d-flex justify-content-end mb-3">
-      <button className="btn btn-warning">New Address</button>
-    </div>
-    {["123 Main St.", "132 Barangay"].map((addr, idx) => (
-      <div className="card p-4 mb-3" key={idx}>
-        <div className="d-flex justify-content-between align-items-center bg-light p-2 mb-2">
-          <span>{addr}</span>
-          <button className="btn btn-sm btn-danger">✕</button>
+const AddressSection = ({ userKey }) => {
+  const [userAddress, setUseraddress] = useState([]);
+  let addresskey = userKey;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/address');
+        setUseraddress(response.data);
+      } catch (err) {
+        console.error(err.message);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const filtered = userAddress.filter((u) =>
+    u.userkey.toString().includes(addresskey?.toString())
+  );
+
+  if (!addresskey || filtered.length === 0) {
+    return (
+      <section>
+        <h2>My Addresses</h2>
+        <div className="card p-4">
+          <p>Please Login</p>
         </div>
+      </section>
+    );
+  }
+
+  return (
+    <section>
+      <h2>My Addresses</h2>
+      <div className="d-flex justify-content-end mb-3">
+        <button className="btn btn-warning">New Address</button>
       </div>
-    ))}
-  </section>
-);
-
-const PaymentSection = () => (
-  <section>
-    <h2>Payment Methods</h2>
-    <div className="card p-4 mb-4 d-flex flex-column">
-      <h5 className="mb-3">eWallets</h5>
-      <ul className="list-group mb-3">
-        {["GCash", "Maya"].map((wallet, idx) => (
-          <li className="list-group-item d-flex justify-content-between align-items-center" key={idx}>
-            {wallet} <button className="btn btn-outline-danger">✕</button>
-          </li>
-        ))}
-      </ul>
-      <button className="btn btn-outline-primary btn-sm">Add eWallet</button>
-    </div>
-
-    <div className="card p-4 d-flex flex-column">
-      <h5 className="mb-3">Credit / Debit Cards</h5>
-      <ul className="list-group mb-3">
-        <li className="list-group-item d-flex justify-content-between align-items-center">
-          <div>
-            <strong>Name</strong><br />**** **** **** 3456<br />Exp: 2026-05
+      {filtered.map((address) => (
+        <div className="card p-4 mb-3" key={address.id}>
+          <div className="d-flex justify-content-between align-items-center p-2 mb-2">
+            <span>
+              {address.housenumber} {address.building}. {address.street} {address.barangay}, {address.city}, {address.province}, {address.region} {address.postalcode}, {address.country}
+            </span>
+            <button className="btn btn-sm btn-danger">✕</button>
           </div>
-          <button className="btn btn-outline-danger">✕</button>
-        </li>
-      </ul>
-      <button className="btn btn-outline-primary btn-sm">Add Card</button>
-    </div>
-  </section>
-);
+        </div>
+      ))}
+    </section>
+  );
+};
 
-const PurchaseSection = () => (
-  <section>
-    <h2>To Pay</h2>
-    <div className="card mb-3 p-3">
-      <div className="row g-3 align-items-center">
-        <div className="col-md-2">
-          <img
-            src="https://cdn.shopify.com/s/files/1/2695/9506/files/Banner_Image_02_bb51cd51-1dfd-4a10-a91e-1b86e08820f7.png?v=1745484105"
-            className="img-fluid rounded"
-            alt="Product"
-          />
+const PaymentSection = ({ userKey }) => {
+  let paymentkey = userKey;
+
+  const [userEpayment, setUserEpayment] = useState([]);
+  const [userCard, setUserCard] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/ewallet');
+        setUserEpayment(response.data);
+      } catch (err) {
+        console.error(err.message);
+      }
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/cards');
+        setUserCard(response.data);
+      } catch (err) {
+        console.error(err.message);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const filteredEpayment = userEpayment.filter((u) =>
+    u.userkey.toString().includes(paymentkey?.toString())
+  );
+
+  const filteredCard = userCard.filter((u) =>
+    u.userkey.toString().includes(paymentkey?.toString())
+  );
+
+  if (!paymentkey || (filteredEpayment.length === 0 && filteredCard.length === 0)) {
+    return (
+      <section>
+        <h2>Payment Methods</h2>
+        <div className="card p-4">
+          <p>Please Login</p>
         </div>
-        <div className="col-md-7">
-          <h6 className="mb-1">Redragon wireless mouse</h6>
-          <p className="mb-0 text-muted">Variation: Black</p>
-          <p className="mb-0 text-muted">Quantity: 1</p>
-        </div>
-        <div className="col-md-3 text-end">
-          <p className="mb-2 fw-bold fs-5">₱1,299.00</p>
-          <button className="btn btn-outline-secondary btn-sm">Track Order</button>
-          <button className="btn btn-outline-primary btn-sm">Buy Again</button>
-        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section>
+      <h2>Payment Methods</h2>
+      <div className="card p-4 mb-4 d-flex flex-column">
+        <h5 className="mb-3">eWallets</h5>
+        <ul className="list-group mb-3">
+          {filteredEpayment.map((ewallet) => (
+            <li
+              className="list-group-item d-flex justify-content-between align-items-center"
+              key={ewallet.id}
+            >
+              <div>
+                <strong>{ewallet.ewalletname}</strong>
+                <br />
+                Number: 0{ewallet.epaymentphone}
+                <br />
+              </div>
+              <button className="btn btn-outline-danger">✕</button>
+            </li>
+          ))}
+        </ul>
+        <button
+          className="btn btn-outline-primary btn-sm"
+          data-bs-toggle="modal"
+          data-bs-target="#eWalletModal"
+        >
+          Add eWallet
+        </button>
       </div>
-    </div>
-  </section>
-);
 
-const EmptySection = ({ title }) => (
-  <section>
-    <h2>{title}</h2>
-    <div className="card p-4"><p>No {title.toLowerCase()} yet.</p></div>
-  </section>
-);
+      <div className="card p-4 d-flex flex-column">
+        <h5 className="mb-3">Credit / Debit Cards</h5>
+        <ul className="list-group mb-3">
+          {filteredCard.map((card) => (
+            <li
+              className="list-group-item d-flex justify-content-between align-items-center"
+              key={card.id}
+            >
+              <div>
+                <strong>{card.bankname} </strong>
+                <br />
+                Account Name: {card.nameoncard}
+                <br />
+                Card Number: {card.cardnumber}
+                <br />
+                Exp: {card.expirydate.substring(0, 10)}
+                <br />
+              </div>
+              <button className="btn btn-outline-danger">✕</button>
+            </li>
+          ))}
+        </ul>
+        <button
+          className="btn btn-outline-primary btn-sm"
+          data-bs-toggle="modal"
+          data-bs-target="#addCardModal"
+        >
+          Add Card
+        </button>
+      </div>
+    </section>
+  );
+};
+
+
+const PurchaseSection = ({ userKey, status, productStatus }) => {
+  const purchasekey = userKey;
+  const [userPurchase, setUserPurchase] = useState([]);
+  const [productData, setProductData] = useState([]);
+
+  useEffect(() => {
+    const fetchUserPurchase = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/cart');
+        setUserPurchase(response.data);
+      } catch (err) {
+        console.error(err.message);
+      }
+    };
+    fetchUserPurchase();
+  }, []);
+
+  useEffect(() => {
+    const fetchProductData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/product');
+        setProductData(response.data);
+      } catch (err) {
+        console.error(err.message);
+      }
+    };
+    fetchProductData();
+  }, []);
+
+  // Filter purchases by userKey and pstatus, then enrich with product details
+  const enrichedPurchases = userPurchase
+    .filter(
+      (purchase) =>
+        purchase.userkey.toString() === purchasekey.toString() &&
+        purchase.pstatus === status
+    )
+    .map((purchase) => {
+      const product = productData.find((p) => p.pid === purchase.productkey);
+      return {
+        purchase,
+        productName: product?.pname || "Unknown Product",
+        productPrice: product?.pprice || 0,
+        productImage: product?.pimageurl || "https://via.placeholder.com/150",
+      };
+    });
+
+  return (
+    <section>
+      <h2>{productStatus}</h2>
+      {enrichedPurchases.length > 0 ? (
+        enrichedPurchases.map((purchase) => (
+          <div className="card mb-3 p-3" key={purchase.id}>
+            <div className="row g-3 align-items-center">
+              <div className="col-md-2">
+                <img
+                  style={{ minHeight: "5rem", maxHeight: "5rem" }}
+                  src={purchase.productImage}
+                  className="img-fluid rounded"
+                  alt={purchase.productName}
+                />
+              </div>
+              <div className="col-md-7">
+                <h6 className="mb-1">{purchase.productName}</h6>
+                <p className="mb-0 text-muted">
+                  Variation: {purchase.variation || "N/A"}
+                </p>
+                <p className="mb-0 text-muted">
+                  Quantity: {purchase.quantity || 1}
+                </p>
+              </div>
+              <div className="col-md-3 text-end">
+                <p className="mb-2 fw-bold fs-5">
+                  ₱{purchase.productPrice.toFixed(2)}
+                </p>
+                {status === 1 && (
+                  <button className="btn btn-outline-secondary btn-sm">
+                    Track Order
+                  </button>
+                )}
+                {(status === 4 || status === 5) && (
+                  <button className="btn btn-outline-primary btn-sm">
+                    Buy Again
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ))
+      ) : (
+        <div className="card p-4">
+          <p>No items in this section yet.</p>
+        </div>
+      )}
+    </section>
+  );
+};
 
 const ProfilePage = () => {
-  const [active, setActive] = useState('profile');
+  const [active, setActive] = useState("profile");
+  let userkey = 14;
 
   return (
     <div className="container-fluid bg-light">
@@ -159,35 +378,92 @@ const ProfilePage = () => {
           <div className="px-3">
             <h5 className="fw-bold">Account</h5>
             <ul className="nav flex-column mb-4">
-              <li className="nav-item"><button className="nav-link btn btn-link text-start" onClick={() => setActive('profile')}>Profile</button></li>
-              <li className="nav-item"><button className="nav-link btn btn-link text-start" onClick={() => setActive('address')}>Address</button></li>
-              <li className="nav-item"><button className="nav-link btn btn-link text-start" onClick={() => setActive('payment')}>Payment</button></li>
+              <li className="nav-item">
+                <button
+                  className="nav-link btn btn-link text-start"
+                  onClick={() => setActive("profile")}
+                >
+                  Profile
+                </button>
+              </li>
+              <li className="nav-item">
+                <button
+                  className="nav-link btn btn-link text-start"
+                  onClick={() => setActive("address")}
+                >
+                  Address
+                </button>
+              </li>
+              <li className="nav-item">
+                <button
+                  className="nav-link btn btn-link text-start"
+                  onClick={() => setActive("payment")}
+                >
+                  Payment
+                </button>
+              </li>
             </ul>
             <h5 className="fw-bold">Purchases</h5>
             <ul className="nav flex-column">
-              <li className="nav-item"><button className="nav-link btn btn-link text-start" onClick={() => setActive('purchases')}>To Pay</button></li>
-              <li className="nav-item"><button className="nav-link btn btn-link text-start" onClick={() => setActive('toShip')}>To Ship</button></li>
-              <li className="nav-item"><button className="nav-link btn btn-link text-start" onClick={() => setActive('toReceive')}>To Receive</button></li>
-              <li className="nav-item"><button className="nav-link btn btn-link text-start" onClick={() => setActive('completed')}>Completed</button></li>
-              <li className="nav-item"><button className="nav-link btn btn-link text-start" onClick={() => setActive('cancelled')}>Cancelled</button></li>
+              <li className="nav-item">
+                <button
+                  className="nav-link btn btn-link text-start"
+                  onClick={() => setActive("toPay")}
+                >
+                  To Pay
+                </button>
+              </li>
+              <li className="nav-item">
+                <button
+                  className="nav-link btn btn-link text-start"
+                  onClick={() => setActive("toShip")}
+                >
+                  To Ship
+                </button>
+              </li>
+              <li className="nav-item">
+                <button
+                  className="nav-link btn btn-link text-start"
+                  onClick={() => setActive("toReceive")}
+                >
+                  To Receive
+                </button>
+              </li>
+              <li className="nav-item">
+                <button
+                  className="nav-link btn btn-link text-start"
+                  onClick={() => setActive("completed")}
+                >
+                  Completed
+                </button>
+              </li>
+              <li className="nav-item">
+                <button
+                  className="nav-link btn btn-link text-start"
+                  onClick={() => setActive("cancelled")}
+                >
+                  Cancelled
+                </button>
+              </li>
             </ul>
           </div>
         </nav>
 
         <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
-          {active === 'profile' && <ProfileSection onEdit={() => setActive('editProfile')} />}
-          {active === 'editProfile' && <EditProfileSection />}
-          {active === 'address' && <AddressSection />}
-          {active === 'payment' && <PaymentSection />}
-          {active === 'purchases' && <PurchaseSection />}
-          {['toShip', 'toReceive', 'completed', 'cancelled'].includes(active) && (
-            <EmptySection title={
-              active === 'toShip' ? 'To Ship' :
-              active === 'toReceive' ? 'To Receive' :
-              active === 'completed' ? 'Completed Orders' :
-              'Cancelled Orders'
-            } />
+          {active === "profile" && (
+            <ProfileSection
+              onEdit={() => setActive("editProfile")}
+              userKey={userkey}
+            />
           )}
+          {active === "editProfile" && <EditProfileSection userKey={userkey} />}
+          {active === "address" && <AddressSection userKey={userkey} />}
+          {active === "payment" && <PaymentSection userKey={userkey} />}
+          {active === "toPay" && <PurchaseSection userKey={userkey} status={1} productStatus={"To Pay"} />}
+          {active === "toShip" && <PurchaseSection userKey={userkey} status={2} productStatus={"To Ship"} />}
+          {active === "toReceive" && <PurchaseSection userKey={userkey} status={3} productStatus={"To Receive"} />}
+          {active === "completed" && <PurchaseSection userKey={userkey} status={4} productStatus={"Completed"} />}
+          {active === "cancelled" && <PurchaseSection userKey={userkey} status={5} productStatus={"Cancelled"} />}
         </main>
       </div>
     </div>
