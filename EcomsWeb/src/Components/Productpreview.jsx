@@ -23,8 +23,8 @@ export function Productpreview({ filterTerm = '' }){
     }, []);
 
     const filtered = productData.filter(p =>
-        p.pname.toLowerCase().includes(filterTerm.toLowerCase()) ||
-        p.pdesc.toLowerCase().includes(filterTerm.toLowerCase())
+        p.pname.toLowerCase().includes(filterTerm.toLowerCase())||
+        p.pdesc?.toLowerCase().includes(filterTerm.toLowerCase())
     );
 
     return(

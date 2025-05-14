@@ -265,10 +265,117 @@ const PaymentSection = ({ userKey }) => {
           Add Card
         </button>
       </div>
+
+      {/* eWallet Modal */}
+      <div
+        className="modal fade"
+        id="eWalletModal"
+        tabIndex="-1"
+        aria-labelledby="eWalletModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Select an eWallet</h5>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+              ></button>
+            </div>
+            <div className="modal-body">
+              <button className="btn btn-outline-primary w-100 mb-2">
+                GCash
+              </button>
+              <button className="btn btn-outline-primary w-100 mb-2">
+                Maya
+              </button>
+              <button className="btn btn-outline-primary w-100">Others</button>
+            </div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Add Card Modal */}
+      <div
+        className="modal fade"
+        id="addCardModal"
+        tabIndex="-1"
+        aria-labelledby="addCardModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog">
+          <form className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Add Debit/Credit Card</h5>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+              ></button>
+            </div>
+            <div className="modal-body">
+              <div className="mb-3">
+                <label className="form-label">Card Number</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="1234 5678 9012 3456"
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Name on Card</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Name"
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Expiration Date</label>
+                <input type="month" className="form-control" required />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">CVV</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  placeholder="123"
+                  maxLength="4"
+                  required
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="submit" className="btn btn-warning">
+                Add Card
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </section>
   );
 };
-
 
 const PurchaseSection = ({ userKey, status, productStatus }) => {
   const purchasekey = userKey;
