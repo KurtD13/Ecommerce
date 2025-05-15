@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 export function Profilepage(){
-
+  let profilekey = 14;
     return(
         <>
         
         <Navbar/>
         <div className="container">
-            <ProfilePage />
+            <ProfilePage userkey={profilekey}/>
         </div>
 
         <Footer/>
@@ -474,9 +474,9 @@ const PurchaseSection = ({ userKey, status, productStatus }) => {
   );
 };
 
-const ProfilePage = () => {
+const ProfilePage = (profilekey) => {
   const [active, setActive] = useState("profile");
-  let userkey = 14;
+  let userkey = profilekey.userkey;
 
   return (
     <div className="container-fluid bg-light">

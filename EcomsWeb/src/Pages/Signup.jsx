@@ -6,6 +6,19 @@ import "bootstrap/dist/css/bootstrap.min.css";
 export function Signup(){
   const [step, setStep] = useState(1);
   const nextStep = () => setStep(step + 1);
+  const [userdata, setUserdata] = useState({
+    consumerusername: '',
+    consumerpassword: '',
+    consumerfirstname: '',
+    consumermiddlename: '',
+    consumerlastname: '',
+    consumerbirthdate: '',
+    consumerimage: '',
+    consumerphone: '',
+    consumeremail: ''
+  });
+
+  
 
   return (
     <>
