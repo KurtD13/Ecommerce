@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Navbar } from "../Components/Navbar";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { Link } from "react-router-dom";
 
 export function Cartpage() {
   const [cartItems, setCartItems] = useState([
@@ -99,9 +100,13 @@ export function Cartpage() {
           </div>
           <div className="col-6 text-end">
             <span className="me-3">Total Items: ₱ {calculateTotal().toFixed(2)}</span>
-            <button className="btn btn-primary" style={{ backgroundColor: '#FE7743', borderColor: '#FE7743' }}>
+            <Link
+              to="/checkout"
+              className="btn btn-primary"
+              style={{ backgroundColor: '#FE7743', borderColor: '#FE7743' }}
+            >
               Check Out
-            </button>
+            </Link>
           </div>
         </div>
       </div>
