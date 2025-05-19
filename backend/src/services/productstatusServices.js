@@ -1,22 +1,22 @@
 import { query } from "../db.js";
 
-export const getCart = async() =>{
+export const getPstatus = async() =>{
     const{rows} = await query('SELECT * FROM product_statuslist');
     return rows;
 }
 
 
-export const createCart = async(cartInfo) => {
-    const{ pstatus, userkey, productkey} = cartInfo;
+export const createPstatus = async(pstatusInfo) => {
+    const{ pstatus, userkey, productkey, itemquantity, variation} = pstatusInfo;
     const { rows } = await query (
-        'INSERT INTO product_statuslist (pstatus, userkey, productkey) VALUES ($1, $2, $3) RETURNING *',
-        [ pstatus, userkey, productkey]
+        'INSERT INTO product_statuslist (pstatus, userkey, productkey, itemquantity, variation) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+        [ pstatus, userkey, productkey, itemquantity, variation]
     );
     return rows[0];
 }
 
-export const updateCart = async(pstatusid, cartInfo) => {
-    const{ pstatus, userkey, productkey } = cartInfo;
+export const updatePstatus = async(pstatusid, pstatusInfo) => {
+    const{ pstatus, userkey, productkey } = pstatusInfo;
     const { rows } = await query (
         'UPDATE product_statuslist SET pstatus = $1, userkey = $2, productkey = $3 WHERE pstatusid = $4 RETURNING *',
         [ pstatus, userkey, productkey, pstatusid ]
@@ -24,7 +24,7 @@ export const updateCart = async(pstatusid, cartInfo) => {
     return rows[0];
 }
 
-export const deleteCart = async (pstatusid) => {
+export const deletePstatus = async (pstatusid) => {
     const { rowCount } = await query (
         'DELETE FROM product_statuslist WHERE pstatusid = $1', [pstatusid]
     );

@@ -3,9 +3,9 @@ import * as controller from '../controllers/productstatusController.js';
 
 const router = express.Router();
 
-router.get('/cart', controller.getCart);
-router.post('/cart', controller.createCart);
-router.put('/cart/:pstatusid', controller.updateCart);
-router.delete('/cart/:pstatusid', controller.deleteCart);
+router.get('/pstatus', controller.getPstatus);
+router.post('/pstatus', controller.createPstatus);
+router.put('/pstatus/:pstatusid', controller.updatePstatus);
+router.delete('/pstatus/:pstatusid', controller.deletePstatus);
 
 export default router;

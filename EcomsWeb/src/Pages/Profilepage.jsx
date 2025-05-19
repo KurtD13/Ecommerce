@@ -2,6 +2,7 @@ import { Navbar } from "../Components/Navbar";
 import { Footer } from "../Components/Footer";
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { use } from "react";
 
 export function Profilepage(){
   let profilekey = 14;
@@ -381,11 +382,12 @@ const PurchaseSection = ({ userKey, status, productStatus }) => {
   const purchasekey = userKey;
   const [userPurchase, setUserPurchase] = useState([]);
   const [productData, setProductData] = useState([]);
+  const [variationData, setVariationData] = useState([]); 
 
   useEffect(() => {
     const fetchUserPurchase = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/cart');
+        const response = await axios.get('http://localhost:3000/api/pstatus');
         setUserPurchase(response.data);
       } catch (err) {
         console.error(err.message);
@@ -393,6 +395,17 @@ const PurchaseSection = ({ userKey, status, productStatus }) => {
     };
     fetchUserPurchase();
   }, []);
+  
+  useEffect(() => {
+    const fetchVariationData = async () => { 
+      try {
+        const response = await axios.get('http://localhost:3000/api/variation');
+        setVariationData(response.data);
+      } catch (err) {
+        console.error(err.message); 
+      }
+    }; fetchVariationData();
+  }, []);  
 
   useEffect(() => {
     const fetchProductData = async () => {
@@ -415,11 +428,14 @@ const PurchaseSection = ({ userKey, status, productStatus }) => {
     )
     .map((purchase) => {
       const product = productData.find((p) => p.pid === purchase.productkey);
+      const variation = variationData.find((v) => v.pvid === purchase.variation);
       return {
         purchase,
         productName: product?.pname || "Unknown Product",
-        productPrice: product?.pprice || 0,
+        productPrice: (product?.pprice * purchase.itemquantity) || 0,
         productImage: product?.pimageurl || "https://via.placeholder.com/150",
+        itemQuantity: purchase.itemquantity || 1,
+        variation: variation?.pvname || "No Variation",
       };
     });
 
@@ -441,10 +457,10 @@ const PurchaseSection = ({ userKey, status, productStatus }) => {
               <div className="col-md-7">
                 <h6 className="mb-1">{purchase.productName}</h6>
                 <p className="mb-0 text-muted">
-                  Variation: {purchase.variation || "N/A"}
+                  Variation: {purchase.variation }
                 </p>
                 <p className="mb-0 text-muted">
-                  Quantity: {purchase.quantity || 1}
+                  Quantity: {purchase.itemQuantity || 1}
                 </p>
               </div>
               <div className="col-md-3 text-end">

@@ -1,21 +1,21 @@
 import * as Service from "../services/productstatusServices.js"
 
-export const getCart = async (req, res) =>{
+export const getPstatus = async (req, res) =>{
     try{
-        const cart = await Service.getCart();
-        res.status(200).json(cart);
+        const pstatus = await Service.getPstatus();
+        res.status(200).json(pstatus);
 
     }catch(err){
         res.status(500).json({message: 'Internal Server Error'});
     }
 };
 
-export const createCart = async (req, res) => {
+export const createPstatus = async (req, res) => {
     try{
         console.log("REQ BODY:", req.body);
-        const cartInfo = req.body;
-        const newCart = await Service.createCart(cartInfo);
-        res.status(200).json(newCart);
+        const pstatusInfo = req.body;
+        const newPstatus = await Service.createPstatus(pstatusInfo);
+        res.status(200).json(newPstatus);
 
     }catch(err){
         console.error("Error adding cart", err);
@@ -24,16 +24,16 @@ export const createCart = async (req, res) => {
 };
 
 
-export const updateCart = async (req, res) => {
+export const updatePstatus = async (req, res) => {
     try{
         console.log("REQ BODY:", req.body);
         const pstatusid = req.params.pstatusid;
-        const cartInfo = req.body;   
-        const updatedcart = await Service.updateCart(pstatusid, cartInfo);
-        if(!updatedcart){
+        const pstatusInfo = req.body;   
+        const updatedPstatusinfo = await Service.updatePstatus(pstatusid, pstatusInfo);
+        if(!updatedPstatusinfo){
             return res.status(404).json({message: 'cart not found'});
         }
-        res.status(200).json(updatedcart);
+        res.status(200).json(updatedPstatusinfo);
 
     }catch(err){
         
@@ -42,12 +42,12 @@ export const updateCart = async (req, res) => {
     }
 };
 
-export const deleteCart = async (req, res) => {
+export const deletePstatus = async (req, res) => {
     try{
         console.log("REQ BODY:", req.body);
         const pstatusid = req.params.pstatusid;
-        const cartInfo = req.body;   
-        const deleted = await Service.deleteCart(pstatusid);
+        const pstatusInfo = req.body;   
+        const deleted = await Service.deletePstatus(pstatusid);
         if (!deleted){
             return res.status(404).json({message : 'shop not found'})
         }

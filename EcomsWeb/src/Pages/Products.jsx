@@ -5,6 +5,7 @@ export function Products(){
     return(
         <>
         <Navbar/>
+           
         </>
     );
 }
