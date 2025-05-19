@@ -70,3 +70,16 @@ export const searchProduct = async (req, res) => {
         res.status(500).json({message: 'Internal Server Error'});
     }
 };
+
+export const getProductById = async (req, res) => {
+    try {
+        const { pid } = req.params;
+        const product = await Service.getProductById(pid);
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+        res.status(200).json(product);
+    } catch (err) {
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};

@@ -13,7 +13,7 @@ import productimageroutes from './routes/productimageRoutes.js';
 import productreviewsroutes from './routes/productreviewsRoutes.js';
 import productstatusroutes from './routes/productstatusRoutes.js';
 import cartlistroutes from './routes/cartlistRoutes.js';
-
+import colorRoutes from './routes/colorRoutes.js';
 const port = 3000;
 const app = express();
 
@@ -34,6 +34,7 @@ app.use('/api', productimageroutes);
 app.use('/api', productreviewsroutes);
 app.use('/api', productstatusroutes);
 app.use('/api', cartlistroutes);
+app.use('/api', colorRoutes);
 
 app.listen(port, () => {
     console.log('listening port 3000')

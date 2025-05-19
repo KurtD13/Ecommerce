@@ -45,3 +45,7 @@ export const searchProduct = async (searchTerm) => {
     return rows;
 };  
 
+export const getProductById = async (productId) => {
+    const { rows } = await query('SELECT * FROM products_info WHERE pid = $1', [productId]);
+    return rows[0];
+};
