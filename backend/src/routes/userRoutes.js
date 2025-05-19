@@ -8,4 +8,5 @@ router.post('/user', controller.createUser);
 router.put('/user/:consumerid', controller.updateUser);
 router.delete('/user/:consumerid', controller.deleteUser);
 router.get('/user/search', controller.searchUser);
+router.post('/user/login', controller.loginUser);
 export default router;

@@ -5,15 +5,16 @@ export const getEwallet = async() =>{
     return rows;
 }
 
+export const createEwallet = async (ewalletInfo) => {
+  const { epaymenttype, epaymentphone, epaymentstatus, userkey } = ewalletInfo;
+  console.log("Inserting eWallet:", ewalletInfo); // Debugging log
+  const { rows } = await query(
+    'INSERT INTO paymentmethod_ewallet (epaymenttype, epaymentphone, epaymentstatus, userkey) VALUES ($1, $2, $3, $4) RETURNING *',
+    [epaymenttype, epaymentphone, epaymentstatus, userkey]
+  );
+  return rows[0];
+};
 
-export const createEwallet = async(ewalletInfo) => {
-    const{ epaymenttype, epaymentphone, epaymentstatus, userkey} = ewalletInfo;
-    const { rows } = await query (
-        'INSERT INTO paymentmethod_ewallet (epaymenttype, epaymentphone, epaymentstatus, userkey) VALUES ($1, $2, $3, $4) RETURNING *',
-        [epaymenttype, epaymentphone, epaymentstatus, userkey]
-    );
-    return rows[0];
-}
 
 export const updateEwallet = async(epaymentid, ewalletInfo) => {
     const{ epaymenttype, epaymentphone, epaymentstatus, userkey  } = ewalletInfo;

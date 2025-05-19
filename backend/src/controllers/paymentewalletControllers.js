@@ -13,16 +13,15 @@ export const getEwallet = async (req, res) =>{
 
 
 export const createEwallet = async (req, res) => {
-    try{
-        console.log("REQ BODY:", req.body);
-        const ewalletInfo = req.body;
-        const newEwallet = await Service.createEwallet(ewalletInfo);
-        res.status(200).json(newEwallet);
-
-    }catch(err){
-        console.error("Error adding ewallet", err);
-        res.status(500).json({message: 'Internal Server Error'});
-    }
+  try {
+    console.log("REQ BODY (eWallet):", req.body); // Debugging log
+    const ewalletInfo = req.body;
+    const newEwallet = await Service.createEwallet(ewalletInfo);
+    res.status(200).json(newEwallet);
+  } catch (err) {
+    console.error("Error adding eWallet:", err); // Log the error
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };
 
 

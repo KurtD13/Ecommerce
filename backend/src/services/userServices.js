@@ -14,14 +14,47 @@ export const createUser = async(userInfo) => {
     return rows[0];
 }
 
-export const updateUser = async(comsumerid, userInfo) => {
-    const{ consumerusername, consumerpassword, consumerfirstname, consumermiddlename, consumerlastname, consumerbirthdate, consumerimage, consumerphone, consumeremail  } = userInfo;
-    const { rows } = await query (
-        'UPDATE consumer_profile SET consumerusername = $1, consumerpassword = $2, consumerfirstname = $3, consumermiddlename = $4, consumerlastname = $5, consumerbirthdate = $6, consumerimage = $7, consumerphone = $8, consumeremail = $9 WHERE consumerid = $10 RETURNING *',
-        [ consumerusername, consumerpassword, consumerfirstname, consumermiddlename, consumerlastname, consumerbirthdate, consumerimage, consumerphone, consumeremail, comsumerid  ]
-    );
-    return rows[0];
-}
+export const updateUser = async (consumerid, userInfo) => {
+  const {
+    consumerusername,
+    consumerpassword,
+    consumerfirstname,
+    consumermiddlename,
+    consumerlastname,
+    consumerbirthdate,
+    consumerimage,
+    consumerphone,
+    consumeremail,
+  } = userInfo;
+
+  const { rows } = await query(
+    `UPDATE consumer_profile 
+     SET consumerusername = $1, 
+         consumerpassword = $2, 
+         consumerfirstname = $3, 
+         consumermiddlename = $4, 
+         consumerlastname = $5, 
+         consumerbirthdate = $6, 
+         consumerimage = $7, 
+         consumerphone = $8, 
+         consumeremail = $9 
+     WHERE consumerid = $10 
+     RETURNING *`,
+    [
+      consumerusername,
+      consumerpassword || null, // Allow null if password is not updated
+      consumerfirstname,
+      consumermiddlename,
+      consumerlastname,
+      consumerbirthdate,
+      consumerimage,
+      consumerphone,
+      consumeremail,
+      consumerid,
+    ]
+  );
+  return rows[0];
+};
 
 export const deleteUser = async (consumerid) => {
     const { rowCount } = await query (
@@ -60,4 +93,13 @@ export const searchUser = async (searchTerm) => {
 
     const { rows } = await query(queryText, values);
     return rows;
+};
+
+
+export const validateUser = async (email, password) => {
+    const { rows } = await query(
+        'SELECT consumerid FROM consumer_profile WHERE consumeremail = $1 AND consumerpassword = $2',
+        [email, password]
+    );
+    return rows[0]; // Return the first matching user
 };

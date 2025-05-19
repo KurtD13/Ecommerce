@@ -1,51 +1,85 @@
-import { Link } from "react-router-dom"
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../Contexts/AuthContext";
 
-export function Navbar(){
-    
-  const [searchTerm, setSearchTerm] = useState('');
+export function Navbar() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const { isLoggedIn } = useAuth(); // Access login state from context
   const navigate = useNavigate();
 
   const handleSearch = (e) => {
-      e.preventDefault();
-      if (searchTerm.trim()) {
-          navigate(`/resultpage?q=${encodeURIComponent(searchTerm)}`);
-      }
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/resultpage?q=${encodeURIComponent(searchTerm)}`);
+    }
   };
 
-    return(
-        <nav  className="navbar navbar-expand-lg py-3 "  style={{backgroundColor:'#273F4F'}}>
-        <div className="container">
-          <a className="navbar-brand fw-bolder" style={{color:'#FE7743'}} href="/">EXOtique</a>
-          <div className="collapse navbar-collapse" id="navbarSupportedContent">
-
-              <form className="d-flex input-group" onSubmit={handleSearch} style={{
-                width: '100%',
-                fontSize: '16px',
-                boxSizing: 'border-box',
-              }} role="search">
-                <span class="input-group-text">Search</span>
-                <input className="form-control" 
-                type="text" 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                aria-label="Search"></input>
-                <button to="/resultpage" className="btn input-group-text me-2" type="submit" style={{background:"#FE7743", color:'#EFEEEA'}}><i className="bi bi-search"></i></button>
-              </form>
-
-            <Link to="/Cartpage" style={{background:"#FE7743", color:'#EFEEEA'}} className="btn me-2"><i className="bi bi-cart-fill"></i></Link>
-
+  return (
+    <nav className="navbar navbar-expand-lg py-3" style={{ backgroundColor: "#273F4F" }}>
+      <div className="container">
+        <a className="navbar-brand fw-bolder" style={{ color: "#FE7743" }} href="/">
+          EXOtique
+        </a>
+        <div className="collapse navbar-collapse" id="navbarSupportedContent">
+          <form
+            className="d-flex input-group"
+            onSubmit={handleSearch}
+            style={{
+              width: "100%",
+              fontSize: "16px",
+              boxSizing: "border-box",
+            }}
+            role="search"
+          >
+            <span className="input-group-text">Search</span>
+            <input
+              className="form-control"
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              aria-label="Search"
+            ></input>
             <button
-                className="btn me-2"
-                style={{ background: "#FE7743", color: "#EFEEEA" }}
-                data-bs-toggle="modal"
-                data-bs-target="#loginModal">Login</button>
+              className="btn input-group-text me-2"
+              type="submit"
+              style={{ background: "#FE7743", color: "#EFEEEA" }}
+            >
+              <i className="bi bi-search"></i>
+            </button>
+          </form>
 
-            <Link to="/profilepage" style={{background:"#FE7743", color:'#EFEEEA'}} className="btn"><i className="bi bi-person-fill"></i></Link>
-          </div>
+          <Link
+            to="/Cartpage"
+            style={{ background: "#FE7743", color: "#EFEEEA" }}
+            className="btn me-2"
+          >
+            <i className="bi bi-cart-fill"></i>
+          </Link>
+
+          {/* Conditionally render login button based on login state */}
+          {!isLoggedIn && (
+            <button
+              className="btn me-2"
+              style={{ background: "#FE7743", color: "#EFEEEA" }}
+              data-bs-toggle="modal"
+              data-bs-target="#loginModal"
+            >
+              Login
+            </button>
+          )}
+
+          {isLoggedIn && (
+            <Link
+              to="/profilepage"
+              style={{ background: "#FE7743", color: "#EFEEEA" }}
+              className="btn"
+            >
+              <i className="bi bi-person-fill"></i>
+            </Link>
+          )}
         </div>
-      </nav>
-    );
+      </div>
+    </nav>
+  );
 }

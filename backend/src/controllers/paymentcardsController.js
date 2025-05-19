@@ -11,18 +11,16 @@ export const getCards = async (req, res) =>{
 };
 
 export const createCards = async (req, res) => {
-    try{
-        console.log("REQ BODY:", req.body);
-        const cardInfo = req.body;
-        const newCards = await Service.createCards(cardInfo);
-        res.status(200).json(newCards);
-
-    }catch(err){
-        console.error("Error adding product", err);
-        res.status(500).json({message: 'Internal Server Error'});
-    }
+  try {
+    console.log("REQ BODY (Card):", req.body); // Debugging log
+    const cardInfo = req.body;
+    const newCard = await Service.createCards(cardInfo);
+    res.status(200).json(newCard);
+  } catch (err) {
+    console.error("Error adding card:", err); // Log the error
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };
-
 
 export const updateCards = async (req, res) => {
     try{

@@ -5,14 +5,16 @@ export const getCards = async() =>{
     return rows;
 }
 
-export const createCards = async(cardinfo) => {
-    const{ bankname, cardnumber, expirydate, cvv, nameoncard, card_status, userkey } = cardinfo;
-    const { rows } = await query (
-        'INSERT INTO paymentmethod_cards (bankname, cardnumber, expirydate, cvv, nameoncard, card_status, userkey ) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-        [bankname, cardnumber, expirydate, cvv, nameoncard, card_status, userkey ]
-    );
-    return rows[0];
-}
+export const createCards = async (cardinfo) => {
+  const { bankname, cardnumber, expirydate, cvv, nameoncard, card_status, userkey } = cardinfo;
+  console.log("Inserting Card:", cardinfo); // Debugging log
+  const { rows } = await query(
+    `INSERT INTO paymentmethod_cards (bankname, cardnumber, expirydate, cvv, nameoncard, card_status, userkey) 
+     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+    [bankname, cardnumber, expirydate, cvv, nameoncard, card_status, userkey]
+  );
+  return rows[0];
+};
 
 export const updateCards = async(paymentid, cardInfo) => {
     const{ bankname, cardnumber, expirydate, cvv, nameoncard, card_status, userkey } = cardInfo;

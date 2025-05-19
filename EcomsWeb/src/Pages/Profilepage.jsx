@@ -5,7 +5,8 @@ import axios from 'axios';
 import { use } from "react";
 
 export function Profilepage(){
-  let profilekey = 14;
+   const userkey = localStorage.getItem("userkey");
+   let profilekey = userkey;
     return(
         <>
         
@@ -62,7 +63,7 @@ const ProfileSection = ({ onEdit, userKey }) => {
               <div className="profile-info">
                 <div className="d-flex align-items-center mb-4">
                   <img
-                    src="https://i.redd.it/bcyq3rjk2w071.png"
+                    src={userInfo.consumerimage || "https://via.placeholder.com/100"}
                     className="rounded-circle me-3"
                     width="100"
                     height="100"
@@ -78,7 +79,17 @@ const ProfileSection = ({ onEdit, userKey }) => {
                 <p><strong>Phone Number:</strong> {userInfo.consumerphone}</p>
               </div>
               <div>
-                <button onClick={onEdit} className="btn btn-warning">Edit Profile</button>
+                <button onClick={onEdit} className="btn btn-warning"><i class="bi bi-pencil-square"></i></button>
+                <button
+                    className="btn btn-danger text-start ms-2"
+                   
+                    onClick={() => {
+                      localStorage.setItem("userkey", "0");
+                      window.location.href = "/";
+                    }}
+                    >
+                    Logout
+                </button>
               </div>
             </div>
           </div>
@@ -88,280 +99,364 @@ const ProfileSection = ({ onEdit, userKey }) => {
   );
 };
 
-const EditProfileSection = () => (
-  <section>
-    <h2>Edit Profile</h2>
-    <form className="card p-4">
-      <input className="form-control mb-3" type="text" placeholder="Username" />
-      <input className="form-control mb-3" type="email" placeholder="Email" />
-      <input className="form-control mb-3" type="date" />
-      <input className="form-control mb-3" type="text" placeholder="Phone Number" />
-      <div className="mb-3">
-        <label className="form-label me-3"><input type="radio" name="gender" /> Male</label>
-        <label className="form-label me-3"><input type="radio" name="gender" /> Female</label>
-        <label className="form-label"><input type="radio" name="gender" /> Other</label>
-      </div>
-      <button type="submit" className="btn btn-warning">Save</button>
-    </form>
-  </section>
-);
-
-const AddressSection = ({ userKey }) => {
-  const [userAddress, setUseraddress] = useState([]);
-  let addresskey = userKey;
+const EditProfileSection = ({ userKey }) => {
+  const [userData, setUserData] = useState({
+    consumerusername: "",
+    consumeremail: "",
+    consumerbirthdate: "",
+    consumerphone: "",
+    consumerpassword: "",
+    consumerimage: "",
+  });
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUserData = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/address');
-        setUseraddress(response.data);
+        const response = await axios.get(`http://localhost:3000/api/user`);
+        const user = response.data.find((u) => u.consumerid.toString() === userKey.toString());
+        if (user) {
+          setUserData({
+            consumerusername: user.consumerusername,
+            consumeremail: user.consumeremail,
+            consumerbirthdate: user.consumerbirthdate.substring(0, 10),
+            consumerphone: user.consumerphone,
+            consumerpassword: "",
+            consumerimage: user.consumerimage,
+          });
+        }
       } catch (err) {
-        console.error(err.message);
+        console.error("Error fetching user data:", err);
       }
     };
-    fetchData();
-  }, []);
 
-  const filtered = userAddress.filter((u) =>
-    u.userkey.toString().includes(addresskey?.toString())
-  );
+    fetchUserData();
+  }, [userKey]);
 
-  if (!addresskey || filtered.length === 0) {
-    return (
-      <section>
-        <h2>My Addresses</h2>
-        <div className="card p-4">
-          <p>Please Login</p>
-        </div>
-      </section>
-    );
-  }
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.put(`http://localhost:3000/api/user/${userKey}`, userData);
+      if (response.status === 200) {
+        alert("Profile updated successfully!");
+      }
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      alert("Failed to update profile. Please try again.");
+    }
+  };
 
   return (
     <section>
-      <h2>My Addresses</h2>
-      <div className="d-flex justify-content-end mb-3">
-        <button className="btn btn-warning">New Address</button>
-      </div>
-      {filtered.map((address) => (
-        <div className="card p-4 mb-3" key={address.id}>
-          <div className="d-flex justify-content-between align-items-center p-2 mb-2">
-            <span>
-              {address.housenumber} {address.building}. {address.street} {address.barangay}, {address.city}, {address.province}, {address.region} {address.postalcode}, {address.country}
-            </span>
-            <button className="btn btn-sm btn-danger">✕</button>
-          </div>
+      <h2>Edit Profile</h2>
+      <form className="card p-4" onSubmit={handleUpdateProfile}>
+        <div className="mb-3">
+          <label className="form-label">Username</label>
+          <input
+            className="form-control"
+            type="text"
+            value={userData.consumerusername}
+            onChange={(e) => setUserData({ ...userData, consumerusername: e.target.value })}
+            required
+          />
         </div>
-      ))}
+        <div className="mb-3">
+          <label className="form-label">Email</label>
+          <input
+            className="form-control"
+            type="email"
+            value={userData.consumeremail}
+            onChange={(e) => setUserData({ ...userData, consumeremail: e.target.value })}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label className="form-label">Birthdate</label>
+          <input
+            className="form-control"
+            type="date"
+            value={userData.consumerbirthdate}
+            onChange={(e) => setUserData({ ...userData, consumerbirthdate: e.target.value })}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label className="form-label">Phone Number</label>
+          <input
+            className="form-control"
+            type="text"
+            value={userData.consumerphone}
+            onChange={(e) => setUserData({ ...userData, consumerphone: e.target.value })}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label className="form-label">Change Password</label>
+          <input
+            className="form-control"
+            type="password"
+            value={userData.consumerpassword}
+            onChange={(e) => setUserData({ ...userData, consumerpassword: e.target.value })}
+          />
+        </div>
+        <div className="mb-3">
+          <label className="form-label">Profile Picture URL</label>
+          <input
+            className="form-control"
+            type="text"
+            value={userData.consumerimage}
+            onChange={(e) => setUserData({ ...userData, consumerimage: e.target.value })}
+          />
+        </div>
+        <button type="submit" className="btn btn-warning">
+          Save
+        </button>
+      </form>
     </section>
   );
 };
 
-const PaymentSection = ({ userKey }) => {
-  let paymentkey = userKey;
-
-  const [userEpayment, setUserEpayment] = useState([]);
-  const [userCard, setUserCard] = useState([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('http://localhost:3000/api/ewallet');
-        setUserEpayment(response.data);
-      } catch (err) {
-        console.error(err.message);
-      }
-    };
-    fetchData();
-  }, []);
+const AddressSection = ({ userKey }) => {
+  const [userAddress, setUserAddress] = useState([]);
+  const [newAddress, setNewAddress] = useState({
+    country: "",
+    region: "",
+    province: "",
+    city: "",
+    barangay: "",
+    postalcode: "",
+    streetname: "",
+    building: "",
+    housenumber: "",
+    userkey: userKey, // Associate the address with the logged-in user
+  });
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAddresses = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/cards');
-        setUserCard(response.data);
+        const response = await axios.get("http://localhost:3000/api/address");
+        setUserAddress(response.data);
       } catch (err) {
-        console.error(err.message);
+        console.error("Error fetching addresses:", err);
       }
     };
-    fetchData();
+    fetchAddresses();
   }, []);
 
-  const filteredEpayment = userEpayment.filter((u) =>
-    u.userkey.toString().includes(paymentkey?.toString())
-  );
+  const handleAddAddress = async (e) => {
+    e.preventDefault();
 
-  const filteredCard = userCard.filter((u) =>
-    u.userkey.toString().includes(paymentkey?.toString())
-  );
+    if (!newAddress.country && !newAddress.province) {
+      alert("Either Country or Province must be provided.");
+      return;
+    }
 
-  if (!paymentkey || (filteredEpayment.length === 0 && filteredCard.length === 0)) {
-    return (
-      <section>
-        <h2>Payment Methods</h2>
-        <div className="card p-4">
-          <p>Please Login</p>
-        </div>
-      </section>
-    );
+    try {
+      const response = await axios.post("http://localhost:3000/api/address", newAddress);
+      if (response.status === 200) {
+        setUserAddress([...userAddress, response.data]); // Update the address list
+        setNewAddress({
+          country: "",
+          region: "",
+          province: "",
+          city: "",
+          barangay: "",
+          postalcode: "",
+          streetname: "",
+          building: "",
+          housenumber: "",
+          userkey: userKey,
+        }); // Reset the form
+        alert("Address added successfully!");
+      }
+    } catch (err) {
+      console.error("Error adding address:", err);
+      alert("Failed to add address. Please try again.");
+    }
+  };
+
+  const handleDeleteAddress = async (addressId) => {
+  try {
+    const response = await axios.delete(`http://localhost:3000/api/address/${addressId}`);
+    if (response.status === 200) {
+      setUserAddress(userAddress.filter((address) => address.addressid !== addressId)); // Use addressid instead of id
+      alert("Address deleted successfully!");
+    }
+  } catch (err) {
+    console.error("Error deleting address:", err);
+    alert("Failed to delete address. Please try again.");
   }
+};
+
+  const filtered = userAddress.filter((u) =>
+    u.userkey.toString().includes(userKey?.toString())
+  );
 
   return (
     <section>
-      <h2>Payment Methods</h2>
-      <div className="card p-4 mb-4 d-flex flex-column">
-        <h5 className="mb-3">eWallets</h5>
-        <ul className="list-group mb-3">
-          {filteredEpayment.map((ewallet) => (
-            <li
-              className="list-group-item d-flex justify-content-between align-items-center"
-              key={ewallet.id}
-            >
-              <div>
-                <strong>{ewallet.ewalletname}</strong>
-                <br />
-                Number: 0{ewallet.epaymentphone}
-                <br />
-              </div>
-              <button className="btn btn-outline-danger">✕</button>
-            </li>
-          ))}
-        </ul>
-        <button
-          className="btn btn-outline-primary btn-sm"
-          data-bs-toggle="modal"
-          data-bs-target="#eWalletModal"
-        >
-          Add eWallet
-        </button>
+      <div className="row d-flex mb-3">
+        <div className="col">
+          <h2>My Addresses</h2>
+        </div>
+        <div className="col text-end">
+          <button
+            className="btn btn-warning"
+            data-bs-toggle="modal"
+            data-bs-target="#addAddressModal"
+          >
+            Add Address
+          </button>
+        </div>
       </div>
-
-      <div className="card p-4 d-flex flex-column">
-        <h5 className="mb-3">Credit / Debit Cards</h5>
-        <ul className="list-group mb-3">
-          {filteredCard.map((card) => (
-            <li
-              className="list-group-item d-flex justify-content-between align-items-center"
-              key={card.id}
-            >
-              <div>
-                <strong>{card.bankname} </strong>
-                <br />
-                Account Name: {card.nameoncard}
-                <br />
-                Card Number: {card.cardnumber}
-                <br />
-                Exp: {card.expirydate.substring(0, 10)}
-                <br />
-              </div>
-              <button className="btn btn-outline-danger">✕</button>
-            </li>
-          ))}
-        </ul>
-        <button
-          className="btn btn-outline-primary btn-sm"
-          data-bs-toggle="modal"
-          data-bs-target="#addCardModal"
-        >
-          Add Card
-        </button>
-      </div>
-
-      {/* eWallet Modal */}
-      <div
-        className="modal fade"
-        id="eWalletModal"
-        tabIndex="-1"
-        aria-labelledby="eWalletModalLabel"
-        aria-hidden="true"
-      >
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Select an eWallet</h5>
+      {filtered.length === 0 ? (
+        <div className="card p-4">
+          <p>No addresses registered yet.</p>
+        </div>
+      ) : (
+        filtered.map((address) => (
+          <div className="card p-4 mb-3" key={address.id}>
+            <div className="d-flex justify-content-between align-items-center p-2 mb-2">
+              <span>
+                {address.housenumber} {address.building}, {address.streetname}, {address.barangay}, {address.city}, {address.province}, {address.region}, {address.postalcode}, {address.country}
+              </span>
               <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-              ></button>
-            </div>
-            <div className="modal-body">
-              <button className="btn btn-outline-primary w-100 mb-2">
-                GCash
-              </button>
-              <button className="btn btn-outline-primary w-100 mb-2">
-                Maya
-              </button>
-              <button className="btn btn-outline-primary w-100">Others</button>
-            </div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="btn btn-secondary"
-                data-bs-dismiss="modal"
+                className="btn btn-sm btn-danger"
+                onClick={() => handleDeleteAddress(address.addressid)}
               >
-                Cancel
+                ✕
               </button>
             </div>
           </div>
-        </div>
-      </div>
+        ))
+      )}
 
-      {/* Add Card Modal */}
+      {/* Add Address Modal */}
       <div
         className="modal fade"
-        id="addCardModal"
+        id="addAddressModal"
         tabIndex="-1"
-        aria-labelledby="addCardModalLabel"
+        aria-labelledby="addAddressModalLabel"
         aria-hidden="true"
       >
         <div className="modal-dialog">
-          <form className="modal-content">
+          <form className="modal-content" onSubmit={handleAddAddress}>
             <div className="modal-header">
-              <h5 className="modal-title">Add Debit/Credit Card</h5>
+              <h5 className="modal-title" id="addAddressModalLabel">
+                Add Address
+              </h5>
               <button
                 type="button"
                 className="btn-close"
                 data-bs-dismiss="modal"
+                aria-label="Close"
               ></button>
             </div>
             <div className="modal-body">
-              <div className="mb-3">
-                <label className="form-label">Card Number</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="1234 5678 9012 3456"
-                  required
-                />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Name on Card</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Name"
-                  required
-                />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Expiration Date</label>
-                <input type="month" className="form-control" required />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">CVV</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  placeholder="123"
-                  maxLength="4"
-                  required
-                />
+              <div className="row">
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">Country</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newAddress.country}
+                    onChange={(e) =>
+                      setNewAddress({ ...newAddress, country: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">Region</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newAddress.region}
+                    onChange={(e) =>
+                      setNewAddress({ ...newAddress, region: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">Province</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newAddress.province}
+                    onChange={(e) =>
+                      setNewAddress({ ...newAddress, province: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">City</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newAddress.city}
+                    onChange={(e) =>
+                      setNewAddress({ ...newAddress, city: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">Barangay</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newAddress.barangay}
+                    onChange={(e) =>
+                      setNewAddress({ ...newAddress, barangay: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">Postal Code</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newAddress.postalcode}
+                    onChange={(e) =>
+                      setNewAddress({ ...newAddress, postalcode: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">Street Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newAddress.streetname}
+                    onChange={(e) =>
+                      setNewAddress({ ...newAddress, streetname: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">Building</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newAddress.building}
+                    onChange={(e) =>
+                      setNewAddress({ ...newAddress, building: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">House Number</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newAddress.housenumber}
+                    onChange={(e) =>
+                      setNewAddress({ ...newAddress, housenumber: e.target.value })
+                    }
+                    required
+                  />
+                </div>
               </div>
             </div>
             <div className="modal-footer">
               <button type="submit" className="btn btn-warning">
-                Add Card
+                Add Address
               </button>
               <button
                 type="button"
@@ -373,6 +468,204 @@ const PaymentSection = ({ userKey }) => {
             </div>
           </form>
         </div>
+      </div>
+    </section>
+  );
+};
+
+const PaymentSection = ({ userKey }) => {
+  const [userEpayment, setUserEpayment] = useState([]);
+  const [userCard, setUserCard] = useState([]);
+  const [newEwallet, setNewEwallet] = useState({
+    epaymenttype: "",
+    epaymentphone: "",
+    epaymentstatus: true, // Ensure boolean value
+    userkey: userKey,
+  });
+
+  const [newCard, setNewCard] = useState({
+    bankname: "",
+    cardnumber: "",
+    expirydate: "", // Ensure correct date format (YYYY-MM-DD)
+    cvv: "",
+    nameoncard: "",
+    card_status: true, // Ensure boolean value
+    userkey: userKey,
+  });
+
+  useEffect(() => {
+    const fetchEpaymentData = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/ewallet");
+        const filteredEpayments = response.data.filter(
+          (ewallet) => ewallet.userkey.toString() === userKey.toString()
+        );
+        setUserEpayment(filteredEpayments);
+      } catch (err) {
+        console.error(err.message);
+      }
+    };
+    fetchEpaymentData();
+  }, [userKey]);
+
+  useEffect(() => {
+    const fetchCardData = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/cards");
+        const filteredCards = response.data.filter(
+          (card) => card.userkey.toString() === userKey.toString()
+        );
+        setUserCard(filteredCards);
+      } catch (err) {
+        console.error(err.message);
+      }
+    };
+    fetchCardData();
+  }, [userKey]);
+
+  const handleDeleteEwallet = async (epaymentid) => {
+    try {
+      const response = await axios.delete(`http://localhost:3000/api/ewallet/${epaymentid}`);
+      if (response.status === 200) {
+        setUserEpayment(userEpayment.filter((ewallet) => ewallet.epaymentid !== epaymentid));
+        alert("eWallet deleted successfully!");
+      }
+    } catch (err) {
+      console.error("Error deleting eWallet:", err);
+      alert("Failed to delete eWallet. Please try again.");
+    }
+  };
+
+  const handleDeleteCard = async (paymentid) => {
+    try {
+      const response = await axios.delete(`http://localhost:3000/api/cards/${paymentid}`);
+      if (response.status === 200) {
+        setUserCard(userCard.filter((card) => card.paymentid !== paymentid));
+        alert("Card deleted successfully!");
+      }
+    } catch (err) {
+      console.error("Error deleting card:", err);
+      alert("Failed to delete card. Please try again.");
+    }
+  };
+
+  const handleAddEwallet = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post("http://localhost:3000/api/ewallet", newEwallet);
+      if (response.status === 200) {
+        setUserEpayment([...userEpayment, response.data]);
+        setNewEwallet({
+          epaymenttype: "",
+          epaymentphone: "",
+          epaymentstatus: true, // Reset to boolean
+          userkey: userKey,
+        });
+        alert("eWallet added successfully!");
+      }
+    } catch (err) {
+      console.error("Error adding eWallet:", err);
+      alert("Failed to add eWallet. Please try again.");
+    }
+  };
+
+  const handleAddCard = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post("http://localhost:3000/api/cards", {
+        ...newCard,
+        expirydate: `${newCard.expirydate}-01`, // Ensure correct date format (YYYY-MM-DD)
+      });
+      if (response.status === 200) {
+        setUserCard([...userCard, response.data]);
+        setNewCard({
+          bankname: "",
+          cardnumber: "",
+          expirydate: "",
+          cvv: "",
+          nameoncard: "",
+          card_status: true, // Reset to boolean
+          userkey: userKey,
+        });
+        alert("Card added successfully!");
+      }
+    } catch (err) {
+      console.error("Error adding card:", err);
+      alert("Failed to add card. Please try again.");
+    }
+  };
+
+  return (
+    <section>
+      <h2>Payment Methods</h2>
+      <div className="card p-4 mb-4">
+        <h5 className="mb-3">eWallets</h5>
+        <ul className="list-group mb-3">
+          {userEpayment.map((ewallet) => (
+            <li
+              className="list-group-item d-flex justify-content-between align-items-center"
+              key={ewallet.epaymentid}
+            >
+              <div>
+                <strong>
+                  {ewallet.epaymenttype === 1
+                    ? "GCash"
+                    : ewallet.epaymenttype === 2
+                    ? "Maya"
+                    : "Others"}
+                </strong>
+                <br />
+                Phone: {ewallet.epaymentphone}
+              </div>
+              <button
+                className="btn btn-outline-danger btn-sm"
+                onClick={() => handleDeleteEwallet(ewallet.epaymentid)}
+              >
+                ✕
+              </button>
+            </li>
+          ))}
+        </ul>
+        <button
+          className="btn btn-outline-primary btn-sm"
+          data-bs-toggle="modal"
+          data-bs-target="#addEwalletModal"
+        >
+          Add Wallet
+        </button>
+      </div>
+
+      <div className="card p-4">
+        <h5 className="mb-3">Credit / Debit Cards</h5>
+        <ul className="list-group mb-3">
+          {userCard.map((card) => (
+            <li
+              className="list-group-item d-flex justify-content-between align-items-center"
+              key={card.paymentid}
+            >
+              <div>
+                <strong>{card.bankname}</strong>
+                <br />
+                Card Number: {card.cardnumber}
+                <br />
+                Expiry: {card.expirydate.substring(0, 10)}
+              </div>
+              <button
+                className="btn btn-outline-danger btn-sm"
+                onClick={() => handleDeleteCard(card.paymentid)}
+              >
+                ✕
+              </button>
+            </li>
+          ))}
+        </ul>
+        <button
+          className="btn btn-outline-primary btn-sm"
+          data-bs-toggle="modal"
+          data-bs-target="#addCardModal"
+        >
+          Add Card
+        </button>
       </div>
     </section>
   );
@@ -569,6 +862,7 @@ const ProfilePage = (profilekey) => {
                 </button>
               </li>
             </ul>
+            
           </div>
         </nav>
 

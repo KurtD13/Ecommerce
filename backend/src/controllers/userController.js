@@ -26,23 +26,19 @@ export const createUser = async (req, res) => {
 
 
 export const updateUser = async (req, res) => {
-    try{
-        console.log("REQ BODY:", req.body);
-        const comsumerid = req.params.consumerid;
-        const userInfo = req.body;   
-        const updatedUser = await Service.updateUser(comsumerid, userInfo)
-        if(!updatedUser){
-            return res.status(404).json({message: 'Product not found'});
-        }
-        res.status(200).json(updatedUser);
-
-    }catch(err){
-        
-        console.error("Error updating product: ", err);
-        res.status(500).json({message: 'Internal Server Error'});
+  try {
+    const consumerid = req.params.consumerid;
+    const userInfo = req.body;
+    const updatedUser = await Service.updateUser(consumerid, userInfo);
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
     }
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    console.error("Error updating user: ", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };
-
 
 export const deleteUser = async (req, res) => {
     try{
@@ -71,5 +67,21 @@ export const searchUser = async (req, res) => {
     }catch(err){
         console.error("Error searching product: ", err);
         res.status(500).json({message: 'Internal Server Error'});
+    }
+};
+
+export const loginUser = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await Service.validateUser(email, password);
+
+        if (!user) {
+            return res.status(401).json({ message: "Invalid email or password" });
+        }
+
+        res.status(200).json(user); // Return the consumerid
+    } catch (err) {
+        console.error("Error during login:", err);
+        res.status(500).json({ message: "Internal Server Error" });
     }
 };

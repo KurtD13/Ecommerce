@@ -1,9 +1,10 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { Navbar } from "../Components/Navbar";
 import "bootstrap/dist/css/bootstrap.min.css";
+import axios from "axios";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
-
-export function Signup(){
+export function Signup() {
   const [step, setStep] = useState(1);
   const nextStep = () => setStep(step + 1);
   const [userdata, setUserdata] = useState({
@@ -17,35 +18,91 @@ export function Signup(){
     consumerphone: '',
     consumeremail: ''
   });
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const navigate = useNavigate(); // Initialize useNavigate
 
-  
+  const handleSignup = async () => {
+    try {
+      const response = await axios.post("http://localhost:3000/api/user", userdata);
+      if (response.status === 200) {
+        setSuccessMessage("Account created successfully!");
+        setErrorMessage('');
+
+        // Redirect to the Landingpage immediately after successful signup
+        navigate("/");
+
+        // Reset the form state (this will happen after navigation)
+        setUserdata({
+          consumerusername: '',
+          consumerpassword: '',
+          consumerfirstname: '',
+          consumermiddlename: '',
+          consumerlastname: '',
+          consumerbirthdate: '',
+          consumerimage: '',
+          consumerphone: '',
+          consumeremail: ''
+        });
+      }
+    } catch (err) {
+      console.error("Signup error:", err);
+      setErrorMessage("An error occurred during signup. Please try again.");
+      setSuccessMessage('');
+    }
+  };
 
   return (
     <>
       <Navbar />
       <div style={{ backgroundColor: "#EFEEEA", minHeight: "100vh", padding: "20px" }}>
-        {step === 1 && <CreateAccount onNext={nextStep} />}
-        {step === 2 && <AccountConfirmation onNext={nextStep} />}
-        {step === 3 && <PersonalInformation />}
+        {step === 1 && <CreateAccount onNext={nextStep} userdata={userdata} setUserdata={setUserdata} />}
+        {step === 2 && (
+          <PersonalInformation
+            userdata={userdata}
+            setUserdata={setUserdata}
+            onSignup={handleSignup}
+            errorMessage={errorMessage}
+            successMessage={successMessage}
+          />
+        )}
       </div>
     </>
   );
 }
 
-function CreateAccount({ onNext }) {
+function CreateAccount({ onNext, userdata, setUserdata }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [showPasswordTip, setShowPasswordTip] = useState(false);
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+
+  const handleNext = () => {
+    if (userdata.consumerpassword !== passwordConfirm) {
+      alert("Passwords do not match!");
+      return;
+    }
+    onNext();
+  };
 
   return (
     <div className="container" style={modalStyle}>
       <h4 style={titleStyle}>Create an Account</h4>
       <div className="row mb-3">
         <div className="col">
-          <input className="form-control" placeholder="Username" />
+          <input
+            className="form-control"
+            placeholder="Username"
+            value={userdata.consumerusername}
+            onChange={(e) => setUserdata({ ...userdata, consumerusername: e.target.value })}
+          />
         </div>
         <div className="col">
-          <input className="form-control" placeholder="Phone number" />
+          <input
+            className="form-control"
+            placeholder="Phone number"
+            value={userdata.consumerphone}
+            onChange={(e) => setUserdata({ ...userdata, consumerphone: e.target.value })}
+          />
         </div>
       </div>
       <div className="row mb-3">
@@ -55,8 +112,8 @@ function CreateAccount({ onNext }) {
               className="form-control"
               placeholder="Create your password"
               type={showPassword ? "text" : "password"}
-              onFocus={() => setShowPasswordTip(true)}
-              onBlur={() => setShowPasswordTip(false)}
+              value={userdata.consumerpassword}
+              onChange={(e) => setUserdata({ ...userdata, consumerpassword: e.target.value })}
             />
             <button
               className="btn btn-outline-secondary"
@@ -66,11 +123,6 @@ function CreateAccount({ onNext }) {
               <i className={`fa ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
             </button>
           </div>
-          {showPasswordTip && (
-            <div style={{ fontSize: "small", color: "#fff", marginTop: "5px" }}>
-              Password must include: a symbol, an uppercase letter, a lowercase letter, and a number.
-            </div>
-          )}
         </div>
         <div className="col">
           <div className="input-group">
@@ -78,8 +130,8 @@ function CreateAccount({ onNext }) {
               className="form-control"
               placeholder="Confirm your password"
               type={showConfirm ? "text" : "password"}
-              onFocus={() => setShowPasswordTip(true)}
-              onBlur={() => setShowPasswordTip(false)}
+              value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)}
             />
             <button
               className="btn btn-outline-secondary"
@@ -91,115 +143,81 @@ function CreateAccount({ onNext }) {
           </div>
         </div>
       </div>
-      <div style={{color:"white"}}  className="text-center mb-2">--- OR ---</div>
-      <div className="d-flex justify-content-center gap-3 mb-3">
-        <button className="btn btn-light"> <i className="fab fa-google"></i> Google</button>
-        <button className="btn btn-primary"> <i className="fab fa-facebook-f"></i> </button>
-      </div>
       <div className="text-end">
-        <button style={{ background: "#FE7743" }} className="btn btn-dark" onClick={onNext}>Proceed</button>
+        <button style={{ background: "#FE7743" }} className="btn btn-dark" onClick={handleNext}>
+          Proceed
+        </button>
       </div>
     </div>
   );
 }
 
-function AccountConfirmation({ onNext }) {
-  const inputsRef = useRef([]);
-
-  const handleChange = (e, index) => {
-    if (e.target.value.length === 1 && index < 5) {
-      inputsRef.current[index + 1].focus();
-    }
-  };
-
-  return (
-    <div className="container" style={modalStyle}>
-      <h4 style={titleStyle}>Enter the Confirmation Code</h4>
-      <div className="d-flex justify-content-center gap-2 mb-2">
-        {[...Array(6)].map((_, i) => (
-          <input
-            key={i}
-            ref={el => inputsRef.current[i] = el}
-            className="form-control text-center"
-            style={{ width: "40px" }}
-            maxLength="1"
-            onChange={e => handleChange(e, i)}
-          />
-        ))}
-      </div>
-      <div className="text-center mb-3" style={{ fontSize: "small", color: "#EFEEEA" }}>
-        Didn't receive it yet? <a href="#" className="text-white">Resend Code</a>
-      </div>
-      <div className="text-end">
-        <button style={{ background: "#FE7743" }} className="btn btn-dark" onClick={onNext}>Confirm</button>
-      </div>
-    </div>
-  );
-}
-
-function PersonalInformation() {
-  const [email, setEmail] = useState("");
-  const isValidEmail = email.endsWith("@gmail.com");
-
+function PersonalInformation({ userdata, setUserdata, onSignup, errorMessage, successMessage }) {
   return (
     <div className="container" style={modalStyle}>
       <h4 style={titleStyle}>Personal Information</h4>
       <div className="row">
         <div className="col-md-6 mb-3">
-          <input className="form-control" placeholder="First name" />
+          <input
+            className="form-control"
+            placeholder="First name"
+            value={userdata.consumerfirstname}
+            onChange={(e) => setUserdata({ ...userdata, consumerfirstname: e.target.value })}
+          />
         </div>
         <div className="col-md-6 mb-3">
-          <select className="form-control">
-            <option value="">Select Province/State</option>
-            <option>Laguna</option>
-            <option>Quezon</option>
-            <option>Cavite</option>
-          </select>
+          <input
+            className="form-control"
+            placeholder="Last name"
+            value={userdata.consumerlastname}
+            onChange={(e) => setUserdata({ ...userdata, consumerlastname: e.target.value })}
+          />
         </div>
         <div className="col-md-6 mb-3">
-          <input className="form-control" placeholder="Last name" />
+          <input
+            className="form-control"
+            placeholder="Middle name"
+            value={userdata.consumermiddlename}
+            onChange={(e) => setUserdata({ ...userdata, consumermiddlename: e.target.value })}
+          />
         </div>
         <div className="col-md-6 mb-3">
-          <select className="form-control">
-            <option value="">Select City/Municipality</option>
-            <option>San Pablo</option>
-            <option>Calamba</option>
-            <option>Lucena</option>
-          </select>
-        </div>
-        <div className="col-md-6 mb-1">
           <input
             className="form-control"
             placeholder="Email"
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={userdata.consumeremail}
+            onChange={(e) => setUserdata({ ...userdata, consumeremail: e.target.value })}
           />
-          {!isValidEmail && <div style={{ color: "red", fontSize: "small" }}>Invalid email format</div>}
         </div>
         <div className="col-md-6 mb-3">
-          <select className="form-control">
-            <option value="">Select Barangay</option>
-            <option>Barangay 1</option>
-            <option>Barangay 2</option>
-            <option>Barangay 3</option>
-          </select>
+          <label className="form-label">Birthdate</label>
+          <input
+            className="form-control"
+            type="date"
+            value={userdata.consumerbirthdate}
+            onChange={(e) => setUserdata({ ...userdata, consumerbirthdate: e.target.value })}
+          />
         </div>
         <div className="col-md-6 mb-3">
-          <label className="form-label text-white">Birthdate</label>
-          <input className="form-control" type="date" />
-        </div>
-        <div className="col-md-6 mb-3">
-          <input className="form-control" placeholder="House number/ Street name" />
+          <label className="form-label">Profile Image</label>
+          <input
+            className="form-control"
+            type="file"
+            onChange={(e) => setUserdata({ ...userdata, consumerimage: e.target.files[0] })}
+          />
         </div>
       </div>
+      {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
+      {successMessage && <div className="alert alert-success">{successMessage}</div>}
       <div className="text-end">
-        <button style={{ background: "#FE7743" }} className="btn btn-dark">Confirm</button>
+        <button style={{ background: "#FE7743" }} className="btn btn-dark" onClick={onSignup}>
+          Confirm
+        </button>
       </div>
     </div>
   );
 }
-
 
 const modalStyle = {
   backgroundColor: "#273F4F",
