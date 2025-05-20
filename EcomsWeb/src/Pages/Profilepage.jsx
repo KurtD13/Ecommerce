@@ -63,7 +63,7 @@ const ProfileSection = ({ onEdit, userKey }) => {
               <div className="profile-info">
                 <div className="d-flex align-items-center mb-4">
                   <img
-                    src={userInfo.consumerimage || "https://via.placeholder.com/100"}
+                    src={userInfo.consumerimage || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"}
                     className="rounded-circle me-3"
                     width="100"
                     height="100"

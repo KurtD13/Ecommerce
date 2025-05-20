@@ -32,7 +32,8 @@ export function Productpreview({ filterTerm = "" }) {
   return (
     <>
       {filtered.map((productInfo) => (
-        <div className="col-sm-2 px-1 py-1" key={productInfo.pid}>
+        productInfo.is_available && (
+          <div className="col-sm-2 px-1 py-1" key={productInfo.pid}>
           <Link
             to={`/products/${productInfo.pid}`} // Link to the product page with the product ID
             className="card btn btn-outline-secondary me-2"
@@ -76,6 +77,8 @@ export function Productpreview({ filterTerm = "" }) {
             </div>
           </Link>
         </div>
+          )
+        
       ))}
     </>
   );

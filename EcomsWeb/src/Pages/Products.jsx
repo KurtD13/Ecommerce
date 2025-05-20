@@ -191,14 +191,12 @@ export function Products() {
                             <h3 className="text-danger mb-3">₱{product.pprice}</h3>
                             <div className="mb-3">
                                 <div className="d-flex align-items-center mb-1">
-                                    <div style={{ width: "100px", fontWeight: 500 }}>Shipping</div>
-                                    <select className="form-select form-select-sm ms-2" style={{ maxWidth: "180px" }}>
-                                        <option selected>Santa Maria, Bulacan</option>
-                                        <option>Metro Manila</option>
-                                        <option>Luzon</option>
-                                        <option>Visayas</option>
-                                        <option>Mindanao</option>
-                                    </select>
+                                    <div style={{ width: "100px", fontWeight: 500 }}>Ship From</div>
+                                    {filteredShop.map((shop) => (
+                                        <div className="text-muted ps-2">
+                                            {"Philippines, " + shop.shippinglocation || "Philippines"}
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                             <div className="d-flex align-items-center mb-3" style={{ gap: "10px" }}>
@@ -262,7 +260,7 @@ export function Products() {
                     {filteredShop.map((shop) => (
                     <div className="card-body d-flex align-items-center">
                         <img
-                            src={shop.shoplogo}
+                            src={shop.shoplogo || "https://cdn-icons-png.flaticon.com/512/2474/2474161.png"}
                             className="pfp me-3 rounded-circle"
                             alt="Seller"
                             style={{ width: "50px", height: "50px" }}
