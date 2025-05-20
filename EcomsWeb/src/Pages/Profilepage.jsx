@@ -399,7 +399,7 @@ const AddressSection = ({ userKey }) => {
         </div>
         <div className="col text-end">
           <button
-            className="btn btn-warning"
+            className="btn btn-success"
             data-bs-toggle="modal"
             data-bs-target="#addAddressModal"
           >
@@ -609,7 +609,7 @@ const AddressSection = ({ userKey }) => {
               </div>
             </div>
             <div className="modal-footer">
-              <button type="submit" className="btn btn-warning">
+              <button type="submit" className="btn btn-success">
                 Add Address
               </button>
               <button
@@ -956,6 +956,7 @@ const AddressEditSection = ({ address, setEditAddress, userAddress, setUserAddre
 const PaymentSection = ({ userKey }) => {
   const [userEpayment, setUserEpayment] = useState([]);
   const [userCard, setUserCard] = useState([]);
+  const [editPayment, setEditPayment] = useState(null); // State to hold the payment being edited
   const [newEwallet, setNewEwallet] = useState({
     epaymenttype: "",
     epaymentphone: "",
@@ -1109,14 +1110,26 @@ const PaymentSection = ({ userKey }) => {
                 <br />
                 Phone: {ewallet.epaymentphone}
               </div>
-              <button className="btn btn-outline-danger btn-sm"
+              <div className="col text-end">
+              <button className="btn btn-danger me-2 btn-sm"
                       onClick={() => handleDeleteEwallet(ewallet.epaymentid)}
                       >✕</button>
+              <button
+                  className="btn btn-sm btn-warning "
+                  onClick={() => setEditPayment({ type: "ewallet", data: ewallet })}
+                  data-bs-toggle="modal"
+                  data-bs-target="#editPaymentModal"
+                >
+                  ✎
+              </button>
+              </div>
+              
+              
             </li>
           ))}
         </ul>
         <button
-          className="btn btn-outline-primary btn-sm"
+          className="btn btn-success btn-sm"
           data-bs-toggle="modal"
           data-bs-target="#addEwalletModal"
         >
@@ -1139,14 +1152,27 @@ const PaymentSection = ({ userKey }) => {
                 <br />
                 Expiry: {(card.expirydate).substring(0, 10)}
               </div>
-              <button className="btn btn-outline-danger btn-sm"
-                      onClick={() => handleDeleteCard(card.paymentid)}
-              >✕</button>
+              <div className="col text-end">
+                <button className="btn btn-danger btn-sm me-2"
+                        onClick={() => handleDeleteCard(card.paymentid)}
+                >✕
+                </button>
+                  <button
+                  className="btn btn-sm btn-warning "
+                  onClick={() => setEditPayment({ type: "card", data: card })}
+                  data-bs-toggle="modal"
+                  data-bs-target="#editPaymentModal"
+                >
+                  ✎
+                </button>
+                
+              </div>
+               
             </li>
           ))}
         </ul>
         <button
-          className="btn btn-outline-primary btn-sm"
+          className="btn btn-success btn-sm"
           data-bs-toggle="modal"
           data-bs-target="#addCardModal"
         >
@@ -1319,10 +1345,208 @@ const PaymentSection = ({ userKey }) => {
           </form>
         </div>
       </div>
+      {editPayment && (
+        <EditPaymentSection
+          payment={editPayment}
+          setEditPayment={setEditPayment}
+          userEpayment={userEpayment}
+          setUserEpayment={setUserEpayment}
+          userCard={userCard}
+          setUserCard={setUserCard}
+        />
+      )}
     </section>
   );
 };
 
+const EditPaymentSection = ({
+  payment,
+  setEditPayment,
+  userEpayment,
+  setUserEpayment,
+  userCard,
+  setUserCard,
+}) => {
+  const [editedPayment, setEditedPayment] = useState({ ...payment.data });
+
+  const handleUpdatePayment = async (e) => {
+    e.preventDefault();
+
+    try {
+      if (payment.type === "ewallet") {
+        const response = await axios.put(
+          `http://localhost:3000/api/ewallet/${editedPayment.epaymentid}`,
+          editedPayment
+        );
+        if (response.status === 200) {
+          const updatedEpayments = userEpayment.map((ewallet) =>
+            ewallet.epaymentid === editedPayment.epaymentid ? response.data : ewallet
+          );
+          setUserEpayment(updatedEpayments);
+        }
+      } else if (payment.type === "card") {
+        const response = await axios.put(
+          `http://localhost:3000/api/cards/${editedPayment.paymentid}`,
+          editedPayment
+        );
+        if (response.status === 200) {
+          const updatedCards = userCard.map((card) =>
+            card.paymentid === editedPayment.paymentid ? response.data : card
+          );
+          setUserCard(updatedCards);
+        }
+      }
+
+      // Close the modal programmatically
+      const modalElement = document.getElementById("editPaymentModal");
+      const modalInstance = bootstrap.Modal.getInstance(modalElement);
+      modalInstance.hide();
+
+      setEditPayment(null); // Clear the edit state
+      alert("Payment method updated successfully!");
+    } catch (err) {
+      console.error("Error updating payment method:", err);
+      alert("Failed to update payment method. Please try again.");
+    }
+  };
+
+  return (
+    <div
+      className="modal fade"
+      id="editPaymentModal"
+      tabIndex="-1"
+      aria-labelledby="editPaymentModalLabel"
+      aria-hidden="true"
+    >
+      <div className="modal-dialog">
+        <form className="modal-content" onSubmit={handleUpdatePayment}>
+          <div className="modal-header">
+            <h5 className="modal-title" id="editPaymentModalLabel">
+              Edit {payment.type === "ewallet" ? "eWallet" : "Card"}
+            </h5>
+            <button
+              type="button"
+              className="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+              onClick={() => setEditPayment(null)}
+            ></button>
+          </div>
+          <div className="modal-body">
+            {payment.type === "ewallet" ? (
+              <>
+                <div className="mb-3">
+                  <label className="form-label">eWallet Type</label>
+                  <select
+                    className="form-select"
+                    value={editedPayment.epaymenttype}
+                    onChange={(e) =>
+                      setEditedPayment({ ...editedPayment, epaymenttype: parseInt(e.target.value) })
+                    }
+                    required
+                  >
+                    <option value="">Select eWallet Type</option>
+                    <option value="1">GCash</option>
+                    <option value="2">Maya</option>
+                    <option value="3">Others</option>
+                  </select>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Phone Number</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={editedPayment.epaymentphone}
+                    onChange={(e) =>
+                      setEditedPayment({ ...editedPayment, epaymentphone: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mb-3">
+                  <label className="form-label">Bank Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={editedPayment.bankname}
+                    onChange={(e) =>
+                      setEditedPayment({ ...editedPayment, bankname: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Card Number</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={editedPayment.cardnumber}
+                    onChange={(e) =>
+                      setEditedPayment({ ...editedPayment, cardnumber: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Expiry Date</label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={editedPayment.expirydate}
+                    onChange={(e) =>
+                      setEditedPayment({ ...editedPayment, expirydate: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">CVV</label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    value={editedPayment.cvv}
+                    onChange={(e) =>
+                      setEditedPayment({ ...editedPayment, cvv: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Name on Card</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={editedPayment.nameoncard}
+                    onChange={(e) =>
+                      setEditedPayment({ ...editedPayment, nameoncard: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+              </>
+            )}
+          </div>
+          <div className="modal-footer">
+            <button type="submit" className="btn btn-warning">
+              Save Changes
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              data-bs-dismiss="modal"
+              onClick={() => setEditPayment(null)}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 const PurchaseSection = ({ userKey, status, productStatus }) => {
   const purchasekey = userKey;
