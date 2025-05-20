@@ -217,6 +217,7 @@ const EditProfileSection = ({ userKey }) => {
 
 const AddressSection = ({ userKey }) => {
   const [userAddress, setUserAddress] = useState([]);
+  const [editAddress, setEditAddress] = useState(null); // State to hold the address being edited
   const [newAddress, setNewAddress] = useState({
     country: "Philippines", // Default to Philippines
     region: "",
@@ -419,12 +420,26 @@ const AddressSection = ({ userKey }) => {
                 {address.city}, {address.province}, {address.region}, {address.postalcode},{" "}
                 {address.country}
               </span>
-              <button
-                className="btn btn-sm btn-danger"
+          
+                <div className="col text-end pe-1">
+                  <button
+                className="btn btn-sm btn-danger me-2 p-2 px-3"
                 onClick={() => handleDeleteAddress(address.addressid)}
-              >
-                ✕
-              </button>
+                  >
+                    ✕
+                  </button>
+                  <button
+                    className="btn btn-sm btn-warning  p-2 px-3 "
+                    onClick={() => setEditAddress(address)} // Open the edit modal
+                    data-bs-toggle="modal"
+                    data-bs-target="#editAddressModal"
+                  >
+                    ✎
+                  </button>
+                </div>
+               
+              
+              
             </div>
           </div>
         ))
@@ -608,7 +623,333 @@ const AddressSection = ({ userKey }) => {
           </form>
         </div>
       </div>
+
+      {/* Edit Address Modal */}
+      {editAddress && (
+        <AddressEditSection
+          address={editAddress}
+          setEditAddress={setEditAddress}
+          userAddress={userAddress}
+          setUserAddress={setUserAddress}
+        />
+      )}
     </section>
+  );
+};
+
+const AddressEditSection = ({ address, setEditAddress, userAddress, setUserAddress }) => {
+  const [editedAddress, setEditedAddress] = useState({ ...address });
+  const [regions, setRegions] = useState([]);
+  const [provinces, setProvinces] = useState([]);
+  const [citiesAndMunicipalities, setCitiesAndMunicipalities] = useState([]);
+  const [barangays, setBarangays] = useState([]);
+
+  // Fetch regions on component mount
+  useEffect(() => {
+    const fetchRegions = async () => {
+      try {
+        const response = await axios.get("https://psgc.cloud/api/regions");
+        setRegions(response.data);
+      } catch (err) {
+        console.error("Error fetching regions:", err);
+      }
+    };
+    fetchRegions();
+  }, []);
+
+  // Fetch provinces when a region is selected
+  useEffect(() => {
+    if (editedAddress.region) {
+      const fetchProvinces = async () => {
+        try {
+          const response = await axios.get(
+            `https://psgc.cloud/api/regions/${editedAddress.region}/provinces`
+          );
+          setProvinces(response.data);
+        } catch (err) {
+          console.error("Error fetching provinces:", err);
+        }
+      };
+      fetchProvinces();
+    } else {
+      setProvinces([]);
+      setCitiesAndMunicipalities([]);
+      setBarangays([]);
+    }
+  }, [editedAddress.region]);
+
+  // Fetch cities and municipalities when a province is selected
+  useEffect(() => {
+    if (editedAddress.province) {
+      const fetchCitiesAndMunicipalities = async () => {
+        try {
+          const [citiesResponse, municipalitiesResponse] = await Promise.all([
+            axios.get(`https://psgc.cloud/api/provinces/${editedAddress.province}/cities`),
+            axios.get(`https://psgc.cloud/api/provinces/${editedAddress.province}/municipalities`),
+          ]);
+
+          // Combine cities and municipalities into one array
+          const combined = [
+            ...citiesResponse.data.map((city) => ({ ...city, type: "City" })),
+            ...municipalitiesResponse.data.map((municipality) => ({
+              ...municipality,
+              type: "Municipality",
+            })),
+          ];
+
+          setCitiesAndMunicipalities(combined);
+        } catch (err) {
+          console.error("Error fetching cities and municipalities:", err);
+        }
+      };
+      fetchCitiesAndMunicipalities();
+    } else {
+      setCitiesAndMunicipalities([]);
+      setBarangays([]);
+    }
+  }, [editedAddress.province]);
+
+  // Fetch barangays when a city/municipality is selected
+  useEffect(() => {
+    if (editedAddress.city) {
+      const fetchBarangays = async () => {
+        try {
+          const response = await axios.get(
+            `https://psgc.cloud/api/cities-municipalities/${editedAddress.city}/barangays`
+          );
+          setBarangays(response.data);
+        } catch (err) {
+          console.error("Error fetching barangays:", err);
+        }
+      };
+      fetchBarangays();
+    } else {
+      setBarangays([]);
+    }
+  }, [editedAddress.city]);
+
+  const handleUpdateAddress = async (e) => {
+  e.preventDefault();
+
+  // Map codes to names
+  const regionName = regions.find((region) => region.code === editedAddress.region)?.name || "";
+  const provinceName = provinces.find((province) => province.code === editedAddress.province)?.name || "";
+  const cityName = citiesAndMunicipalities.find((city) => city.code === editedAddress.city)?.name || "";
+  const barangayName = barangays.find((barangay) => barangay.code === editedAddress.barangay)?.name || "";
+
+  const updatedAddress = {
+    ...editedAddress,
+    region: regionName,
+    province: provinceName,
+    city: cityName,
+    barangay: barangayName,
+  };
+
+  try {
+    const response = await axios.put(
+      `http://localhost:3000/api/address/${editedAddress.addressid}`,
+      updatedAddress
+    );
+    if (response.status === 200) {
+      const updatedAddresses = userAddress.map((addr) =>
+        addr.addressid === editedAddress.addressid ? response.data : addr
+      );
+      setUserAddress(updatedAddresses);
+
+      // Close the modal programmatically
+      const modalElement = document.getElementById("editAddressModal");
+      const modalInstance = bootstrap.Modal.getInstance(modalElement);
+      modalInstance.hide();
+
+      setEditAddress(null); // Clear the edit state
+      alert("Address updated successfully!");
+    }
+  } catch (err) {
+    console.error("Error updating address:", err);
+    alert("Failed to update address. Please try again.");
+  }
+};
+
+  return (
+    <div
+      className="modal fade"
+      id="editAddressModal"
+      tabIndex="-1"
+      aria-labelledby="editAddressModalLabel"
+      aria-hidden="true"
+    >
+      <div className="modal-dialog">
+        <form className="modal-content" onSubmit={handleUpdateAddress}>
+          <div className="modal-header">
+            <h5 className="modal-title" id="editAddressModalLabel">
+              Edit Address
+            </h5>
+            <button
+              type="button"
+              className="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+              onClick={() => setEditAddress(null)} // Close the modal
+            ></button>
+          </div>
+          <div className="modal-body">
+            <div className="row">
+              {/* Region Dropdown */}
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Region</label>
+                <select
+                  className="form-select"
+                  value={editedAddress.region}
+                  onChange={(e) =>
+                    setEditedAddress({
+                      ...editedAddress,
+                      region: e.target.value,
+                      province: "",
+                      city: "",
+                      barangay: "",
+                    })
+                  }
+                  required
+                >
+                  <option value="">Select Region</option>
+                  {regions.map((region) => (
+                    <option key={region.code} value={region.code}>
+                      {region.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* Province Dropdown */}
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Province</label>
+                <select
+                  className="form-select"
+                  value={editedAddress.province}
+                  onChange={(e) =>
+                    setEditedAddress({
+                      ...editedAddress,
+                      province: e.target.value,
+                      city: "",
+                      barangay: "",
+                    })
+                  }
+                  required
+                  disabled={!editedAddress.region}
+                >
+                  <option value="">Select Province</option>
+                  {provinces.map((province) => (
+                    <option key={province.code} value={province.code}>
+                      {province.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* City/Municipality Dropdown */}
+              <div className="col-md-6 mb-3">
+                <label className="form-label">City/Municipality</label>
+                <select
+                  className="form-select"
+                  value={editedAddress.city}
+                  onChange={(e) =>
+                    setEditedAddress({ ...editedAddress, city: e.target.value, barangay: "" })
+                  }
+                  required
+                  disabled={!editedAddress.province}
+                >
+                  <option value="">Select City/Municipality</option>
+                  {citiesAndMunicipalities.map((item) => (
+                    <option key={item.code} value={item.code}>
+                      {item.name} ({item.type})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* Barangay Dropdown */}
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Barangay</label>
+                <select
+                  className="form-select"
+                  value={editedAddress.barangay}
+                  onChange={(e) =>
+                    setEditedAddress({ ...editedAddress, barangay: e.target.value })
+                  }
+                  required
+                  disabled={!editedAddress.city}
+                >
+                  <option value="">Select Barangay</option>
+                  {barangays.map((barangay) => (
+                    <option key={barangay.code} value={barangay.code}>
+                      {barangay.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* Additional Fields */}
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Postal Code</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={editedAddress.postalcode}
+                  onChange={(e) =>
+                    setEditedAddress({ ...editedAddress, postalcode: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Street Name</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={editedAddress.streetname}
+                  onChange={(e) =>
+                    setEditedAddress({ ...editedAddress, streetname: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Building</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={editedAddress.building}
+                  onChange={(e) =>
+                    setEditedAddress({ ...editedAddress, building: e.target.value })
+                  }
+                />
+              </div>
+              <div className="col-md-6 mb-3">
+                <label className="form-label">House Number</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={editedAddress.housenumber}
+                  onChange={(e) =>
+                    setEditedAddress({ ...editedAddress, housenumber: e.target.value })
+                  }
+                  required
+                />
+              </div>
+            </div>
+          </div>
+          <div className="modal-footer">
+            <button type="submit" className="btn btn-warning">
+              Save Changes
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              data-bs-dismiss="modal"
+              onClick={() => setEditAddress(null)} // Close the modal
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 
