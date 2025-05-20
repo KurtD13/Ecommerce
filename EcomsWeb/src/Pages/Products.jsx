@@ -15,7 +15,7 @@ export function Products() {
     const [imageData, setImageData] = useState([]);
     const [reviewData, setReviewData] = useState([]);
     const [reviewerInfo, setReviewerInfo] = useState([]);
-
+    
     useEffect(() => {
         const fetchProduct = async () => {
             try {
@@ -127,20 +127,22 @@ export function Products() {
     const filteredShop = shopData.filter(
         (p) => p.shopid?.toString() === product?.shopkey?.toString()
     );
+        // Calculate the average review score
+        const validReviewScores = filteredReviews
+        .map((review) => Number(review.reviewscore)) // Convert to number
+        .filter((score) => typeof score === "number" && !isNaN(score)); // Ensure valid numeric scores
 
-    // Calculate the average review score
-    const averageReviewScore =
-    filteredReviews.length > 0
-        ? filteredReviews.reduce((sum, review) => sum + (review.reviewscore || 0), 0) / filteredReviews.length
-        : 0;
+        const averageReviewScore =
+        validReviewScores.length > 0
+            ? validReviewScores.reduce((sum, score) => sum + score, 0) / validReviewScores.length
+            : 0;
 
-    // Round the average score to one decimal place
-    const roundedAverageScore = Math.round(averageReviewScore * 10) / 10;
+        // Round the average score to one decimal place
+        const roundedAverageScore = Math.round(averageReviewScore * 10) / 10;
 
-    // Generate stars based on the average score
-    const filledStars = Math.floor(averageReviewScore); // Number of filled stars
-    const emptyStars = 5 - filledStars; // Number of empty stars
-    const hasHalfStar = averageReviewScore % 1 >= 0.5; // Check if there's a half star
+        // Generate stars based on the average score
+        const filledStars = Math.floor(averageReviewScore); // Number of solid stars
+        const emptyStars = 5 - filledStars; // Number of hollow stars
     if (loading) {
         return <p>Loading product details...</p>;
     }
@@ -193,16 +195,14 @@ export function Products() {
 
                             {/* Updated Ratings Section */}
                             <p>
-                                <span className="text-warning star">
-                                    {"★".repeat(filledStars)}
-                                    {hasHalfStar && "½"} {/* Add a half star if applicable */}
-                                    {"☆".repeat(emptyStars - (hasHalfStar ? 1 : 0))}
-                                </span>
-                                <span className="text-muted ms-2">
-                                    {roundedAverageScore} / 5 ({filteredReviews.length} reviews)
-                                </span>
+                            <span className="text-warning star">
+                                {"★".repeat(filledStars)}{/* Solid stars */}
+                                {"☆".repeat(emptyStars)}{/* Hollow stars */}
+                            </span>
+                            <span className="text-muted ms-2">
+                                {roundedAverageScore} / 5 ({filteredReviews.length} reviews)
+                            </span>
                             </p>
-
                             <h3 className="text-danger mb-3">₱{product.pprice}</h3>
                             <div className="mb-3">
                                 <div className="d-flex align-items-center mb-1">

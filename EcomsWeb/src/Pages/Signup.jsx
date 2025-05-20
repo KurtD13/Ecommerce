@@ -203,7 +203,8 @@ function PersonalInformation({ userdata, setUserdata, onSignup, errorMessage, su
           <label className="form-label">Profile Image</label>
           <input
             className="form-control"
-            type="file"
+            type="text"
+            placeholder="Paste Image url here"
             onChange={(e) => setUserdata({ ...userdata, consumerimage: e.target.files[0] })}
           />
         </div>

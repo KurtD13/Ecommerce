@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "../Components/Navbar";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 export function Cartpage() {
+  const [cartProducts, setCartProducts] = useState([]);
   const [cartItems, setCartItems] = useState([
     {
       seller: "Seller A",
@@ -18,6 +20,20 @@ export function Cartpage() {
       ],
     },
   ]);
+  useEffect(() => {
+          const fetchProduct = async () => {
+              try {
+                  const response = await axios.get(`http://localhost:3000/api/cart`);
+                  setCartProducts(response.data); // 
+                 
+              } catch (err) {
+                  setError(err.message);
+              }
+          };
+          fetchProduct();
+      }, []);
+
+  
 
   const handleQuantityChange = (sellerIndex, productIndex, delta) => {
     const newCartItems = [...cartItems];

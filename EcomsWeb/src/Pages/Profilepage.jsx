@@ -58,7 +58,7 @@ const ProfileSection = ({ onEdit, userKey }) => {
       {filtered.map((userInfo) => (
         <section key={userInfo.consumerid}>
           <h2>My Profile</h2>
-          <div className="card p-4">
+          <div className="card p-4 shadow-lg">
             <div className="d-flex justify-content-between mb-4">
               <div className="profile-info">
                 <div className="d-flex align-items-center mb-4">
@@ -413,7 +413,7 @@ const AddressSection = ({ userKey }) => {
         </div>
       ) : (
         userAddress.map((address) => (
-          <div className="card p-4 mb-3" key={address.addressid}>
+          <div className="card p-4 mb-3 shadow-sm" key={address.addressid}>
             <div className="d-flex justify-content-between align-items-center">
               <span>
                 {address.housenumber} {address.building}, {address.streetname}, {address.barangay},{" "}
@@ -1091,12 +1091,12 @@ const PaymentSection = ({ userKey }) => {
   return (
     <section>
       <h2>Payment Methods</h2>
-      <div className="card p-4 mb-4">
+      <div className="card p-4 mb-4 shadow-lg">
         <h5 className="mb-3">eWallets</h5>
         <ul className="list-group mb-3">
           {userEpayment.map((ewallet) => (
             <li
-              className="list-group-item d-flex justify-content-between align-items-center"
+              className="list-group-item d-flex justify-content-between align-items-center shadow-sm"
               key={ewallet.epaymentid}
             >
               <div>
@@ -1137,12 +1137,12 @@ const PaymentSection = ({ userKey }) => {
         </button>
       </div>
 
-      <div className="card p-4">
+      <div className="card p-4 shadow-lg">
         <h5 className="mb-3">Credit / Debit Cards</h5>
         <ul className="list-group mb-3">
           {userCard.map((card) => (
             <li
-              className="list-group-item d-flex justify-content-between align-items-center"
+              className="list-group-item d-flex justify-content-between align-items-center mb-1"
               key={card.paymentid}
             >
               <div>
@@ -1665,9 +1665,9 @@ const ProfilePage = (profilekey) => {
   let userkey = profilekey.userkey;
 
   return (
-    <div className="container-fluid bg-light">
-      <div className="row min-vh-100">
-        <nav className="col-md-3 col-lg-2 d-md-block bg-white border-end pt-4">
+    <div className="container-fluid bg-light ">
+      <div className="row min-vh-100 ">
+        <nav className="col-md-3 col-lg-2 d-md-block bg-white border-end pt-4 ">
           <div className="px-3">
             <h5 className="fw-bold">Account</h5>
             <ul className="nav flex-column mb-4">
