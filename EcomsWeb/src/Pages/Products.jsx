@@ -44,9 +44,7 @@ export function Products() {
         fetchData();
     }, []);
 
-    
-
-        useEffect(() => {
+    useEffect(() => {
         const fetchData = async () => {
             try {
                 const response = await axios.get("http://localhost:3000/api/shop");
@@ -55,7 +53,6 @@ export function Products() {
                 setError(err.message);
             }
         };
-
 
         fetchData();
     }, []);
@@ -68,7 +65,7 @@ export function Products() {
             } catch (err) {
                 setError(err.message);
             }
-        }; 
+        };
         fetchData();
     }, []);
 
@@ -115,12 +112,10 @@ export function Products() {
         (p) => p.productkey?.toString() === productId?.toString()
     );
 
-
-     const filteredReviews = reviewData.filter(
+    const filteredReviews = reviewData.filter(
         (p) => p.productkey?.toString() === productId?.toString()
     );
 
-    
     const filteredColor = colorData.filter(
         (p) => p.productkey?.toString() === productId?.toString()
     );
@@ -128,10 +123,24 @@ export function Products() {
     const filteredVariation = variationData.filter(
         (p) => p.productkey?.toString() === productId?.toString()
     );
+
     const filteredShop = shopData.filter(
         (p) => p.shopid?.toString() === product?.shopkey?.toString()
     );
 
+    // Calculate the average review score
+    const averageReviewScore =
+    filteredReviews.length > 0
+        ? filteredReviews.reduce((sum, review) => sum + (review.reviewscore || 0), 0) / filteredReviews.length
+        : 0;
+
+    // Round the average score to one decimal place
+    const roundedAverageScore = Math.round(averageReviewScore * 10) / 10;
+
+    // Generate stars based on the average score
+    const filledStars = Math.floor(averageReviewScore); // Number of filled stars
+    const emptyStars = 5 - filledStars; // Number of empty stars
+    const hasHalfStar = averageReviewScore % 1 >= 0.5; // Check if there's a half star
     if (loading) {
         return <p>Loading product details...</p>;
     }
@@ -182,12 +191,18 @@ export function Products() {
                                 </div>
                             </div>
 
+                            {/* Updated Ratings Section */}
                             <p>
-                                <span className="text-warning star">★ ★ ★ ★ ★</span>
-                                <span className="text-muted">
-                                    Ratings {product.pratings} | Sold {product.ptotalsales}
+                                <span className="text-warning star">
+                                    {"★".repeat(filledStars)}
+                                    {hasHalfStar && "½"} {/* Add a half star if applicable */}
+                                    {"☆".repeat(emptyStars - (hasHalfStar ? 1 : 0))}
+                                </span>
+                                <span className="text-muted ms-2">
+                                    {roundedAverageScore} / 5 ({filteredReviews.length} reviews)
                                 </span>
                             </p>
+
                             <h3 className="text-danger mb-3">₱{product.pprice}</h3>
                             <div className="mb-3">
                                 <div className="d-flex align-items-center mb-1">
@@ -254,170 +269,163 @@ export function Products() {
                     </div>
                 </div>
 
-                {/* Seller Info */}
                 
+                {/* Seller Info */}
                 <div className="card mb-4" id="seller-info">
                     {filteredShop.map((shop) => (
-                    <div className="card-body d-flex align-items-center">
-                        <img
-                            src={shop.shoplogo || "https://cdn-icons-png.flaticon.com/512/2474/2474161.png"}
-                            className="pfp me-3 rounded-circle"
-                            alt="Seller"
-                            style={{ width: "50px", height: "50px" }}
-                        />
-                        <div>
-                            <strong>{shop.shopname}</strong>
-                            <br />
-                            <span className="text-muted">{product.sellerType}</span>
+                        <div className="card-body d-flex align-items-center">
+                            <img
+                                src={shop.shoplogo || "https://cdn-icons-png.flaticon.com/512/2474/2474161.png"}
+                                className="pfp me-3 rounded-circle"
+                                alt="Seller"
+                                style={{ width: "50px", height: "50px" }}
+                            />
+                            <div>
+                                <strong>{shop.shopname}</strong>
+                                <br />
+                                <span className="text-muted">{product.sellerType}</span>
+                            </div>
                         </div>
-                    </div>
                     ))}
                 </div>
-             
-                
 
                 {/* Product Information */}
-                                <div className="card mb-4" id="product-information">
-                                    <div className="card-body">
-                                        <div className="row d-flex">
-                                            <div className="col">
-                                                <h5 >
-                                                    Product Information
-                                                </h5>
+                <div className="card mb-4" id="product-information">
+                    <div className="card-body">
+                        <div className="row d-flex">
+                            <div className="col">
+                                <h5>Product Information</h5>
+                            </div>
+                            <div className="col text-end">
+                                <button
+                                    className="btn btn-outline-secondary btn-sm"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#productInfoCollapse"
+                                    aria-expanded="false"
+                                    aria-controls="productInfoCollapse"
+                                >
+                                    View more...
+                                </button>
+                            </div>
+                        </div>
+                        <p className="text-muted">{product.pdesc}</p>
+                        <div className="collapse" id="productInfoCollapse">
+                            {filteredImages.map((image) => (
+                                <img
+                                    src={image.pimage}
+                                    className="img-fluid mb-2"
+                                    alt="Product Detail"
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Ratings & Reviews */}
+                <div className="card mb-4" id="ratings-reviews">
+                    <div className="card-body">
+                        <h5>Ratings & Reviews</h5>
+                        <div className="row">
+                            {filteredReviews.map((review, index) => {
+                                const reviewId = review.reviewid || `fallback-${index}`;
+                                const reviewer = reviewerInfo.find(
+                                    (r) => r.consumerid?.toString() === review.userkey?.toString()
+                                );
+                                const reviewImages = [
+                                    review.reviewimage1,
+                                    review.reviewimage2,
+                                    review.reviewimage3,
+                                    review.reviewimage4,
+                                ].filter((img) => img);
+
+                                return (
+                                    <div className="col-md-2" key={reviewId}>
+                                        <div
+                                            className="card p-2"
+                                            style={{ minHeight: "200px", maxHeight: "200px", overflowY: "auto" }}
+                                        >
+                                            <div className="d-flex align-items-center mb-2">
+                                                {reviewer ? (
+                                                    <>
+                                                        <img
+                                                            src={reviewer.consumerimage}
+                                                            className="rounded-circle me-2"
+                                                            style={{ width: "40px", height: "40px" }}
+                                                            alt="Reviewer"
+                                                        />
+                                                        {reviewer.consumerfirstname || "Unknown"}
+                                                    </>
+                                                ) : (
+                                                    <p className="text-muted">Unknown Reviewer</p>
+                                                )}
                                             </div>
-                                            <div className="col text-end">
+                                            <p className="small">{review.reviewdesc}</p>
+                                            <div className="text-warning">
+                                                <small className="text-muted">{review.reviewscore} </small>
+                                                {"★".repeat(review.reviewscore)}
+                                                {"☆".repeat(5 - review.reviewscore)}
+                                            </div>
+                                            {reviewImages.length > 0 && (
                                                 <button
-                                                className="btn btn-outline-secondary btn-sm"
-                                                type="button"
-                                                data-bs-toggle="collapse"
-                                                data-bs-target="#productInfoCollapse"
-                                                aria-expanded="false"
-                                                aria-controls="productInfoCollapse"
+                                                    className="btn btn-outline-secondary btn-sm mt-2"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target={`#reviewImagesModal-${reviewId}`}
                                                 >
-                                                View more...
-
+                                                    View Images
                                                 </button>
-                                            </div>
-                                        </div>
-                                        <p className="text-muted">{product.pdesc}</p>
-                                        <div className="collapse" id="productInfoCollapse">
-                                            {filteredImages.map((image) => (
-                                                <img
-                                                    src={image.pimage}
-                                                    className="img-fluid mb-2"
-                                                    alt="Product Detail"
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
+                                            )}
 
-                               { /* Ratings & Reviews */}
-                                                
-                            <div className="card mb-4" id="ratings-reviews">
-                            <div className="card-body">
-                                <h5>Ratings & Reviews</h5>
-                                <div className="row">
-                                    {filteredReviews.map((review) => {
-                                        const reviewer = reviewerInfo.find(
-                                            (r) => r.consumerid?.toString() === review.userkey?.toString()
-                                        );
-
-                                        const reviewImages = [
-                                            review.reviewimage1,
-                                            review.reviewimage2,
-                                            review.reviewimage3,
-                                            review.reviewimage4,
-                                        ].filter((img) => img); // Filter out null or undefined images
-
-                                        return (
-                                            <div className="col-md-2" key={review.reviewid}>
-                                                <div className="card p-2">
-                                                    <div className="d-flex align-items-center mb-2">
-                                                        {reviewer ? (
-                                                            <>
-                                                                <img
-                                                                    src={reviewer.consumerimage}
-                                                                    className="rounded-circle me-2"
-                                                                    style={{ width: "40px", height: "40px" }}
-                                                                    alt="Reviewer"
-                                                                />
-                                                                {reviewer.consumerfirstname}
-                                                            </>
-                                                        ) : (
-                                                            <p className="text-muted">Unknown Reviewer</p>
-                                                        )}
-                                                    </div>
-                                                    <p className="small">{review.reviewdesc}</p>
-                                                    <div className="text-warning">
-                                                        <small className="text-muted">{review.reviewscore} </small>
-                                                        {"★".repeat(review.reviewscore)}{""}
-                                                        {"☆".repeat(5 - review.reviewscore)}
-                                                    </div>
-                                                    {reviewImages.length > 0 && (
-                                                        <button
-                                                            className="btn btn-outline-secondary btn-sm mt-2"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target={`#reviewImagesModal-${review.reviewid}`}
-                                                        >
-                                                            View Images
-                                                        </button>
-                                                    )}
-
-                                                    {/* Modal for Review Images */}
-                                                    <div
-                                                        className="modal fade"
-                                                        id={`reviewImagesModal-${review.reviewid}`}
-                                                        tabIndex="-1"
-                                                        aria-hidden="true"
-                                                    >
-                                                        <div className="modal-dialog modal-dialog-centered modal-lg">
-                                                            <div className="modal-content">
-                                                                <div className="modal-header">
-                                                                    <h5 className="modal-title">Review Images</h5>
-                                                                    <button
-                                                                        type="button"
-                                                                        className="btn-close"
-                                                                        data-bs-dismiss="modal"
-                                                                        aria-label="Close"
-                                                                    ></button>
-                                                                </div>
-                                                                <div className="modal-body">
-                                                                    <div className="row">
-                                                                        {reviewImages.map((image, index) => (
-                                                                            <div className="col-md-6 mb-3" key={index}>
-                                                                                <img
-                                                                                    src={image}
-                                                                                    className="img-fluid rounded"
-                                                                                    alt={`Review Image ${index + 1}`}
-                                                                                />
-                                                                            </div>
-                                                                        ))}
+                                            {/* Modal for Review Images */}
+                                            <div
+                                                className="modal fade"
+                                                id={`reviewImagesModal-${reviewId}`}
+                                                tabIndex="-1"
+                                                aria-hidden="true"
+                                            >
+                                                <div className="modal-dialog modal-dialog-centered modal-lg">
+                                                    <div className="modal-content">
+                                                        <div className="modal-header">
+                                                            <h5 className="modal-title">Review Images</h5>
+                                                            <button
+                                                                type="button"
+                                                                className="btn-close"
+                                                                data-bs-dismiss="modal"
+                                                                aria-label="Close"
+                                                            ></button>
+                                                        </div>
+                                                        <div className="modal-body">
+                                                            <div className="row">
+                                                                {reviewImages.map((image, imgIndex) => (
+                                                                    <div className="col-md-6 mb-3" key={imgIndex}>
+                                                                        <img
+                                                                            src={image}
+                                                                            className="img-fluid rounded"
+                                                                            alt={`Review Image ${imgIndex + 1}`}
+                                                                        />
                                                                     </div>
-                                                                </div>
+                                                                ))}
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        );
-                                    })}
-                                </div>
-                                </div>
-                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
 
-                            {/* Recommendation */}
+                {/* Recommendation */}
                 <div className="card mb-4" id="recommendation">
                     <div className="card-body">
                         <h5>Recommendation</h5>
                         <p className="text-muted">You might also like:</p>
-                        <div className="row d-flex">
-                            
-                                <Productpreview filterTerm={product.pname}/>
-                    
+                        <div className="row d-flex ms-1">
+                            <Productpreview filterTerm={product.pname} />
                         </div>
-                       
-                        {/* Add product cards here */}
                     </div>
                 </div>
             </div>
@@ -459,6 +467,7 @@ export function Products() {
                     </div>
                 </div>
             </div>
+            
         </>
     );
 }
