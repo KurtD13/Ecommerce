@@ -493,6 +493,15 @@ const PaymentSection = ({ userKey }) => {
     userkey: userKey,
   });
 
+  const reformatDate = (date) => {
+      if (date.includes("-")) {
+        const [day, month, year] = date.split("-");
+        return `${year}-${month}-${day}`;
+      }
+      return date;
+    };
+
+
   useEffect(() => {
     const fetchEpaymentData = async () => {
       try {
@@ -549,8 +558,10 @@ const PaymentSection = ({ userKey }) => {
     }
   };
 
+
   const handleAddEwallet = async (e) => {
     e.preventDefault();
+    console.log("Adding eWallet:", newEwallet); // Debugging log
     try {
       const response = await axios.post("http://localhost:3000/api/ewallet", newEwallet);
       if (response.status === 200) {
@@ -571,10 +582,11 @@ const PaymentSection = ({ userKey }) => {
 
   const handleAddCard = async (e) => {
     e.preventDefault();
+    console.log("Adding Card:", newCard); // Debugging log
     try {
       const response = await axios.post("http://localhost:3000/api/cards", {
         ...newCard,
-        expirydate: `${newCard.expirydate}-01`, // Ensure correct date format (YYYY-MM-DD)
+        expirydate: reformatDate(newCard.expirydate), // Ensure correct date format (YYYY-MM-DD)
       });
       if (response.status === 200) {
         setUserCard([...userCard, response.data]);
@@ -617,12 +629,9 @@ const PaymentSection = ({ userKey }) => {
                 <br />
                 Phone: {ewallet.epaymentphone}
               </div>
-              <button
-                className="btn btn-outline-danger btn-sm"
-                onClick={() => handleDeleteEwallet(ewallet.epaymentid)}
-              >
-                ✕
-              </button>
+              <button className="btn btn-outline-danger btn-sm"
+                      onClick={() => handleDeleteEwallet(ewallet.epaymentid)}
+                      >✕</button>
             </li>
           ))}
         </ul>
@@ -648,14 +657,11 @@ const PaymentSection = ({ userKey }) => {
                 <br />
                 Card Number: {card.cardnumber}
                 <br />
-                Expiry: {card.expirydate.substring(0, 10)}
+                Expiry: {(card.expirydate).substring(0, 10)}
               </div>
-              <button
-                className="btn btn-outline-danger btn-sm"
-                onClick={() => handleDeleteCard(card.paymentid)}
-              >
-                ✕
-              </button>
+              <button className="btn btn-outline-danger btn-sm"
+                      onClick={() => handleDeleteCard(card.paymentid)}
+              >✕</button>
             </li>
           ))}
         </ul>
@@ -667,9 +673,176 @@ const PaymentSection = ({ userKey }) => {
           Add Card
         </button>
       </div>
+
+      {/* Add eWallet Modal */}
+      <div
+        className="modal fade"
+        id="addEwalletModal"
+        tabIndex="-1"
+        aria-labelledby="addEwalletModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog">
+          <form className="modal-content" onSubmit={handleAddEwallet}>
+            <div className="modal-header">
+              <h5 className="modal-title" id="addEwalletModalLabel">
+                Add eWallet
+              </h5>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="modal-body">
+              <div className="mb-3">
+                <label className="form-label">eWallet Type</label>
+                <select
+                  className="form-select"
+                  value={newEwallet.epaymenttype}
+                  onChange={(e) =>
+                    setNewEwallet({ ...newEwallet, epaymenttype: parseInt(e.target.value) })
+                  }
+                  required
+                >
+                  <option value="">Select eWallet Type</option>
+                  <option value="1">GCash</option>
+                  <option value="2">Maya</option>
+                  <option value="3">Others</option>
+                </select>
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Phone Number</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={newEwallet.epaymentphone}
+                  onChange={(e) =>
+                    setNewEwallet({ ...newEwallet, epaymentphone: e.target.value })
+                  }
+                  required
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="submit" className="btn btn-warning">
+                Add Wallet
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      {/* Add Card Modal */}
+      <div
+        className="modal fade"
+        id="addCardModal"
+        tabIndex="-1"
+        aria-labelledby="addCardModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog">
+          <form className="modal-content" onSubmit={handleAddCard}>
+            <div className="modal-header">
+              <h5 className="modal-title" id="addCardModalLabel">
+                Add Debit/Credit Card
+              </h5>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="modal-body">
+              <div className="mb-3">
+                <label className="form-label">Bank Name</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={newCard.bankname}
+                  onChange={(e) =>
+                    setNewCard({ ...newCard, bankname: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Card Number</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={newCard.cardnumber}
+                  onChange={(e) =>
+                    setNewCard({ ...newCard, cardnumber: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Expiry Date</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={newCard.expirydate}
+                  onChange={(e) =>
+                    setNewCard({ ...newCard, expirydate: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">CVV</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  value={newCard.cvv}
+                  onChange={(e) =>
+                    setNewCard({ ...newCard, cvv: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Name on Card</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={newCard.nameoncard}
+                  onChange={(e) =>
+                    setNewCard({ ...newCard, nameoncard: e.target.value })
+                  }
+                  required
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="submit" className="btn btn-warning">
+                Add Card
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </section>
   );
 };
+
 
 const PurchaseSection = ({ userKey, status, productStatus }) => {
   const purchasekey = userKey;
