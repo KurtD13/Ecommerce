@@ -218,7 +218,7 @@ const EditProfileSection = ({ userKey }) => {
 const AddressSection = ({ userKey }) => {
   const [userAddress, setUserAddress] = useState([]);
   const [newAddress, setNewAddress] = useState({
-    country: "",
+    country: "Philippines", // Default to Philippines
     region: "",
     province: "",
     city: "",
@@ -227,35 +227,137 @@ const AddressSection = ({ userKey }) => {
     streetname: "",
     building: "",
     housenumber: "",
-    userkey: userKey, // Associate the address with the logged-in user
+    userkey: userKey,
   });
 
+  const [regions, setRegions] = useState([]);
+  const [provinces, setProvinces] = useState([]);
+  const [citiesAndMunicipalities, setCitiesAndMunicipalities] = useState([]);
+  const [barangays, setBarangays] = useState([]);
+
+  // Fetch addresses from the database and filter by userKey
   useEffect(() => {
     const fetchAddresses = async () => {
       try {
         const response = await axios.get("http://localhost:3000/api/address");
-        setUserAddress(response.data);
+        const filteredAddresses = response.data.filter(
+          (address) => address.userkey.toString() === userKey.toString()
+        );
+        setUserAddress(filteredAddresses);
       } catch (err) {
         console.error("Error fetching addresses:", err);
       }
     };
     fetchAddresses();
+  }, [userKey]);
+
+  // Fetch regions on component mount
+  useEffect(() => {
+    const fetchRegions = async () => {
+      try {
+        const response = await axios.get("https://psgc.cloud/api/regions");
+        setRegions(response.data);
+      } catch (err) {
+        console.error("Error fetching regions:", err);
+      }
+    };
+    fetchRegions();
   }, []);
+
+  // Fetch provinces when a region is selected
+  useEffect(() => {
+    if (newAddress.region) {
+      const fetchProvinces = async () => {
+        try {
+          const response = await axios.get(
+            `https://psgc.cloud/api/regions/${newAddress.region}/provinces`
+          );
+          setProvinces(response.data);
+        } catch (err) {
+          console.error("Error fetching provinces:", err);
+        }
+      };
+      fetchProvinces();
+    } else {
+      setProvinces([]);
+      setCitiesAndMunicipalities([]);
+      setBarangays([]);
+    }
+  }, [newAddress.region]);
+
+  // Fetch cities and municipalities when a province is selected
+  useEffect(() => {
+    if (newAddress.province) {
+      const fetchCitiesAndMunicipalities = async () => {
+        try {
+          const [citiesResponse, municipalitiesResponse] = await Promise.all([
+            axios.get(`https://psgc.cloud/api/provinces/${newAddress.province}/cities`),
+            axios.get(`https://psgc.cloud/api/provinces/${newAddress.province}/municipalities`),
+          ]);
+
+          // Combine cities and municipalities into one array
+          const combined = [
+            ...citiesResponse.data.map((city) => ({ ...city, type: "City" })),
+            ...municipalitiesResponse.data.map((municipality) => ({
+              ...municipality,
+              type: "Municipality",
+            })),
+          ];
+
+          setCitiesAndMunicipalities(combined);
+        } catch (err) {
+          console.error("Error fetching cities and municipalities:", err);
+        }
+      };
+      fetchCitiesAndMunicipalities();
+    } else {
+      setCitiesAndMunicipalities([]);
+      setBarangays([]);
+    }
+  }, [newAddress.province]);
+
+  // Fetch barangays when a city/municipality is selected
+  useEffect(() => {
+    if (newAddress.city) {
+      const fetchBarangays = async () => {
+        try {
+          const response = await axios.get(
+            `https://psgc.cloud/api/cities-municipalities/${newAddress.city}/barangays`
+          );
+          setBarangays(response.data);
+        } catch (err) {
+          console.error("Error fetching barangays:", err);
+        }
+      };
+      fetchBarangays();
+    } else {
+      setBarangays([]);
+    }
+  }, [newAddress.city]);
 
   const handleAddAddress = async (e) => {
     e.preventDefault();
 
-    if (!newAddress.country && !newAddress.province) {
-      alert("Either Country or Province must be provided.");
-      return;
-    }
+    // Map codes to names
+    const regionName = regions.find((region) => region.code === newAddress.region)?.name || "";
+    const provinceName = provinces.find((province) => province.code === newAddress.province)?.name || "";
+    const cityName = citiesAndMunicipalities.find((city) => city.code === newAddress.city)?.name || "";
+    const barangayName = barangays.find((barangay) => barangay.code === newAddress.barangay)?.name || "";
+
+    const addressToSubmit = {
+      ...newAddress,
+      region: regionName,
+      province: provinceName,
+      city: cityName,
+      barangay: barangayName,
+    };
 
     try {
-      const response = await axios.post("http://localhost:3000/api/address", newAddress);
+      const response = await axios.post("http://localhost:3000/api/address", addressToSubmit);
       if (response.status === 200) {
-        setUserAddress([...userAddress, response.data]); // Update the address list
+        setUserAddress([...userAddress, response.data]);
         setNewAddress({
-          country: "",
+          country: "Philippines",
           region: "",
           province: "",
           city: "",
@@ -265,7 +367,7 @@ const AddressSection = ({ userKey }) => {
           building: "",
           housenumber: "",
           userkey: userKey,
-        }); // Reset the form
+        });
         alert("Address added successfully!");
       }
     } catch (err) {
@@ -275,27 +377,24 @@ const AddressSection = ({ userKey }) => {
   };
 
   const handleDeleteAddress = async (addressId) => {
-  try {
-    const response = await axios.delete(`http://localhost:3000/api/address/${addressId}`);
-    if (response.status === 200) {
-      setUserAddress(userAddress.filter((address) => address.addressid !== addressId)); // Use addressid instead of id
-      alert("Address deleted successfully!");
+    try {
+      const response = await axios.delete(`http://localhost:3000/api/address/${addressId}`);
+      if (response.status === 200) {
+        // Remove the deleted address from the state
+        setUserAddress(userAddress.filter((address) => address.addressid !== addressId));
+        alert("Address deleted successfully!");
+      }
+    } catch (err) {
+      console.error("Error deleting address:", err);
+      alert("Failed to delete address. Please try again.");
     }
-  } catch (err) {
-    console.error("Error deleting address:", err);
-    alert("Failed to delete address. Please try again.");
-  }
-};
-
-  const filtered = userAddress.filter((u) =>
-    u.userkey.toString().includes(userKey?.toString())
-  );
+  };
 
   return (
     <section>
       <div className="row d-flex mb-3">
-        <div className="col">
-          <h2>My Addresses</h2>
+         <div className="col">
+            <h2>My Addresses</h2>
         </div>
         <div className="col text-end">
           <button
@@ -307,16 +406,18 @@ const AddressSection = ({ userKey }) => {
           </button>
         </div>
       </div>
-      {filtered.length === 0 ? (
+      {userAddress.length === 0 ? (
         <div className="card p-4">
           <p>No addresses registered yet.</p>
         </div>
       ) : (
-        filtered.map((address) => (
-          <div className="card p-4 mb-3" key={address.id}>
-            <div className="d-flex justify-content-between align-items-center p-2 mb-2">
+        userAddress.map((address) => (
+          <div className="card p-4 mb-3" key={address.addressid}>
+            <div className="d-flex justify-content-between align-items-center">
               <span>
-                {address.housenumber} {address.building}, {address.streetname}, {address.barangay}, {address.city}, {address.province}, {address.region}, {address.postalcode}, {address.country}
+                {address.housenumber} {address.building}, {address.streetname}, {address.barangay},{" "}
+                {address.city}, {address.province}, {address.region}, {address.postalcode},{" "}
+                {address.country}
               </span>
               <button
                 className="btn btn-sm btn-danger"
@@ -352,62 +453,98 @@ const AddressSection = ({ userKey }) => {
             </div>
             <div className="modal-body">
               <div className="row">
-                <div className="col-md-4 mb-3">
-                  <label className="form-label">Country</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={newAddress.country}
-                    onChange={(e) =>
-                      setNewAddress({ ...newAddress, country: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="col-md-4 mb-3">
+                {/* Region Dropdown */}
+                <div className="col-md-6 mb-3">
                   <label className="form-label">Region</label>
-                  <input
-                    type="text"
-                    className="form-control"
+                  <select
+                    className="form-select"
                     value={newAddress.region}
                     onChange={(e) =>
-                      setNewAddress({ ...newAddress, region: e.target.value })
+                      setNewAddress({
+                        ...newAddress,
+                        region: e.target.value,
+                        province: "",
+                        city: "",
+                        barangay: "",
+                      })
                     }
-                  />
+                    required
+                  >
+                    <option value="">Select Region</option>
+                    {regions.map((region) => (
+                      <option key={region.code} value={region.code}>
+                        {region.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                <div className="col-md-4 mb-3">
+                {/* Province Dropdown */}
+                <div className="col-md-6 mb-3">
                   <label className="form-label">Province</label>
-                  <input
-                    type="text"
-                    className="form-control"
+                  <select
+                    className="form-select"
                     value={newAddress.province}
                     onChange={(e) =>
-                      setNewAddress({ ...newAddress, province: e.target.value })
+                      setNewAddress({
+                        ...newAddress,
+                        province: e.target.value,
+                        city: "",
+                        barangay: "",
+                      })
                     }
-                  />
+                    required
+                    disabled={!newAddress.region}
+                  >
+                    <option value="">Select Province</option>
+                    {provinces.map((province) => (
+                      <option key={province.code} value={province.code}>
+                        {province.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                <div className="col-md-4 mb-3">
-                  <label className="form-label">City</label>
-                  <input
-                    type="text"
-                    className="form-control"
+                {/* City/Municipality Dropdown */}
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">City/Municipality</label>
+                  <select
+                    className="form-select"
                     value={newAddress.city}
                     onChange={(e) =>
-                      setNewAddress({ ...newAddress, city: e.target.value })
+                      setNewAddress({ ...newAddress, city: e.target.value, barangay: "" })
                     }
-                  />
+                    required
+                    disabled={!newAddress.province}
+                  >
+                    <option value="">Select City/Municipality</option>
+                    {citiesAndMunicipalities.map((item) => (
+                      <option key={item.code} value={item.code}>
+                        {item.name} ({item.type})
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                <div className="col-md-4 mb-3">
+                {/* Barangay Dropdown */}
+                <div className="col-md-6 mb-3">
                   <label className="form-label">Barangay</label>
-                  <input
-                    type="text"
-                    className="form-control"
+                  <select
+                    className="form-select"
                     value={newAddress.barangay}
                     onChange={(e) =>
                       setNewAddress({ ...newAddress, barangay: e.target.value })
                     }
-                  />
+                    required
+                    disabled={!newAddress.city}
+                  >
+                    <option value="">Select Barangay</option>
+                    {barangays.map((barangay) => (
+                      <option key={barangay.code} value={barangay.code}>
+                        {barangay.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                <div className="col-md-4 mb-3">
+                {/* Additional Fields */}
+                <div className="col-md-6 mb-3">
                   <label className="form-label">Postal Code</label>
                   <input
                     type="text"
@@ -416,9 +553,10 @@ const AddressSection = ({ userKey }) => {
                     onChange={(e) =>
                       setNewAddress({ ...newAddress, postalcode: e.target.value })
                     }
+                    required
                   />
                 </div>
-                <div className="col-md-4 mb-3">
+                <div className="col-md-6 mb-3">
                   <label className="form-label">Street Name</label>
                   <input
                     type="text"
@@ -427,9 +565,10 @@ const AddressSection = ({ userKey }) => {
                     onChange={(e) =>
                       setNewAddress({ ...newAddress, streetname: e.target.value })
                     }
+                    required
                   />
                 </div>
-                <div className="col-md-4 mb-3">
+                <div className="col-md-6 mb-3">
                   <label className="form-label">Building</label>
                   <input
                     type="text"
@@ -440,7 +579,7 @@ const AddressSection = ({ userKey }) => {
                     }
                   />
                 </div>
-                <div className="col-md-4 mb-3">
+                <div className="col-md-6 mb-3">
                   <label className="form-label">House Number</label>
                   <input
                     type="text"
