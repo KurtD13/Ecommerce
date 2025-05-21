@@ -18,7 +18,14 @@ export function Products() {
     const [selectedVariation, setSelectedVariation] = useState(null); // State for selected variation
     const userKey = localStorage.getItem("userkey"); // Get user key from localStorage
 
-    const handleAddToCart = async () => {
+    
+    
+        const handleAddToCart = async () => {
+        if (!userKey || userKey === "0") {
+            alert("Please login first!");
+            navigate("/login");
+            return;
+        }
         if (!product) {
             alert("Product not found.");
             return;

@@ -108,7 +108,7 @@ const EditProfileSection = ({ userKey }) => {
     consumerpassword: "",
     consumerimage: "",
   });
-
+const [showPassword, setShowPassword] = useState(false);
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -185,19 +185,37 @@ const EditProfileSection = ({ userKey }) => {
             className="form-control"
             type="text"
             value={userData.consumerphone}
-            onChange={(e) => setUserData({ ...userData, consumerphone: e.target.value })}
+            onChange={(e) =>
+              setUserData({ ...userData, consumerphone: e.target.value.trim() })
+            }
+            pattern="^9[0-9]{9}$"
+            maxLength="10"
+            title="Please enter exactly 10 digits starting with 9."
             required
           />
         </div>
         <div className="mb-3">
-          <label className="form-label">Change Password</label>
-          <input
-            className="form-control"
-            type="password"
-            value={userData.consumerpassword}
-            onChange={(e) => setUserData({ ...userData, consumerpassword: e.target.value })}
-          />
-        </div>
+  <label className="form-label">Change Password</label>
+  <div className="input-group">
+    <input
+      className="form-control"
+      type={showPassword ? "text" : "password"}
+      value={userData.consumerpassword}
+      onChange={(e) =>
+        setUserData({ ...userData, consumerpassword: e.target.value })
+      }
+      pattern="^(?=.*[!@#$%^&*])(?=.*\d).{9,}$"
+      title="Password must be at least 9 characters long, contain at least 1 digit and 1 special character."
+    />
+    <button
+      type="button"
+      className="btn btn-outline-secondary"
+      onClick={() => setShowPassword(!showPassword)}
+    >
+      <i className={ showPassword ? "fas fa-eye-slash" : "fas fa-eye"}></i>
+    </button>
+  </div>
+</div>
         <div className="mb-3">
           <label className="form-label">Profile Picture URL</label>
           <input
@@ -964,6 +982,12 @@ const PaymentSection = ({ userKey }) => {
     userkey: userKey,
   });
 
+  const formatCardNumber = (number) => {
+    const str = number.toString();
+    return str.replace(/(\d{4})(?=\d)/g, '$1-');
+  };
+
+
   const [newCard, setNewCard] = useState({
     bankname: "",
     cardnumber: "",
@@ -1148,7 +1172,7 @@ const PaymentSection = ({ userKey }) => {
               <div>
                 <strong>{card.bankname}</strong>
                 <br />
-                Card Number: {card.cardnumber}
+                Card Number: {formatCardNumber(card.cardnumber)}
                 <br />
                 Expiry: {(card.expirydate).substring(0, 10)}
               </div>
@@ -1219,17 +1243,20 @@ const PaymentSection = ({ userKey }) => {
                 </select>
               </div>
               <div className="mb-3">
-                <label className="form-label">Phone Number</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={newEwallet.epaymentphone}
-                  onChange={(e) =>
-                    setNewEwallet({ ...newEwallet, epaymentphone: e.target.value })
-                  }
-                  required
-                />
-              </div>
+                  <label className="form-label">Phone Number</label>
+                  <input
+                    type="tel"
+                    className="form-control"
+                    value={newEwallet.epaymentphone}
+                    onChange={(e) =>
+                      setNewEwallet({ ...newEwallet, epaymentphone: e.target.value.trim() })
+                    }
+                    pattern="^9[0-9]{9}$"
+                    maxLength="10"
+                    title="Please enter exactly 10 digits starting with 9."
+                    required
+                  />
+                </div>
             </div>
             <div className="modal-footer">
               <button type="submit" className="btn btn-warning">
@@ -1281,18 +1308,22 @@ const PaymentSection = ({ userKey }) => {
                   required
                 />
               </div>
-              <div className="mb-3">
-                <label className="form-label">Card Number</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={newCard.cardnumber}
-                  onChange={(e) =>
-                    setNewCard({ ...newCard, cardnumber: e.target.value })
-                  }
-                  required
-                />
-              </div>
+             
+                <div className="mb-3">
+                  <label className="form-label">Card Number</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newCard.cardnumber}
+                    onChange={(e) =>
+                      setNewCard({ ...newCard, cardnumber: e.target.value })
+                    }
+                    pattern="\d{16}"
+                    maxLength="16"
+                    title="Please enter exactly 16 digits."
+                    required
+                  />
+                </div>
               <div className="mb-3">
                 <label className="form-label">Expiry Date</label>
                 <input
@@ -1454,12 +1485,18 @@ const EditPaymentSection = ({
                 <div className="mb-3">
                   <label className="form-label">Phone Number</label>
                   <input
-                    type="text"
+                    type="tel"
                     className="form-control"
                     value={editedPayment.epaymentphone}
                     onChange={(e) =>
-                      setEditedPayment({ ...editedPayment, epaymentphone: e.target.value })
+                      setEditedPayment({
+                        ...editedPayment,
+                        epaymentphone: e.target.value.trim(),
+                      })
                     }
+                    pattern="^9[0-9]{9}$"
+                    maxLength="10"
+                    title="Please enter exactly 10 digits starting with 9."
                     required
                   />
                 </div>
@@ -1487,6 +1524,9 @@ const EditPaymentSection = ({
                     onChange={(e) =>
                       setEditedPayment({ ...editedPayment, cardnumber: e.target.value })
                     }
+                    pattern="^\d{16}$"
+                    maxLength="16"
+                    title="Please enter exactly 16 digits."
                     required
                   />
                 </div>
