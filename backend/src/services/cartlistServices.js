@@ -15,14 +15,14 @@ export const createCart = async (cartInfo) => {
 
     return rows[0];
 };
-export const updateCart = async(cartid, cartInfo) => {
-    const{ pquantity, ptotal, productid, variation, userkey   } = cartInfo;
-    const { rows } = await query (
-        'UPDATE cart_list SET pquantity = $1, ptotal = $2, productkey = $3, variation = $4, userkey = $5 WHERE cartid = $6 RETURNING *',
-        [pquantity, ptotal, productid, variation, userkey, cartid ]
+export const updateCart = async (cartid, cartInfo) => {
+    const { pquantity, ptotal, variation, userkey } = cartInfo; // Exclude productkey
+    const { rows } = await query(
+        'UPDATE cart_list SET pquantity = $1, ptotal = $2, variation = $3, userkey = $4 WHERE cartid = $5 RETURNING *',
+        [pquantity, ptotal, variation, userkey, cartid]
     );
     return rows[0];
-}
+};
 
 
 export const deleteCart = async (cartid) => {

@@ -265,7 +265,10 @@ export function Products() {
                                     />
                                 </div>
                             </div>
-                            <button className="btn btn-outline-secondary me-2" onClick={handleAddToCart}>
+                            <button className="btn me-2" style={{ background: "#FE7743", color: "#EFEEEA"  }}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e8602c")}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#FE7743")}
+                            onClick={handleAddToCart}>
                                 Add to Cart
                             </button>
                             <button className="btn btn-success">Buy Now</button>

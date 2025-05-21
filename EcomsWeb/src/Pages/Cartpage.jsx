@@ -10,106 +10,113 @@ export function Cartpage() {
   const userkey = localStorage.getItem("userkey"); // Get user key from localStorage
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchCartData = async () => {
-      try {
-        if (!userkey) {
-          throw new Error("User key is missing. Please log in.");
-        }
-
-        // Fetch cart items for the current user
-        const cartResponse = await axios.get(`http://localhost:3000/api/cart`);
-        const cartItems = cartResponse.data.filter((item) => item.userkey.toString() === userkey);
-
-        // Fetch all products and variations
-        const [productResponse, variationResponse] = await Promise.all([
-          axios.get(`http://localhost:3000/api/product`),
-          axios.get(`http://localhost:3000/api/variation`),
-        ]);
-
-        const products = productResponse.data;
-        const variations = variationResponse.data;
-
-        // Map cart items to include product and variation details
-        const enrichedCartItems = cartItems.map((cartItem) => {
-          const product = products.find((p) => p.pid === cartItem.productkey);
-          const availableVariations = variations.filter((v) => v.productkey === cartItem.productkey);
-
-          return {
-            ...cartItem,
-            productkey: cartItem.productkey, // Preserve productkey
-            variation: cartItem.variation || null, // Preserve variation
-            productName: product?.pname || "Unknown Product",
-            productDesc: product?.pdesc || "No description available",
-            productPrice: product?.pprice || 0,
-            productImage: product?.pimageurl || "", // Add product image URL
-            availableVariations,
-          };
-        });
-
-        setCartProducts(enrichedCartItems);
-      } catch (err) {
-        console.error("Error fetching cart data:", err);
-        setError(err.message);
-      }
-    };
-
-    fetchCartData();
-
-    // Update the database when the component is unmounted or the user navigates away
-    return () => {
-      updateCartInDatabase();
-    };
-  }, [userkey]);
-
-  const updateCartInDatabase = async () => {
+useEffect(() => {
+  const fetchCartData = async () => {
     try {
-      console.log("Updating cart in database...", cartProducts); // Debugging log
-      await Promise.all(
-        cartProducts.map((product) =>
-          axios.put(`http://localhost:3000/api/cart/${product.cartid}`, {
-            userkey: product.userkey,
-            productkey: product.productkey,
-            pquantity: product.pquantity,
-            ptotal: product.ptotal,
-            variation: product.variation || null,
-          })
-        )
-      );
-      console.log("Cart updated successfully.");
+      if (!userkey) {
+        throw new Error("User key is missing. Please log in.");
+      }
+
+      // Fetch cart items for the current user
+      const cartResponse = await axios.get(`http://localhost:3000/api/cart`);
+      const cartItems = cartResponse.data.filter((item) => item.userkey.toString() === userkey);
+
+      // Fetch all products and variations
+      const [productResponse, variationResponse] = await Promise.all([
+        axios.get(`http://localhost:3000/api/product`),
+        axios.get(`http://localhost:3000/api/variation`),
+      ]);
+
+      const products = productResponse.data;
+      const variations = variationResponse.data;
+
+      // Map cart items to include product and variation details
+      const enrichedCartItems = cartItems.map((cartItem) => {
+        const product = products.find((p) => p.pid === cartItem.productkey);
+        const availableVariations = variations.filter((v) => v.productkey === cartItem.productkey);
+
+        return {
+          ...cartItem,
+          productkey: cartItem.productkey || product?.pid || null, // Ensure productkey is preserved
+          variation: cartItem.variation || null, // Ensure variation is preserved
+          productName: product?.pname || "Unknown Product",
+          productDesc: product?.pdesc || "No description available",
+          productPrice: product?.pprice || 0,
+          productImage: product?.pimageurl || "", // Add product image URL
+          ptotal: cartItem.ptotal || cartItem.pquantity * (product?.pprice || 0), // Recalculate ptotal if missing
+          availableVariations,
+        };
+      });
+
+      setCartProducts(enrichedCartItems);
     } catch (err) {
-      console.error("Error updating cart in database:", err);
+      console.error("Error fetching cart data:", err);
+      setError(err.message);
     }
   };
 
-  const handleQuantityChange = (cartId, delta) => {
-    const updatedCartProducts = cartProducts.map((product) => {
-      if (product.cartid === cartId) {
-        const updatedQuantity = Math.max(1, product.pquantity + delta);
-        product.pquantity = updatedQuantity;
-        product.ptotal = updatedQuantity * Number(product.productPrice); // Ensure productPrice is a number
-      }
-      return product;
-    });
+  fetchCartData();
+}, [userkey]);
 
-    console.log("Updated cartProducts after quantity change:", updatedCartProducts); // Debugging log
-    setCartProducts(updatedCartProducts);
-  };
+const handleQuantityChange = async (cartId, delta) => {
+  const updatedCartProducts = cartProducts.map((product) => {
+    if (product.cartid === cartId) {
+      const updatedQuantity = Math.max(1, product.pquantity + delta);
+      product.pquantity = updatedQuantity;
+      product.ptotal = updatedQuantity * Number(product.productPrice); // Ensure productPrice is a number
 
-  const handleVariationChange = (cartId, newVariationKey) => {
-    const updatedCartProducts = cartProducts.map((product) => {
-      if (product.cartid === cartId) {
-        product.variation = newVariationKey; // Update variation key
-      }
-      return product;
-    });
+      // Update the database immediately
+      axios.put(`http://localhost:3000/api/cart/${cartId}`, {
+        userkey: product.userkey,
+        pquantity: updatedQuantity,
+        ptotal: product.ptotal, // Ensure ptotal is included
+        variation: product.variation || null, // Ensure variation is included
+      }).catch((err) => {
+        console.error("Error updating quantity in database:", err);
+        alert("Failed to update quantity. Please try again.");
+      });
+    }
+    return product;
+  });
 
-    setCartProducts(updatedCartProducts);
-  };
+  setCartProducts(updatedCartProducts);
+};
 
-  const handleDelete = (cartId) => {
-    const updatedCartProducts = cartProducts.filter((product) => product.cartid !== cartId);
-    setCartProducts(updatedCartProducts);
+const handleVariationChange = async (cartId, newVariationKey) => {
+  const updatedCartProducts = cartProducts.map((product) => {
+    if (product.cartid === cartId) {
+      product.variation = newVariationKey; // Update variation key
+
+      // Update the database immediately
+      axios.put(`http://localhost:3000/api/cart/${cartId}`, {
+        userkey: product.userkey,
+        pquantity: product.pquantity,
+        ptotal: product.ptotal, // Ensure ptotal is included
+        variation: newVariationKey, // Ensure variation is included
+      }).catch((err) => {
+        console.error("Error updating variation in database:", err);
+        alert("Failed to update variation. Please try again.");
+      });
+    }
+    return product;
+  });
+
+  setCartProducts(updatedCartProducts);
+};
+
+
+  const handleDelete = async (cartId) => {
+    try {
+      // Delete the product from the database
+      await axios.delete(`http://localhost:3000/api/cart/${cartId}`);
+
+      // Update the frontend state to remove the deleted item
+      const updatedCartProducts = cartProducts.filter((product) => product.cartid !== cartId);
+      setCartProducts(updatedCartProducts);
+    } catch (err) {
+      console.error("Error deleting cart item:", err);
+      alert("Failed to delete cart item. Please try again.");
+    }
   };
 
   const calculateTotal = () => {

@@ -18,7 +18,19 @@ export function Navbar() {
   return (
     <nav className="navbar navbar-expand-lg py-3" style={{ backgroundColor: "#273F4F" }}>
       <div className="container">
-        <a className="navbar-brand fw-bolder" style={{ color: "#FE7743" }} href="/">
+        <a
+          className="navbar-brand fw-bolder"
+          style={{ color: "#FE7743", fontSize:"1.5rem" , transition: "transform 0.3s ease, font-size 0.3s ease" }}
+          href="/"
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "scale(1.2)";
+            e.currentTarget.style.fontSize = "1.6rem";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "scale(1.0)";
+            e.currentTarget.style.fontSize = "1.5rem";
+          }}
+        >
           EXOtique
         </a>
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
@@ -32,7 +44,7 @@ export function Navbar() {
             }}
             role="search"
           >
-            <span className="input-group-text">Search</span>
+            
             <input
               className="form-control"
               type="text"
@@ -44,6 +56,8 @@ export function Navbar() {
               className="btn input-group-text me-2"
               type="submit"
               style={{ background: "#FE7743", color: "#EFEEEA" }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e8602c")}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#FE7743")}
             >
               <i className="bi bi-search"></i>
             </button>
@@ -52,6 +66,8 @@ export function Navbar() {
           <Link
             to="/Cartpage"
             style={{ background: "#FE7743", color: "#EFEEEA" }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e8602c")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#FE7743")}
             className="btn me-2"
           >
             <i className="bi bi-cart-fill"></i>
@@ -64,6 +80,8 @@ export function Navbar() {
               style={{ background: "#FE7743", color: "#EFEEEA" }}
               data-bs-toggle="modal"
               data-bs-target="#loginModal"
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e8602c")}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#FE7743")}
             >
               Login
             </button>
@@ -73,6 +91,8 @@ export function Navbar() {
             <Link
               to="/profilepage"
               style={{ background: "#FE7743", color: "#EFEEEA" }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e8602c")}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#FE7743")}
               className="btn"
             >
               <i className="bi bi-person-fill"></i>

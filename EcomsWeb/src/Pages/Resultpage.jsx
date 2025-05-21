@@ -39,9 +39,10 @@ export function Resultpage(){
                                     <button className="btn btn-outline-dark mx-1 rounded-5" >TopSales</button>
                             </div>
                         </div>
-                        <div className="card mt-2 p-2 d-flex">
+                        <div className="card mt-2 p-2 d-flex" style={{minHeight: "410px"}}>
                             <div className="row ms-1">
                                 <Productpreview filterTerm={query}/>
+                                
                             </div>
                            
                             
