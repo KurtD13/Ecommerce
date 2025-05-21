@@ -5,15 +5,16 @@ export const getCart = async() =>{
     return rows;
 }
 
-export const createCart = async(cartInfo) => {
-    const{ pquantity, ptotal, productid, variation, userkey } = cartInfo;
-    const { rows } = await query (
-        'INSERT INTO cart_list (pquantity, ptotal, productkey, variation, userkey  ) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-        [pquantity, ptotal, productid, variation, userkey ]
-    );
-    return rows[0];
-}
+export const createCart = async (cartInfo) => {
+    const { userkey, pquantity, variation, productkey, colorkey, ptotal } = cartInfo;
 
+    const { rows } = await query(
+        'INSERT INTO cart_list (userkey, pquantity, variation, productkey, colorkey, ptotal) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+        [userkey, pquantity, variation, productkey, colorkey, ptotal]
+    );
+
+    return rows[0];
+};
 export const updateCart = async(cartid, cartInfo) => {
     const{ pquantity, ptotal, productid, variation, userkey   } = cartInfo;
     const { rows } = await query (

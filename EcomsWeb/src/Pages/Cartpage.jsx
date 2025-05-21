@@ -1,63 +1,137 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "../Components/Navbar";
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { Link } from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 export function Cartpage() {
   const [cartProducts, setCartProducts] = useState([]);
-  const [cartItems, setCartItems] = useState([
-    {
-      seller: "Seller A",
-      products: [
-        { id: 1, name: "Product A1", price: 100, quantity: 1 },
-      ],
-    },
-    {
-      seller: "Seller B",
-      products: [
-        { id: 2, name: "Product B1", price: 150, quantity: 1 },
-      ],
-    },
-  ]);
+  const [error, setError] = useState(null);
+  const userkey = localStorage.getItem("userkey"); // Get user key from localStorage
+  const navigate = useNavigate();
+
   useEffect(() => {
-          const fetchProduct = async () => {
-              try {
-                  const response = await axios.get(`http://localhost:3000/api/cart`);
-                  setCartProducts(response.data); // 
-                 
-              } catch (err) {
-                  setError(err.message);
-              }
+    const fetchCartData = async () => {
+      try {
+        if (!userkey) {
+          throw new Error("User key is missing. Please log in.");
+        }
+
+        // Fetch cart items for the current user
+        const cartResponse = await axios.get(`http://localhost:3000/api/cart`);
+        const cartItems = cartResponse.data.filter((item) => item.userkey.toString() === userkey);
+
+        // Fetch all products, colors, and variations
+        const [productResponse, colorResponse, variationResponse] = await Promise.all([
+          axios.get(`http://localhost:3000/api/product`),
+          axios.get(`http://localhost:3000/api/color`),
+          axios.get(`http://localhost:3000/api/variation`),
+        ]);
+
+        const products = productResponse.data;
+        const colors = colorResponse.data;
+        const variations = variationResponse.data;
+
+        // Map cart items to include product, color, and variation details
+        const enrichedCartItems = cartItems.map((cartItem) => {
+          const product = products.find((p) => p.pid === cartItem.productkey);
+          const availableColors = colors.filter((c) => c.productkey === cartItem.productkey);
+          const availableVariations = variations.filter((v) => v.productkey === cartItem.productkey);
+
+          return {
+            ...cartItem,
+            productkey: cartItem.productkey, // Preserve productkey
+            colorkey: cartItem.colorkey || null, // Preserve colorkey
+            variation: cartItem.variation || null, // Preserve variation
+            productName: product?.pname || "Unknown Product",
+            productDesc: product?.pdesc || "No description available",
+            productPrice: product?.pprice || 0,
+            productImage: product?.pimageurl || "", // Add product image URL
+            availableColors,
+            availableVariations,
           };
-          fetchProduct();
-      }, []);
+        });
 
-  
+        setCartProducts(enrichedCartItems);
+      } catch (err) {
+        console.error("Error fetching cart data:", err);
+        setError(err.message);
+      }
+    };
 
-  const handleQuantityChange = (sellerIndex, productIndex, delta) => {
-    const newCartItems = [...cartItems];
-    const product = newCartItems[sellerIndex].products[productIndex];
-    product.quantity = Math.max(1, product.quantity + delta);
-    setCartItems(newCartItems);
+    fetchCartData();
+
+    // Update the database when the component is unmounted or the user navigates away
+    return () => {
+      updateCartInDatabase();
+    };
+  }, [userkey]);
+
+  const updateCartInDatabase = async () => {
+  try {
+    console.log("Updating cart in database...", cartProducts); // Debugging log
+    await Promise.all(
+      cartProducts.map((product) =>
+        axios.put(`http://localhost:3000/api/cart/${product.cartid}`, {
+          userkey: product.userkey,
+          productkey: product.productkey,
+          pquantity: product.pquantity,
+          ptotal: product.ptotal,
+          colorkey: product.colorkey || null,
+          variation: product.variation || null,
+        })
+      )
+    );
+    console.log("Cart updated successfully.");
+  } catch (err) {
+    console.error("Error updating cart in database:", err);
+  }
+};
+
+ const handleQuantityChange = (cartId, delta) => {
+  const updatedCartProducts = cartProducts.map((product) => {
+    if (product.cartid === cartId) {
+      const updatedQuantity = Math.max(1, product.pquantity + delta);
+      product.pquantity = updatedQuantity;
+      product.ptotal = updatedQuantity * Number(product.productPrice); // Ensure productPrice is a number
+    }
+    return product;
+  });
+
+  console.log("Updated cartProducts after quantity change:", updatedCartProducts); // Debugging log
+  setCartProducts(updatedCartProducts);
+};
+
+  const handleColorChange = (cartId, newColorKey) => {
+    const updatedCartProducts = cartProducts.map((product) => {
+      if (product.cartid === cartId) {
+        product.colorkey = newColorKey; // Update color key
+      }
+      return product;
+    });
+
+    setCartProducts(updatedCartProducts);
   };
 
-  const handleDelete = (sellerIndex, productIndex) => {
-    const newCartItems = [...cartItems];
-    newCartItems[sellerIndex].products.splice(productIndex, 1);
+  const handleVariationChange = (cartId, newVariationKey) => {
+    const updatedCartProducts = cartProducts.map((product) => {
+      if (product.cartid === cartId) {
+        product.variation = newVariationKey; // Update variation key
+      }
+      return product;
+    });
 
-    if (newCartItems[sellerIndex].products.length === 0) {
-      newCartItems.splice(sellerIndex, 1);
-    }
+    setCartProducts(updatedCartProducts);
+  };
 
-    setCartItems(newCartItems);
+  const handleDelete = (cartId) => {
+    const updatedCartProducts = cartProducts.filter((product) => product.cartid !== cartId);
+    setCartProducts(updatedCartProducts);
   };
 
   const calculateTotal = () => {
-    return cartItems.reduce((total, seller) => {
-      return total + seller.products.reduce((subTotal, product) => {
-        return subTotal + product.price * product.quantity;
-      }, 0);
+    return cartProducts.reduce((total, product) => {
+      return total + Number(product.ptotal); // Ensure ptotal is treated as a number
     }, 0);
   };
 
@@ -75,38 +149,89 @@ export function Cartpage() {
           <div className="col-1 text-center">Actions</div>
         </div>
 
-        {cartItems.map((group, index) => (
-          <div key={index} className="mb-3 p-2 border bg-white rounded">
-            <div className="fw-bold mb-2">{group.seller}</div>
-            {group.products.map((item, idx) => (
-              <div key={item.id} className="row align-items-center border-top py-2">
-                <div className="col-6 d-flex align-items-start">
-                  <input type="checkbox" className="me-2 mt-1" />
+        {cartProducts.map((product) => (
+          <div key={product.cartid} className="mb-3 p-2 border bg-white rounded">
+            <div className="row align-items-center py-2">
+              <div className="col-6 d-flex align-items-start">
+                <input type="checkbox" className="me-2 mt-1" />
+                <img
+                  src={product.productImage}
+                  alt={product.productName}
+                  className="img-thumbnail me-3"
+                  style={{ minWidth: "100px", maxWidth: "100px", minHeight: "100px", maxHeight: "100px", objectFit: "fill" }}
+                />
+                <div>
+                  <div>{product.productName}</div>
+                  <small className="text-muted">{product.productDesc}</small>
                   <div>
-                    <div>{item.name}</div>
-                    <small className="text-muted">Other Descriptions</small>
-                    <div>
-                      <select className="form-select form-select-sm w-auto mt-1">
-                        <option>Variations</option>
-                      </select>
-                    </div>
+                    <select
+                      className="form-select form-select-sm w-auto mt-1"
+                      value={product.variation || ""}
+                      onChange={(e) => handleVariationChange(product.cartid, e.target.value)}
+                    >
+                      {product.availableVariations.length > 0 ? (
+                        product.availableVariations.map((variation) => (
+                          <option key={variation.pvid} value={variation.pvid}>
+                            {variation.pvname}
+                          </option>
+                        ))
+                      ) : (
+                        <option>No Variations</option>
+                      )}
+                    </select>
                   </div>
-                </div>
-                <div className="col-2 text-center">₱ {item.price.toFixed(2)}</div>
-                <div className="col-2 text-center">
-                  <div className="input-group input-group-sm justify-content-center">
-                    <button className="btn btn-outline-secondary" onClick={() => handleQuantityChange(index, idx, -1)}>-</button>
-                    <input type="text" value={item.quantity} className="form-control text-center" readOnly />
-                    <button className="btn btn-outline-secondary" onClick={() => handleQuantityChange(index, idx, 1)}>+</button>
+                  <div>
+                    <select
+                      className="form-select form-select-sm w-auto mt-1"
+                      value={product.colorkey || ""}
+                      onChange={(e) => handleColorChange(product.cartid, e.target.value)}
+                    >
+                      {product.availableColors.length > 0 ? (
+                        product.availableColors.map((color) => (
+                          <option key={color.colorid} value={color.colorid}>
+                            {color.colorname}
+                          </option>
+                        ))
+                      ) : (
+                        <option>No Colors</option>
+                      )}
+                    </select>
                   </div>
-                </div>
-                <div className="col-1 text-center">₱ {(item.price * item.quantity).toFixed(2)}</div>
-                <div className="col-1 text-center">
-                  <button className="btn btn-outline-danger btn-sm me-1" onClick={() => handleDelete(index, idx)}>Delete</button>
-                  <button className="btn btn-outline-secondary btn-sm">Similar</button>
                 </div>
               </div>
-            ))}
+              <div className="col-2 text-center">₱ {product.productPrice.toFixed(2)}</div>
+              <div className="col-2 text-center">
+                <div className="input-group input-group-sm justify-content-center">
+                  <button
+                    className="btn btn-outline-secondary"
+                    onClick={() => handleQuantityChange(product.cartid, -1)}
+                  >
+                    -
+                  </button>
+                  <input
+                    type="text"
+                    value={product.pquantity}
+                    className="form-control text-center"
+                    readOnly
+                  />
+                  <button
+                    className="btn btn-outline-secondary"
+                    onClick={() => handleQuantityChange(product.cartid, 1)}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              <div className="col-1 text-center">₱ {Number(product.ptotal).toFixed(2)}</div>              <div className="col-1 text-center">
+                <button
+                  className="btn btn-outline-danger btn-sm me-1"
+                  onClick={() => handleDelete(product.cartid)}
+                >
+                  Delete
+                </button>
+                <button className="btn btn-outline-secondary btn-sm">Similar</button>
+              </div>
+            </div>
           </div>
         ))}
 
@@ -119,7 +244,7 @@ export function Cartpage() {
             <Link
               to="/checkout"
               className="btn btn-primary"
-              style={{ backgroundColor: '#FE7743', borderColor: '#FE7743' }}
+              style={{ backgroundColor: "#FE7743", borderColor: "#FE7743" }}
             >
               Check Out
             </Link>

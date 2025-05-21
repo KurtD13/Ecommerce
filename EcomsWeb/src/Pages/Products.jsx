@@ -15,7 +15,40 @@ export function Products() {
     const [imageData, setImageData] = useState([]);
     const [reviewData, setReviewData] = useState([]);
     const [reviewerInfo, setReviewerInfo] = useState([]);
+    const [quantity, setQuantity] = useState(1); // State for quantity
+    const [selectedVariation, setSelectedVariation] = useState(null); // State for selected variation
+    const [selectedColor, setSelectedColor] = useState(null); // State for selected color
+    const userKey = localStorage.getItem("userkey"); // Get user key from localStorage
     
+     const handleAddToCart = async () => {
+    if (!product) {
+        alert("Product not found.");
+        return;
+    }
+
+    const ptotal = product.pprice * quantity; // Calculate total price
+
+    const cartData = {
+        userkey: userKey,
+        pquantity: quantity,
+        variation: selectedVariation || null, // Allow null
+        productkey: product.pid,
+        colorkey: selectedColor || null, // Allow null
+        ptotal: ptotal,
+    };
+
+    try {
+        const response = await axios.post("http://localhost:3000/api/cart", cartData);
+        if (response.status === 200) {
+            alert("Product added to cart successfully!");
+        }
+    } catch (err) {
+        console.error("Error adding to cart:", err);
+        alert("Failed to add product to cart. Please try again.");
+    }
+};
+
+
     useEffect(() => {
         const fetchProduct = async () => {
             try {
@@ -214,6 +247,7 @@ export function Products() {
                                     ))}
                                 </div>
                             </div>
+                            {/* Color Selection */}
                             <div className="d-flex align-items-center mb-3" style={{ gap: "10px" }}>
                                 <div style={{ minWidth: "100px", fontWeight: 500 }}>Color:</div>
                                 <div>
@@ -221,8 +255,11 @@ export function Products() {
                                         filteredColor.map((color) => (
                                             <button
                                                 type="button"
-                                                className="btn btn-outline-secondary btn-sm me-1"
+                                                className={`btn btn-outline-secondary btn-sm me-1 ${
+                                                    selectedColor === color.colorid ? "active" : ""
+                                                }`}
                                                 key={color.colorid}
+                                                onClick={() => setSelectedColor(color.colorid)}
                                             >
                                                 {color.colorname}
                                             </button>
@@ -232,15 +269,19 @@ export function Products() {
                                     )}
                                 </div>
                             </div>
+                            {/* Variation Selection */}
                             <div className="d-flex align-items-center mb-3" style={{ gap: "10px" }}>
-                                <div style={{ minWidth: "100px", fontWeight: 500 }}>Capacity:</div>
+                                <div style={{ minWidth: "100px", fontWeight: 500 }}>Variation:</div>
                                 <div>
                                     {filteredVariation.length > 0 ? (
-                                        filteredVariation.map((variation, index) => (
+                                        filteredVariation.map((variation) => (
                                             <button
                                                 type="button"
-                                                className="btn btn-outline-secondary btn-sm me-1"
-                                                key={index}
+                                                className={`btn btn-outline-secondary btn-sm me-1 ${
+                                                    selectedVariation === variation.pvid ? "active" : ""
+                                                }`}
+                                                key={variation.pvid}
+                                                onClick={() => setSelectedVariation(variation.pvid)}
                                             >
                                                 {variation.pvname}
                                             </button>
@@ -250,20 +291,24 @@ export function Products() {
                                     )}
                                 </div>
                             </div>
+                            {/* Quantity Input */}
                             <div className="d-flex align-items-center mb-3" style={{ gap: "10px" }}>
                                 <div style={{ minWidth: "100px", fontWeight: 500 }}>Quantity:</div>
                                 <div>
                                     <input
                                         type="number"
                                         className="form-control form-control-sm"
-                                        defaultValue="1"
+                                        value={quantity}
                                         min="1"
-                                        max={product.stock}
+                                        max={product?.stock || 1}
+                                        onChange={(e) => setQuantity(Number(e.target.value))}
                                         style={{ width: "80px" }}
                                     />
                                 </div>
                             </div>
-                            <button className="btn btn-outline-secondary me-2">Add to Cart</button>
+                            <button className="btn btn-outline-secondary me-2" onClick={handleAddToCart}>
+                                Add to Cart
+                            </button>
                             <button className="btn btn-success">Buy Now</button>
                         </div>
                     </div>

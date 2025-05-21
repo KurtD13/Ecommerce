@@ -11,15 +11,24 @@ export const getCart = async (req, res) =>{
 };
 
 export const createCart = async (req, res) => {
-    try{
-        console.log("REQ BODY:", req.body);
-        const cartInfo = req.body;
+    try {
+        const { userkey, pquantity, variation, productkey, colorkey, ptotal } = req.body;
+
+        // Allow colorkey and variation to be null
+        const cartInfo = {
+            userkey,
+            pquantity,
+            variation: variation || null,
+            productkey,
+            colorkey: colorkey || null,
+            ptotal,
+        };
+
         const newCart = await Service.createCart(cartInfo);
         res.status(200).json(newCart);
-
-    }catch(err){
-        console.error("Error adding reviews", err);
-        res.status(500).json({message: 'Internal Server Error'});
+    } catch (err) {
+        console.error("Error adding to cart:", err);
+        res.status(500).json({ message: "Internal Server Error" });
     }
 };
 
