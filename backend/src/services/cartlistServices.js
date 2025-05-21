@@ -6,11 +6,11 @@ export const getCart = async() =>{
 }
 
 export const createCart = async (cartInfo) => {
-    const { userkey, pquantity, variation, productkey, colorkey, ptotal } = cartInfo;
+    const { userkey, pquantity, variation, productkey, ptotal } = cartInfo;
 
     const { rows } = await query(
-        'INSERT INTO cart_list (userkey, pquantity, variation, productkey, colorkey, ptotal) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-        [userkey, pquantity, variation, productkey, colorkey, ptotal]
+        'INSERT INTO cart_list (userkey, pquantity, variation, productkey, ptotal) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+        [userkey, pquantity, variation, productkey, ptotal]
     );
 
     return rows[0];

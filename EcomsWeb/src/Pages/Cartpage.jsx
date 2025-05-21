@@ -21,33 +21,28 @@ export function Cartpage() {
         const cartResponse = await axios.get(`http://localhost:3000/api/cart`);
         const cartItems = cartResponse.data.filter((item) => item.userkey.toString() === userkey);
 
-        // Fetch all products, colors, and variations
-        const [productResponse, colorResponse, variationResponse] = await Promise.all([
+        // Fetch all products and variations
+        const [productResponse, variationResponse] = await Promise.all([
           axios.get(`http://localhost:3000/api/product`),
-          axios.get(`http://localhost:3000/api/color`),
           axios.get(`http://localhost:3000/api/variation`),
         ]);
 
         const products = productResponse.data;
-        const colors = colorResponse.data;
         const variations = variationResponse.data;
 
-        // Map cart items to include product, color, and variation details
+        // Map cart items to include product and variation details
         const enrichedCartItems = cartItems.map((cartItem) => {
           const product = products.find((p) => p.pid === cartItem.productkey);
-          const availableColors = colors.filter((c) => c.productkey === cartItem.productkey);
           const availableVariations = variations.filter((v) => v.productkey === cartItem.productkey);
 
           return {
             ...cartItem,
             productkey: cartItem.productkey, // Preserve productkey
-            colorkey: cartItem.colorkey || null, // Preserve colorkey
             variation: cartItem.variation || null, // Preserve variation
             productName: product?.pname || "Unknown Product",
             productDesc: product?.pdesc || "No description available",
             productPrice: product?.pprice || 0,
             productImage: product?.pimageurl || "", // Add product image URL
-            availableColors,
             availableVariations,
           };
         });
@@ -68,48 +63,36 @@ export function Cartpage() {
   }, [userkey]);
 
   const updateCartInDatabase = async () => {
-  try {
-    console.log("Updating cart in database...", cartProducts); // Debugging log
-    await Promise.all(
-      cartProducts.map((product) =>
-        axios.put(`http://localhost:3000/api/cart/${product.cartid}`, {
-          userkey: product.userkey,
-          productkey: product.productkey,
-          pquantity: product.pquantity,
-          ptotal: product.ptotal,
-          colorkey: product.colorkey || null,
-          variation: product.variation || null,
-        })
-      )
-    );
-    console.log("Cart updated successfully.");
-  } catch (err) {
-    console.error("Error updating cart in database:", err);
-  }
-};
-
- const handleQuantityChange = (cartId, delta) => {
-  const updatedCartProducts = cartProducts.map((product) => {
-    if (product.cartid === cartId) {
-      const updatedQuantity = Math.max(1, product.pquantity + delta);
-      product.pquantity = updatedQuantity;
-      product.ptotal = updatedQuantity * Number(product.productPrice); // Ensure productPrice is a number
+    try {
+      console.log("Updating cart in database...", cartProducts); // Debugging log
+      await Promise.all(
+        cartProducts.map((product) =>
+          axios.put(`http://localhost:3000/api/cart/${product.cartid}`, {
+            userkey: product.userkey,
+            productkey: product.productkey,
+            pquantity: product.pquantity,
+            ptotal: product.ptotal,
+            variation: product.variation || null,
+          })
+        )
+      );
+      console.log("Cart updated successfully.");
+    } catch (err) {
+      console.error("Error updating cart in database:", err);
     }
-    return product;
-  });
+  };
 
-  console.log("Updated cartProducts after quantity change:", updatedCartProducts); // Debugging log
-  setCartProducts(updatedCartProducts);
-};
-
-  const handleColorChange = (cartId, newColorKey) => {
+  const handleQuantityChange = (cartId, delta) => {
     const updatedCartProducts = cartProducts.map((product) => {
       if (product.cartid === cartId) {
-        product.colorkey = newColorKey; // Update color key
+        const updatedQuantity = Math.max(1, product.pquantity + delta);
+        product.pquantity = updatedQuantity;
+        product.ptotal = updatedQuantity * Number(product.productPrice); // Ensure productPrice is a number
       }
       return product;
     });
 
+    console.log("Updated cartProducts after quantity change:", updatedCartProducts); // Debugging log
     setCartProducts(updatedCartProducts);
   };
 
@@ -180,23 +163,6 @@ export function Cartpage() {
                       )}
                     </select>
                   </div>
-                  <div>
-                    <select
-                      className="form-select form-select-sm w-auto mt-1"
-                      value={product.colorkey || ""}
-                      onChange={(e) => handleColorChange(product.cartid, e.target.value)}
-                    >
-                      {product.availableColors.length > 0 ? (
-                        product.availableColors.map((color) => (
-                          <option key={color.colorid} value={color.colorid}>
-                            {color.colorname}
-                          </option>
-                        ))
-                      ) : (
-                        <option>No Colors</option>
-                      )}
-                    </select>
-                  </div>
                 </div>
               </div>
               <div className="col-2 text-center">₱ {product.productPrice.toFixed(2)}</div>
@@ -222,7 +188,8 @@ export function Cartpage() {
                   </button>
                 </div>
               </div>
-              <div className="col-1 text-center">₱ {Number(product.ptotal).toFixed(2)}</div>              <div className="col-1 text-center">
+              <div className="col-1 text-center">₱ {Number(product.ptotal).toFixed(2)}</div>
+              <div className="col-1 text-center">
                 <button
                   className="btn btn-outline-danger btn-sm me-1"
                   onClick={() => handleDelete(product.cartid)}

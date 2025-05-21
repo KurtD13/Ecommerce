@@ -10,44 +10,40 @@ export function Products() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [variationData, setVariationData] = useState([]);
-    const [colorData, setColorData] = useState([]);
     const [shopData, setShopData] = useState([]);
     const [imageData, setImageData] = useState([]);
     const [reviewData, setReviewData] = useState([]);
     const [reviewerInfo, setReviewerInfo] = useState([]);
     const [quantity, setQuantity] = useState(1); // State for quantity
     const [selectedVariation, setSelectedVariation] = useState(null); // State for selected variation
-    const [selectedColor, setSelectedColor] = useState(null); // State for selected color
     const userKey = localStorage.getItem("userkey"); // Get user key from localStorage
-    
-     const handleAddToCart = async () => {
-    if (!product) {
-        alert("Product not found.");
-        return;
-    }
 
-    const ptotal = product.pprice * quantity; // Calculate total price
-
-    const cartData = {
-        userkey: userKey,
-        pquantity: quantity,
-        variation: selectedVariation || null, // Allow null
-        productkey: product.pid,
-        colorkey: selectedColor || null, // Allow null
-        ptotal: ptotal,
-    };
-
-    try {
-        const response = await axios.post("http://localhost:3000/api/cart", cartData);
-        if (response.status === 200) {
-            alert("Product added to cart successfully!");
+    const handleAddToCart = async () => {
+        if (!product) {
+            alert("Product not found.");
+            return;
         }
-    } catch (err) {
-        console.error("Error adding to cart:", err);
-        alert("Failed to add product to cart. Please try again.");
-    }
-};
 
+        const ptotal = product.pprice * quantity; // Calculate total price
+
+        const cartData = {
+            userkey: userKey,
+            pquantity: quantity,
+            variation: selectedVariation || null, // Allow null
+            productkey: product.pid,
+            ptotal: ptotal,
+        };
+
+        try {
+            const response = await axios.post("http://localhost:3000/api/cart", cartData);
+            if (response.status === 200) {
+                alert("Product added to cart successfully!");
+            }
+        } catch (err) {
+            console.error("Error adding to cart:", err);
+            alert("Failed to add product to cart. Please try again.");
+        }
+    };
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -118,19 +114,6 @@ export function Products() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get("http://localhost:3000/api/color");
-                setColorData(response.data || []);
-            } catch (err) {
-                setError(err.message);
-            }
-        };
-
-        fetchData();
-    }, []);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
                 const response = await axios.get("http://localhost:3000/api/image");
                 setImageData(response.data || []); // Set the product data
             } catch (err) {
@@ -149,10 +132,6 @@ export function Products() {
         (p) => p.productkey?.toString() === productId?.toString()
     );
 
-    const filteredColor = colorData.filter(
-        (p) => p.productkey?.toString() === productId?.toString()
-    );
-
     const filteredVariation = variationData.filter(
         (p) => p.productkey?.toString() === productId?.toString()
     );
@@ -160,22 +139,24 @@ export function Products() {
     const filteredShop = shopData.filter(
         (p) => p.shopid?.toString() === product?.shopkey?.toString()
     );
-        // Calculate the average review score
-        const validReviewScores = filteredReviews
+
+    // Calculate the average review score
+    const validReviewScores = filteredReviews
         .map((review) => Number(review.reviewscore)) // Convert to number
         .filter((score) => typeof score === "number" && !isNaN(score)); // Ensure valid numeric scores
 
-        const averageReviewScore =
+    const averageReviewScore =
         validReviewScores.length > 0
             ? validReviewScores.reduce((sum, score) => sum + score, 0) / validReviewScores.length
             : 0;
 
-        // Round the average score to one decimal place
-        const roundedAverageScore = Math.round(averageReviewScore * 10) / 10;
+    // Round the average score to one decimal place
+    const roundedAverageScore = Math.round(averageReviewScore * 10) / 10;
 
-        // Generate stars based on the average score
-        const filledStars = Math.floor(averageReviewScore); // Number of solid stars
-        const emptyStars = 5 - filledStars; // Number of hollow stars
+    // Generate stars based on the average score
+    const filledStars = Math.floor(averageReviewScore); // Number of solid stars
+    const emptyStars = 5 - filledStars; // Number of hollow stars
+
     if (loading) {
         return <p>Loading product details...</p>;
     }
@@ -228,13 +209,13 @@ export function Products() {
 
                             {/* Updated Ratings Section */}
                             <p>
-                            <span className="text-warning star">
-                                {"★".repeat(filledStars)}{/* Solid stars */}
-                                {"☆".repeat(emptyStars)}{/* Hollow stars */}
-                            </span>
-                            <span className="text-muted ms-2">
-                                {roundedAverageScore} / 5 ({filteredReviews.length} reviews)
-                            </span>
+                                <span className="text-warning star">
+                                    {"★".repeat(filledStars)}{/* Solid stars */}
+                                    {"☆".repeat(emptyStars)}{/* Hollow stars */}
+                                </span>
+                                <span className="text-muted ms-2">
+                                    {roundedAverageScore} / 5 ({filteredReviews.length} reviews)
+                                </span>
                             </p>
                             <h3 className="text-danger mb-3">₱{product.pprice}</h3>
                             <div className="mb-3">
@@ -245,28 +226,6 @@ export function Products() {
                                             {"Philippines, " + shop.shippinglocation || "Philippines"}
                                         </div>
                                     ))}
-                                </div>
-                            </div>
-                            {/* Color Selection */}
-                            <div className="d-flex align-items-center mb-3" style={{ gap: "10px" }}>
-                                <div style={{ minWidth: "100px", fontWeight: 500 }}>Color:</div>
-                                <div>
-                                    {filteredColor.length > 0 ? (
-                                        filteredColor.map((color) => (
-                                            <button
-                                                type="button"
-                                                className={`btn btn-outline-secondary btn-sm me-1 ${
-                                                    selectedColor === color.colorid ? "active" : ""
-                                                }`}
-                                                key={color.colorid}
-                                                onClick={() => setSelectedColor(color.colorid)}
-                                            >
-                                                {color.colorname}
-                                            </button>
-                                        ))
-                                    ) : (
-                                        <p className="text-muted">No colors available</p>
-                                    )}
                                 </div>
                             </div>
                             {/* Variation Selection */}
@@ -314,7 +273,6 @@ export function Products() {
                     </div>
                 </div>
 
-                
                 {/* Seller Info */}
                 <div className="card mb-4" id="seller-info">
                     {filteredShop.map((shop) => (
@@ -512,7 +470,6 @@ export function Products() {
                     </div>
                 </div>
             </div>
-            
         </>
     );
 }

@@ -12,15 +12,13 @@ export const getCart = async (req, res) =>{
 
 export const createCart = async (req, res) => {
     try {
-        const { userkey, pquantity, variation, productkey, colorkey, ptotal } = req.body;
+        const { userkey, pquantity, variation, productkey, ptotal } = req.body;
 
-        // Allow colorkey and variation to be null
         const cartInfo = {
             userkey,
             pquantity,
             variation: variation || null,
             productkey,
-            colorkey: colorkey || null,
             ptotal,
         };
 
