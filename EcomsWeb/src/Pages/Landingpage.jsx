@@ -21,7 +21,12 @@ export function Landingpage(){
                 
             </div>
             <div className="row ">
-                <h3 className="col text-center bg-secondary rounded-1 p-4 m-2 mb-3 shadow-lg">
+                <h3 className="col text-center rounded-1 p-4 m-2 mb-3 shadow-lg"
+                style={{ 
+                    fontSize: "2rem", 
+                    background: "linear-gradient(to right, lightblue, #FE7743)", 
+                    color: "white" 
+                }}>
                     R a n d o m P r o d u c t s
                 </h3>
             </div>

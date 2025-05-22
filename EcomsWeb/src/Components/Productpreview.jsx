@@ -53,7 +53,7 @@ export function Productpreview({ filterTerm = "" }) {
           <div className="col-sm-2 px-1 py-1" key={productInfo.pid}>
             <Link
               to={`/products/${productInfo.pid}`} // Link to the product page with the product ID
-              className="card btn btn-outline-secondary me-2"
+              className="card btn btn-outline-dark me-2"
               style={{
                 boxShadow:
                   "0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
@@ -61,7 +61,8 @@ export function Productpreview({ filterTerm = "" }) {
             >
               <img
                 src={productInfo.pimageurl}
-                style={{ minHeight: "10rem", maxHeight: "10rem" }}
+                style={{ minHeight: "12rem", maxHeight: "10rem" }}
+                className="rounded-2"
                 alt={productInfo.pname}
               />
               <div className="card-body">
@@ -76,10 +77,10 @@ export function Productpreview({ filterTerm = "" }) {
                 <div className="row">
                   <div className="col px-0">
                     <div
-                      className="card-text text-start"
-                      style={{ fontSize: "15px" }}
+                      className="card-text text-start fw-bold"
+                      style={{ fontSize: "17px" }}
                     >
-                      ₱{productInfo.pprice}
+                      ₱{productInfo.pprice}.00
                     </div>
                   </div>
                   <div className="col px-0">
@@ -87,7 +88,7 @@ export function Productpreview({ filterTerm = "" }) {
                       className="card-text text-end"
                       style={{ fontSize: "15px" }}
                     >
-                      Sold: {productInfo.ptotalsales}
+                      {productInfo.ptotalsales} sold
                     </div>
                   </div>
                 </div>

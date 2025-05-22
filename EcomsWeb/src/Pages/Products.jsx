@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Navbar } from "../Components/Navbar";
 import { Productpreview } from "../Components/Productpreview";
+import { Footer } from "../Components/Footer";
 
 export function Products() {
     const { productId } = useParams(); // Get the product ID from the URL
@@ -17,8 +18,8 @@ export function Products() {
     const [quantity, setQuantity] = useState(1); // State for quantity
     const [selectedVariation, setSelectedVariation] = useState(null); // State for selected variation
     const userKey = localStorage.getItem("userkey"); // Get user key from localStorage
+    const [previewImages, setPreviewImages] = useState([]);  
 
-    
     
         const handleAddToCart = async () => {
         if (!userKey || userKey === "0") {
@@ -51,6 +52,58 @@ export function Products() {
             alert("Failed to add product to cart. Please try again.");
         }
     };
+
+    const [newReview, setNewReview] = useState({
+        reviewtitle: "",
+        reviewdesc: "",
+        reviewimage1: "",
+        reviewimage2: "",
+        reviewimage3: "",
+        reviewimage4: "",
+        reviewscore: 5,
+        productkey: productId, // assumes productId is from useParams()
+        userkey: userKey,      // userKey from localStorage
+        });
+
+        const handleSubmitReview = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post("http://localhost:3000/api/reviews", newReview);
+            // Append new review to reviewData to trigger update in average rating
+            setReviewData([...reviewData, response.data]);
+            // Reset the review fields
+            setNewReview({
+            reviewtitle: "",
+            reviewdesc: "",
+            reviewimage1: "",
+            reviewimage2: "",
+            reviewimage3: "",
+            reviewimage4: "",
+            reviewscore: 5,
+            productkey: productId,
+            userkey: userKey,
+            });
+            // Hide the modal programmatically
+            const modalEl = document.getElementById("writeReviewModal");
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+        } catch (err) {
+            console.error("Error submitting review:", err);
+            alert("Error submitting review. Please try again.");
+        }
+        };
+
+    useEffect(() => {
+        const fetchProduct = async () => {
+            try {
+                const response = await axios.get(`http://localhost:3000/api/preview`);
+                setPreviewImages(response.data); // Set the images data
+            } catch (err) {
+                setError(err.message);
+            }
+        };
+        fetchProduct();
+    }, []);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -131,6 +184,12 @@ export function Products() {
         fetchData();
     }, []);
 
+    
+
+    const filteredpreviewImages = previewImages.filter(
+        (p) => p.productkey?.toString() === productId?.toString()
+    );
+
     const filteredImages = imageData.filter(
         (p) => p.productkey?.toString() === productId?.toString()
     );
@@ -164,6 +223,22 @@ export function Products() {
     const filledStars = Math.floor(averageReviewScore); // Number of solid stars
     const emptyStars = 5 - filledStars; // Number of hollow stars
 
+    // Update product rating whenever roundedAverageScore (and product) changes
+    useEffect(() => {
+        if (product) {
+            const updateProductRating = async () => {
+                try {
+                    await axios.put(`http://localhost:3000/api/product/${product.pid}`, {
+                        pratings: roundedAverageScore,
+                    });
+                } catch (err) {
+                    console.error("Error updating product rating:", err);
+                }
+            };
+            updateProductRating();
+        }
+    }, [roundedAverageScore, product]);
+
     if (loading) {
         return <p>Loading product details...</p>;
     }
@@ -175,24 +250,77 @@ export function Products() {
     if (!product) {
         return <p>Product not found.</p>;
     }
+    // Compute whether the current user already submitted a review for this product
+    const userReviewExists = reviewData.some(
+    (review) =>
+        review.productkey?.toString() === productId?.toString() &&
+        review.userkey?.toString() === userKey?.toString()
+    );
 
     return (
         <>
             <Navbar />
             <div className="container mt-5">
                 {/* Product Display */}
-                <div className="card mb-4 position-relative" id="product-display">
+                <div className="card mb-4 position-relative shadow-lg" id="product-display">
                     <div className="card-body row">
                         <div className="col-md-5">
                             <div className="img-wrapper mb-3">
-                                <img
-                                    src={product.pimageurl}
-                                    className="img-fluid"
-                                    alt={product.pname}
-                                    style={{ cursor: "pointer" }}
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#imageModal"
-                                />
+                                <div id="previewCarousel" className="carousel slide" data-bs-ride="carousel">
+                                    <div className="carousel-indicators">
+                                        {filteredpreviewImages.map((image, index) => (
+                                        <button
+                                            key={index}
+                                            type="button"
+                                            data-bs-target="#previewCarousel"
+                                            data-bs-slide-to={index}
+                                            className={index === 0 ? "active" : ""}
+                                            aria-current={index === 0 ? "true" : ""}
+                                            aria-label={`Slide ${index + 1}`}
+                                        ></button>
+                                        ))}
+                                    </div>
+                                    <div className="carousel-inner">
+                                        {filteredpreviewImages.map((image, index) => (
+                                        <div
+                                            className={`carousel-item ${index === 0 ? "active" : ""}`}
+                                            key={image.pimages}
+                                        >
+                                            <img
+                                            src={image.pimages}
+                                            className="d-block w-100 img-fluid"
+                                            alt={image.previewname}
+                                            style={{ cursor: "pointer" }}
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#imageModal"
+                                            />
+                                        </div>
+                                        ))}
+                                    </div>
+                                    <button
+                                        className="carousel-control-prev"
+                                        type="button"
+                                        data-bs-target="#previewCarousel"
+                                        data-bs-slide="prev"
+                                    >
+                                        <i class="bi bi-caret-left-fill text-dark"
+                                            style={{ fontSize: "2rem", cursor: "pointer" }}
+                                        ></i>
+                                        <span className="visually-hidden">Previous</span>
+                                    </button>
+                                    <button
+                                        className="carousel-control-next"
+                                        type="button"
+                                        data-bs-target="#previewCarousel"
+                                        data-bs-slide="next"
+                                    >
+                                        <i class="bi bi-caret-right-fill text-dark"
+                                            style={{ fontSize: "2rem", cursor: "pointer" }}
+                                        ></i>
+                                        <span className="visually-hidden">Next</span>
+                                    </button>
+                                    </div>
+                                
                             </div>
                             <div className="d-flex gap-2">
                                 {product.thumbnails?.map((thumbnail, index) => (
@@ -284,7 +412,7 @@ export function Products() {
                 </div>
 
                 {/* Seller Info */}
-                <div className="card mb-4" id="seller-info">
+                <div className="card mb-4 shadow-lg" id="seller-info">
                     {filteredShop.map((shop) => (
                         <div className="card-body d-flex align-items-center">
                             <img
@@ -303,7 +431,7 @@ export function Products() {
                 </div>
 
                 {/* Product Information */}
-                <div className="card mb-4" id="product-information">
+                <div className="card mb-4 shadow-lg" id="product-information">
                     <div className="card-body">
                         <div className="row d-flex">
                             <div className="col">
@@ -324,7 +452,7 @@ export function Products() {
                         </div>
                         <p className="text-muted">{product.pdesc}</p>
                         <div className="collapse" id="productInfoCollapse">
-                            {filteredImages.map((image) => (
+                            {   filteredImages.map((image) => (
                                 <img
                                     src={image.pimage}
                                     className="img-fluid mb-2"
@@ -336,9 +464,23 @@ export function Products() {
                 </div>
 
                 {/* Ratings & Reviews */}
-                <div className="card mb-4" id="ratings-reviews">
+                <div className="card mb-4 shadow-lg" id="ratings-reviews">
                     <div className="card-body">
-                        <h5>Ratings & Reviews</h5>
+                        <div className="row">
+                            <div className="col">
+                                <h5>Ratings & Reviews</h5>
+                            </div>
+                            <div className="col text-end">
+                                <button
+                                    className="btn btn-outline-success btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#writeReviewModal"
+                                    >
+                                    Write a Review
+                                </button>
+                            </div>
+                        </div>
+                        
                         <div className="row">
                             {filteredReviews.map((review, index) => {
                                 const reviewId = review.reviewid || `fallback-${index}`;
@@ -353,16 +495,18 @@ export function Products() {
                                 ].filter((img) => img);
 
                                 return (
-                                    <div className="col-md-2" key={reviewId}>
+                                    <div className="col-md-3" key={reviewId}>
                                         <div
-                                            className="card p-2"
+                                            className="card p-2 shadow-lg"
                                             style={{ minHeight: "200px", maxHeight: "200px", overflowY: "auto" }}
                                         >
-                                            <div className="d-flex align-items-center mb-2">
+                                            <div className="row">
+                                                
+                                                <div className="d-flex align-items-center mb-2">
                                                 {reviewer ? (
                                                     <>
                                                         <img
-                                                            src={reviewer.consumerimage}
+                                                            src={reviewer.consumerimage ||  "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"}
                                                             className="rounded-circle me-2"
                                                             style={{ width: "40px", height: "40px" }}
                                                             alt="Reviewer"
@@ -372,13 +516,22 @@ export function Products() {
                                                 ) : (
                                                     <p className="text-muted">Unknown Reviewer</p>
                                                 )}
+                                                </div>
+                                                <div className="row">
+                                                    <div className="col">
+                                                        <small className="text-muted ps-1 pe-1"> {review.reviewscore}</small>
+                                                    {"★".repeat(review.reviewscore)}
+                                                    {"☆".repeat(5 - review.reviewscore)}
+                                                    </div>
+                                                    
+                                                </div>
                                             </div>
-                                            <p className="small">{review.reviewdesc}</p>
-                                            <div className="text-warning">
-                                                <small className="text-muted">{review.reviewscore} </small>
-                                                {"★".repeat(review.reviewscore)}
-                                                {"☆".repeat(5 - review.reviewscore)}
+                                            
+                                            <p className="small fw-bold">{review.reviewtitle}</p>
+                                            <div className="card p-1">
+                                                <p className="small">{review.reviewdesc}</p>
                                             </div>
+                                            
                                             {reviewImages.length > 0 && (
                                                 <button
                                                     className="btn btn-outline-secondary btn-sm mt-2"
@@ -432,7 +585,7 @@ export function Products() {
                 </div>
 
                 {/* Recommendation */}
-                <div className="card mb-4" id="recommendation">
+                <div className="card mb-4 shadow-lg" id="recommendation">
                     <div className="card-body">
                         <h5>Recommendation</h5>
                         <p className="text-muted">You might also like:</p>
@@ -443,43 +596,92 @@ export function Products() {
                 </div>
             </div>
 
-            {/* Carousel Modal */}
-            <div className="modal fade" id="imageModal" tabIndex="-1" aria-hidden="true">
-                <div className="modal-dialog modal-dialog-centered modal-lg">
-                    <div className="modal-content bg-dark text-white">
-                        <div className="modal-body p-0">
-                            <div id="productCarousel" className="carousel slide" data-bs-ride="carousel">
-                                <div className="carousel-inner">
-                                    {product.images?.map((image, index) => (
-                                        <div
-                                            className={`carousel-item ${index === 0 ? "active" : ""}`}
-                                            key={index}
-                                        >
-                                            <img src={image} className="d-block w-100 img-fluid" alt={`Product Image ${index + 1}`} />
-                                        </div>
-                                    ))}
-                                </div>
-                                <button
-                                    className="carousel-control-prev"
-                                    type="button"
-                                    data-bs-target="#productCarousel"
-                                    data-bs-slide="prev"
-                                >
-                                    <span className="carousel-control-prev-icon"></span>
-                                </button>
-                                <button
-                                    className="carousel-control-next"
-                                    type="button"
-                                    data-bs-target="#productCarousel"
-                                    data-bs-slide="next"
-                                >
-                                    <span className="carousel-control-next-icon"></span>
-                                </button>
-                            </div>
-                        </div>
+            <div className="modal fade" id="writeReviewModal" tabIndex="-1" aria-labelledby="writeReviewModalLabel" aria-hidden="true">
+            <div className="modal-dialog">
+                <form className="modal-content" onSubmit={handleSubmitReview}>
+                <div className="modal-header">
+                    <h5 className="modal-title" id="writeReviewModalLabel">Write a Review</h5>
+                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div className="modal-body">
+                    <div className="mb-3">
+                    <label className="form-label">Review Title</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={newReview.reviewtitle}
+                        onChange={(e) => setNewReview({ ...newReview, reviewtitle: e.target.value })}
+                        required
+                    />
+                    </div>
+                    <div className="mb-3">
+                    <label className="form-label">Review Description</label>
+                    <textarea
+                        className="form-control"
+                        rows="3"
+                        value={newReview.reviewdesc}
+                        onChange={(e) => setNewReview({ ...newReview, reviewdesc: e.target.value })}
+                        required
+                    ></textarea>
+                    </div>
+                    <div className="mb-3">
+                    <label className="form-label">Review Image URL 1</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={newReview.reviewimage1}
+                        onChange={(e) => setNewReview({ ...newReview, reviewimage1: e.target.value })}
+                    />
+                    </div>
+                    <div className="mb-3">
+                    <label className="form-label">Review Image URL 2</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={newReview.reviewimage2}
+                        onChange={(e) => setNewReview({ ...newReview, reviewimage2: e.target.value })}
+                    />
+                    </div>
+                    <div className="mb-3">
+                    <label className="form-label">Review Image URL 3</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={newReview.reviewimage3}
+                        onChange={(e) => setNewReview({ ...newReview, reviewimage3: e.target.value })}
+                    />
+                    </div>
+                    <div className="mb-3">
+                    <label className="form-label">Review Image URL 4</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={newReview.reviewimage4}
+                        onChange={(e) => setNewReview({ ...newReview, reviewimage4: e.target.value })}
+                    />
+                    </div>
+                    <div className="mb-3">
+                    <label className="form-label">Review Score (1-5)</label>
+                    <input
+                        type="number"
+                        className="form-control"
+                        value={newReview.reviewscore}
+                        onChange={(e) => setNewReview({ ...newReview, reviewscore: Number(e.target.value) })}
+                        min="1"
+                        max="5"
+                        required
+                    />
                     </div>
                 </div>
+                <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" className="btn btn-primary">Submit Review</button>
+                </div>
+                </form>
             </div>
+            </div>
+
+            <Footer/>
         </>
     );
 }
