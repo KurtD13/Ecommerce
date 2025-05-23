@@ -41,6 +41,14 @@ export function Navbar(){
                 data-bs-toggle="modal"
                 data-bs-target="#loginModal">Login</button>
 
+                <Link
+              to="/sellerpage"
+              className="btn me-2"
+              style={{ background: "#FE7743", color: "#EFEEEA" }}
+            >
+              Seller
+            </Link>
+
             <Link to="/profilepage" style={{background:"#FE7743", color:'#EFEEEA'}} className="btn"><i className="bi bi-person-fill"></i></Link>
           </div>
         </div>
