@@ -14,12 +14,21 @@ export function Products() {
     const [shopData, setShopData] = useState([]);
     const [imageData, setImageData] = useState([]);
     const [reviewData, setReviewData] = useState([]);
+    const [updateData, setUpdateData] = useState([]);
     const [reviewerInfo, setReviewerInfo] = useState([]);
     const [quantity, setQuantity] = useState(1); // State for quantity
     const [selectedVariation, setSelectedVariation] = useState(null); // State for selected variation
     const userKey = localStorage.getItem("userkey"); // Get user key from localStorage
     const [previewImages, setPreviewImages] = useState([]);  
+    const [selectedImage, setSelectedImage] = useState(null);
 
+        const handleExpandImage = (img) => {
+            setSelectedImage(img);
+            const modalEl = document.getElementById("imageExpandModal");
+            const modal = new bootstrap.Modal(modalEl, {});
+            modal.show();
+        };
+            
     
         const handleAddToCart = async () => {
         if (!userKey || userKey === "0") {
@@ -50,6 +59,17 @@ export function Products() {
         } catch (err) {
             console.error("Error adding to cart:", err);
             alert("Failed to add product to cart. Please try again.");
+        }
+    };
+
+    const handleDelete = async (previewsid) => {
+        try {
+            await axios.delete(`http://localhost:3000/api/reviews/${previewsid}`);
+            await refreshReviews();
+            alert("Review deleted successfully.");
+        } catch (err) {
+            console.error("Error deleting review:", err);
+            alert("Failed to delete review. Please try again.");
         }
     };
 
@@ -89,7 +109,55 @@ export function Products() {
             modal.hide();
         } catch (err) {
             console.error("Error submitting review:", err);
-            alert("Error submitting review. Please try again.");
+            alert("Error submitting review.");
+        }
+        };
+
+        const [updateReview, setUpdateReview] = useState({
+        reviewtitle: "",
+        reviewdesc: "",
+        reviewimage1: "",
+        reviewimage2: "",
+        reviewimage3: "",
+        reviewimage4: "",
+        reviewscore: 5,
+        productkey: productId, // assumes productId is from useParams()
+        userkey: userKey,      // userKey from localStorage
+        });
+
+        const refreshReviews = async () => {
+            try {
+                const response = await axios.get("http://localhost:3000/api/reviews");
+                setReviewData(response.data || []);
+            } catch (err) {
+                console.error("Error refreshing reviews:", err);
+            }
+        };
+
+        const handleUpdateReview = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.put(`http://localhost:3000/api/reviews/${userKey}`, updateReview);
+            setUpdateData([...updateData, response.data]);
+            await refreshReviews();
+            setUpdateReview({
+            reviewtitle: "",
+            reviewdesc: "",
+            reviewimage1: "",
+            reviewimage2: "",
+            reviewimage3: "",
+            reviewimage4: "",
+            reviewscore: 5,
+            productkey: productId,
+            userkey: userKey,
+            });
+            const modalEl = document.getElementById("updateReviewModal");
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+            
+        } catch (err) {
+            console.error("Error submitting review:", err);
+            alert("Error submitting review.");
         }
         };
 
@@ -250,11 +318,10 @@ export function Products() {
     if (!product) {
         return <p>Product not found.</p>;
     }
-    // Compute whether the current user already submitted a review for this product
-    const userReviewExists = reviewData.some(
-    (review) =>
-        review.productkey?.toString() === productId?.toString() &&
-        review.userkey?.toString() === userKey?.toString()
+    const userReview = reviewData.find(
+        (review) =>
+            review.productkey?.toString() === productId?.toString() &&
+            review.userkey?.toString() === userKey?.toString()
     );
 
     return (
@@ -466,18 +533,28 @@ export function Products() {
                 {/* Ratings & Reviews */}
                 <div className="card mb-4 shadow-lg" id="ratings-reviews">
                     <div className="card-body">
-                        <div className="row">
+                       <div className="row">
                             <div className="col">
                                 <h5>Ratings & Reviews</h5>
                             </div>
                             <div className="col text-end">
-                                <button
-                                    className="btn btn-outline-success btn-sm"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#writeReviewModal"
+                                {userReview ? (
+                                    <button
+                                        className="btn btn-outline-primary btn-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#updateReviewModal"
                                     >
-                                    Write a Review
-                                </button>
+                                        Update Review
+                                    </button>
+                                ) : (
+                                    <button
+                                        className="btn btn-outline-success btn-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#writeReviewModal"
+                                    >
+                                        Write a Review
+                                    </button>
+                                )}
                             </div>
                         </div>
                         
@@ -498,91 +575,68 @@ export function Products() {
                                     <div className="col-md-3" key={reviewId}>
                                         <div
                                             className="card p-2 shadow-lg"
-                                            style={{ minHeight: "200px", maxHeight: "200px", overflowY: "auto" }}
+                                            style={{ minHeight: "200px", maxHeight: "200px", overflowY: "auto", overflowX: "hidden" }}
                                         >
                                             <div className="row">
-                                                
-                                                <div className="d-flex align-items-center mb-2">
-                                                {reviewer ? (
-                                                    <>
-                                                        <img
-                                                            src={reviewer.consumerimage ||  "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"}
-                                                            className="rounded-circle me-2"
-                                                            style={{ width: "40px", height: "40px" }}
-                                                            alt="Reviewer"
-                                                        />
-                                                        {reviewer.consumerfirstname || "Unknown"}
-                                                    </>
-                                                ) : (
-                                                    <p className="text-muted">Unknown Reviewer</p>
-                                                )}
+                                                <div className="col-5 d-flex align-items-center mb-2">
+                                                    {reviewer ? (
+                                                        <>
+                                                            <img
+                                                                src={reviewer.consumerimage || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"}
+                                                                className="rounded-circle me-2"
+                                                                style={{ width: "40px", height: "40px" }}
+                                                                alt="Reviewer"
+                                                            />
+                                                            {reviewer.consumerfirstname || "Unknown"}
+                                                        </>
+                                                    ) : (
+                                                        <p className="text-muted">Unknown Reviewer</p>
+                                                    )}
                                                 </div>
-                                                <div className="row">
-                                                    <div className="col">
-                                                        <small className="text-muted ps-1 pe-1"> {review.reviewscore}</small>
+                                                <div className="col-5 text-end pt-2">
+                                                    <span className="text-muted">{review.reviewscore} </span>
                                                     {"★".repeat(review.reviewscore)}
                                                     {"☆".repeat(5 - review.reviewscore)}
-                                                    </div>
-                                                    
                                                 </div>
+                                                {userKey.toString() === review.userkey.toString() && (
+                                                    <div className="col-2 text-end pt-2 pe-2">
+                                                        <button
+                                                            className="btn btn-sm btn-outline-danger"
+                                                            onClick={() => handleDelete(review.previewsid)}
+                                                        >
+                                                            <i className="bi bi-trash3"></i>
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
-                                            
-                                            <p className="small fw-bold">{review.reviewtitle}</p>
-                                            <div className="card p-1">
-                                                <p className="small">{review.reviewdesc}</p>
-                                            </div>
-                                            
-                                            {reviewImages.length > 0 && (
-                                                <button
-                                                    className="btn btn-outline-secondary btn-sm mt-2"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target={`#reviewImagesModal-${reviewId}`}
-                                                >
-                                                    View Images
-                                                </button>
-                                            )}
 
-                                            {/* Modal for Review Images */}
-                                            <div
-                                                className="modal fade"
-                                                id={`reviewImagesModal-${reviewId}`}
-                                                tabIndex="-1"
-                                                aria-hidden="true"
-                                            >
-                                                <div className="modal-dialog modal-dialog-centered modal-lg">
-                                                    <div className="modal-content">
-                                                        <div className="modal-header">
-                                                            <h5 className="modal-title">Review Images</h5>
-                                                            <button
-                                                                type="button"
-                                                                className="btn-close"
-                                                                data-bs-dismiss="modal"
-                                                                aria-label="Close"
-                                                            ></button>
-                                                        </div>
-                                                        <div className="modal-body">
-                                                            <div className="row">
-                                                                {reviewImages.map((image, imgIndex) => (
-                                                                    <div className="col-md-6 mb-3" key={imgIndex}>
-                                                                        <img
-                                                                            src={image}
-                                                                            className="img-fluid rounded"
-                                                                            alt={`Review Image ${imgIndex + 1}`}
-                                                                        />
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                            <p className="small fw-bold ps-1 mb-1">{review.reviewtitle || "No Title"}</p>
+                                            <p className="small text-secondary ps-1 mb-0" style={{ fontSize: "10px" }}>Description</p>
+                                            <div className="card p-1">
+                                                <p className="small p-1">{review.reviewdesc}</p>
+                                            </div>
+                                            {/* Inline images row */}
+                                            {reviewImages.length > 0 && (
+                                                <div style={{ display: "flex", gap: "5px", flexWrap: "wrap", marginTop: "5px" }}>
+                                                    {reviewImages.map((img, idx) => (
+                                                        <img
+                                                            key={idx}
+                                                            src={img}
+                                                            className="img-thumbnail"
+                                                            alt={`Review ${idx + 1}`}
+                                                            style={{ width: "23%", height:"4rem", cursor: "pointer" }}
+                                                            onClick={() => handleExpandImage(img)}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                                        );
+                                    })}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
 
                 {/* Recommendation */}
                 <div className="card mb-4 shadow-lg" id="recommendation">
@@ -596,6 +650,30 @@ export function Products() {
                 </div>
             </div>
 
+            {/*Expand Image for Reviews */}                        
+            <div className="modal fade" id="imageExpandModal" tabIndex="-1" aria-hidden="true">
+                <div className="modal-dialog modal-dialog-centered modal-lg">
+                    <div className="modal-content">
+                        <div className="modal-body p-0">
+                            {selectedImage && (
+                                <img src={selectedImage} alt="Expanded" className="img-fluid" style={{ width: "100%" }} />
+                            )}
+                        </div>
+                        <div className="modal-footer">
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
+                                data-bs-dismiss="modal"
+                                onClick={() => setSelectedImage(null)}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {/*Write review modal*/}
             <div className="modal fade" id="writeReviewModal" tabIndex="-1" aria-labelledby="writeReviewModalLabel" aria-hidden="true">
             <div className="modal-dialog">
                 <form className="modal-content" onSubmit={handleSubmitReview}>
@@ -676,6 +754,91 @@ export function Products() {
                 <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" className="btn btn-primary">Submit Review</button>
+                </div>
+                </form>
+            </div>
+            </div>
+
+            <div className="modal fade" id="updateReviewModal" tabIndex="-1" aria-labelledby="updateReviewModalLabel" aria-hidden="true">
+            <div className="modal-dialog">
+                <form className="modal-content" onSubmit={handleUpdateReview}>
+                <div className="modal-header">
+                    <h5 className="modal-title" id="updateReviewModalLabel">Write a Review</h5>
+                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div className="modal-body">
+                    <div className="mb-3">
+                    <label className="form-label">Review Title</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={updateReview.reviewtitle}
+                        onChange={(e) => setUpdateReview({ ...updateReview, reviewtitle: e.target.value })}
+                        required
+                    />
+                    </div>
+                    <div className="mb-3">
+                    <label className="form-label">Review Description</label>
+                    <textarea
+                        className="form-control"
+                        rows="3"
+                        value={updateReview.reviewdesc}
+                        onChange={(e) => setUpdateReview({ ...updateReview, reviewdesc: e.target.value })}
+                        required
+                    ></textarea>
+                    </div>
+                    <div className="mb-3">
+                    <label className="form-label">Review Image URL 1</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={updateReview.reviewimage1}
+                        onChange={(e) => setUpdateReview({ ...updateReview, reviewimage1: e.target.value })}
+                    />
+                    </div>
+                    <div className="mb-3">
+                    <label className="form-label">Review Image URL 2</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={updateReview.reviewimage2}
+                        onChange={(e) => setUpdateReview({ ...updateReview, reviewimage2: e.target.value })}
+                    />
+                    </div>
+                    <div className="mb-3">
+                    <label className="form-label">Review Image URL 3</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={updateReview.reviewimage3}
+                        onChange={(e) => setUpdateReview({ ...updateReview, reviewimage3: e.target.value })}
+                    />
+                    </div>
+                    <div className="mb-3">
+                    <label className="form-label">Review Image URL 4</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={updateReview.reviewimage4}
+                        onChange={(e) => setUpdateReview({ ...updateReview, reviewimage4: e.target.value })}
+                    />
+                    </div>
+                    <div className="mb-3">
+                    <label className="form-label">Review Score (1-5)</label>
+                    <input
+                        type="number"
+                        className="form-control"
+                        value={updateReview.reviewscore}
+                        onChange={(e) => setUpdateReview({ ...updateReview, reviewscore: Number(e.target.value) })}
+                        min="1"
+                        max="5"
+                        required
+                    />
+                    </div>
+                </div>
+                <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" className="btn btn-primary">Update Review</button>
                 </div>
                 </form>
             </div>

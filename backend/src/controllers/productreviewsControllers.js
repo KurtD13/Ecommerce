@@ -26,9 +26,9 @@ export const createReviews = async (req, res) => {
 export const updateReviews = async (req, res) => {
     try{
         console.log("REQ BODY:", req.body);
-        const previewsid = req.params.previewsid;
+        const userkey = req.params.userkey;
         const reviewsInfo = req.body;   
-        const updatedreviews = await Service.updateReviews(previewsid, reviewsInfo)
+        const updatedreviews = await Service.updateReviews(userkey, reviewsInfo)
         if(!updatedreviews){
             return res.status(404).json({message: 'reviews not found'});
         }

@@ -14,11 +14,11 @@ export const createReviews = async(reviesInfo) => {
     return rows[0];
 }
 
-export const updateReviews = async(previewsid, reviesInfo) => {
-    const{ reviewtitle, reviewdesc, reviewimage1, reviewimage2, reviewimage3, reviewimage4, productkey, userkey, reviewscore  } = reviesInfo;
+export const updateReviews = async(userkey, reviewsInfo) => {
+    const{ reviewtitle, reviewdesc, reviewimage1, reviewimage2, reviewimage3, reviewimage4, productkey, reviewscore  } = reviewsInfo;
     const { rows } = await query (
-        'UPDATE product_reviews SET reviewtitle = $1, reviewdesc = $2, reviewimage1 = $3, reviewimage2 = $4, reviewimage3 = $5, reviewimage4 = $6, productkey = $7, userkey = $8, reviewscore = $9 WHERE previewsid = $10 RETURNING *',
-        [ reviewtitle, reviewdesc, reviewimage1, reviewimage2, reviewimage3, reviewimage4, productkey, userkey, reviewscore, previewsid ]
+        'UPDATE product_reviews SET reviewtitle = $1, reviewdesc = $2, reviewimage1 = $3, reviewimage2 = $4, reviewimage3 = $5, reviewimage4 = $6, productkey = $7, reviewscore = $8 WHERE userkey = $9 RETURNING *',
+        [ reviewtitle, reviewdesc, reviewimage1, reviewimage2, reviewimage3, reviewimage4, productkey,  reviewscore, userkey ]
     );
     return rows[0];
 }
