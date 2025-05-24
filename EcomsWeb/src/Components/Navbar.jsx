@@ -15,6 +15,8 @@ export function Navbar() {
     }
   };
 
+  
+
   return (
     <nav className="navbar navbar-expand-lg py-3" style={{ backgroundColor: "#273F4F" }}>
       <div className="container">
@@ -88,18 +90,30 @@ export function Navbar() {
           )}
 
           {isLoggedIn && (
-            <Link
+            <>
+             <Link
               to="/profilepage"
               style={{ background: "#FE7743", color: "#EFEEEA" }}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e8602c")}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#FE7743")}
-              className="btn"
+              className="btn me-2"
             >
               <i className="bi bi-person-fill"></i>
             </Link>
+
+            </>
           )}
+
+          <Link
+                  to="/sellerpage"
+                  className="btn me-2"
+                  style={{ background: "#FE7743", color: "#EFEEEA" }}
+                >
+              Seller
+            </Link>
+            
+          </div>
         </div>
-      </div>
     </nav>
   );
 }

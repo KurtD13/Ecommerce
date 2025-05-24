@@ -9,6 +9,9 @@ import { Products } from './Pages/Products';
 import { Productpreview } from './Components/Productpreview';
 import { Checkoutpage } from './Pages/Checkout';
 import { AuthProvider } from './Contexts/AuthContext'; // Import AuthProvider
+import { useState } from 'react'
+import { SellerDashboard } from './Pages/SellerDashboard'
+import { Sellerproducts } from './Pages/Sellerproducts'
 
 function App() {
   return (
@@ -26,6 +29,15 @@ function App() {
           <Route path="/products/:productId" element={<Products />} />
           <Route path="/productsearch" element={<Productpreview />} />
           <Route path="/productpreview" element={<Productpreview />} />
+          <Route path="/" element={<Landingpage/>}/>
+          <Route path="/loginpage" element={<Loginpage/>}/>
+          <Route path="/cartpage" element={<Cartpage/>}/>
+          <Route path="/checkout" element={<Checkoutpage/>}/>
+          <Route path="/resultpage" element={<Resultpage/>}/>
+          <Route path="/profilepage" element={<Profilepage/>}/>
+          <Route path="/signup" element={<Signup/>}/>
+          <Route path="/sellerpage" element={<SellerDashboard/>}/>
+          <Route path="/sellerproducts" element={<Sellerproducts/>}/>
         </Routes>
       </Router>
     </AuthProvider>
