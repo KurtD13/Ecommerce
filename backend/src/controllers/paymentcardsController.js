@@ -57,3 +57,17 @@ export const deleteCards = async (req, res) => {
         res.status(500).json({message: 'Internal Server Error'});
     }
 };
+
+export const getUserCard = async (req, res) => {
+  try {
+    const userid = req.params.q;
+    const userCard = await Service.getUserCard(userid);
+    if (!userCard) {
+      return res.status(404).json({ message: "Cards not found" });
+    }
+    res.status(200).json(userCard);
+  } catch (err) {
+    console.error("Error fetching user cards:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

@@ -7,5 +7,7 @@ router.get('/ewallet', controller.getEwallet);
 router.post('/ewallet', controller.createEwallet);
 router.put('/ewallet/:epaymentid', controller.updateEwallet);
 router.delete('/ewallet/:epaymentid', controller.deleteEwallet);
+router.get('/ewallet/user/:q', controller.getUserEpayment)
+
 
 export default router;

@@ -2,10 +2,36 @@ import axios from "axios";
 import { Navbar } from "../Components/Navbar";
 import React, { useEffect, useState } from 'react';
 import { Modal, Button, Form, ListGroup } from 'react-bootstrap';
+import { Link, useLocation } from "react-router-dom";
+
 
 export function Checkoutpage(){
+  
   const userkey = localStorage.getItem("userkey");
+  const userKey = userkey;
   const [userAddress, setUserAddress] = useState([]);
+  const location = useLocation();
+  const { checkoutData } = location.state || { checkoutData: [] };
+  const [productData, setProductData] = useState([]);
+  const [productVariation, setProductVariation] = useState([]);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [checkoutDetails, setCheckoutDetails] = useState([]);
+  const [userContact, setUserContact] = useState([]);
+  const [epayment, setePayment] = useState([]);
+  const [cardpayment, setCardPayment] = useState([]);
+
+  
+
+ 
+  const handleRemoveProduct = (index) => {
+    setCheckoutDetails((prevDetails) => {
+      const updatedDetails = prevDetails.filter((_, i) => i !== index);
+      
+      const updatedTotal = updatedDetails.reduce((acc, item) => acc + item.subtotal, 0);
+      setTotalPrice(updatedTotal);
+      return updatedDetails;
+    });
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -18,6 +44,69 @@ export function Checkoutpage(){
     };
     fetchData();
   },[]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const productResponse = await axios.get("http://localhost:3000/api/product");
+        setProductData(productResponse.data);
+
+        const variationResponse = await axios.get("http://localhost:3000/api/variation");
+        setProductVariation(variationResponse.data);
+        
+        const phoneResponse = await axios.get(`http://localhost:3000/api/user/phone/${userKey}`);
+        setUserContact([phoneResponse.data]); // Wrap the object in an array
+
+        const ewalletResponse = await axios.get(`http://localhost:3000/api/ewallet/user/${userKey}`);
+        setePayment(ewalletResponse.data);
+
+        const cardResponse = await axios.get(`http://localhost:3000/api/cards/user/${userKey}`);
+        setCardPayment(cardResponse.data);
+
+
+      } catch (err) {
+        console.error(err.message);
+      }
+    };
+    fetchData();
+  }, []);
+
+
+useEffect(() => {
+  if (checkoutData.length > 0 && productData.length > 0 && productVariation.length > 0) {
+    let total = 0;
+    const details = checkoutData.map((item) => {
+      // Find product details
+      const product = productData.find((p) => p.pid === item.productid);
+      const productName = product?.pname || "Unknown Product";
+      const productPrice = product?.pprice || 0;
+      const productImage = product?.pimageurl;
+
+      // Find variation details IF NULL IT DEFAULTS TO EMPTY STRING
+      const variation = productVariation.find(
+        (v) => v.pvid.toString() === (item.variation ? item.variation.toString() : "")
+      );
+      const variationName = variation?.pvname || "Standard";
+
+      // Calculate subtotal
+      const subtotal = productPrice * item.quantity;
+      total += subtotal;
+
+      return {
+        productName,
+        productPrice,
+        quantity: item.quantity,
+        variationName, // Use the correct variation name
+        subtotal,
+        productImage,
+      };
+    });
+
+    setCheckoutDetails(details);
+    setTotalPrice(total);
+  }
+}, [checkoutData, productData, productVariation]);
+
 
   const filteredAddress = userAddress.filter((a) => 
     a.userkey.toString().includes(userkey?.toString())
@@ -57,19 +146,6 @@ export function Checkoutpage(){
   };
 
 
-  
-  
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      name: 'Product A',
-      unitPrice: 0.0,
-      quantity: 1,
-      selected: false,
-      imageUrl: '',
-    },
-  ]);
-
   const [message, setMessage] = useState('');
   const [vouchers, setVouchers] = useState([]);
   const [shippingOption, setShippingOption] = useState({
@@ -79,11 +155,8 @@ export function Checkoutpage(){
   const [paymentMethod, setPaymentMethod] = useState('Cash on Delivery');
   const discountAmount = 30.0;
 
-  const merchandiseTotal = products
-    .filter((p) => p.selected)
-    .reduce((acc, p) => acc + p.unitPrice * p.quantity, 0);
   const shippingTotal = shippingOption.cost;
-  const total = merchandiseTotal + shippingTotal - discountAmount;
+  const total = totalPrice + shippingTotal - discountAmount;
 
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [showShippingModal, setShowShippingModal] = useState(false);
@@ -115,7 +188,7 @@ export function Checkoutpage(){
     setShippingOption(option);
     setShowShippingModal(false);
   };
-
+  
   const selectPaymentMethod = (method) => {
     setPaymentMethod(method);
     setShowPaymentModal(false);
@@ -135,18 +208,20 @@ export function Checkoutpage(){
   let dynamicDiscount = 0;
   vouchers.forEach(v => {
     if (v.code === 'DISCOUNT10') {
-      dynamicDiscount += merchandiseTotal * 0.1;
+      dynamicDiscount += totalPrice * 0.1;
     } else if (v.code === 'FREESHIP') {
       dynamicDiscount += shippingTotal;
     }
   });
 
   const discount = dynamicDiscount > 0 ? dynamicDiscount : discountAmount;
-  const finalTotal = merchandiseTotal + shippingTotal - discount;
-
+  const finalTotal = totalPrice + shippingTotal - discount;
+  console.log("Checkout Data:", checkoutData); // Debugging
+  console.log("Product Variations:", productVariation); // Debugging
   return (
     <>
     <Navbar/>
+    
     <div className="container p-3" style={{ maxWidth: 700, fontSize: '0.85rem', fontFamily: 'Arial, sans-serif' }}>
 
       <div className="border rounded p-3 mb-3" style={{ backgroundColor: '#f8f9fa' }}>
@@ -163,9 +238,18 @@ export function Checkoutpage(){
         </div>
         <div className="d-flex mt-2" style={{ fontSize: '0.8rem', color: '#555' }}>
           <div style={{ minWidth: 90 }}>
-            <div><strong>Name</strong></div>
-            
-          </div>
+          {userContact.length > 0 ? (
+            userContact.map((contact, index) => (
+              <div key={index}>
+                <strong>Contact Info:</strong> {contact.consumerphone}
+              </div>
+            ))
+          ) : (
+            <div>
+              <strong>Contact Info:</strong> No contact information available
+            </div>
+          )}
+        </div>
           <div className="border-start ps-3 flex-grow-1" style={{ color: '#212529' }}>
                 {address.housenumber} {address.building}, {address.streetname}, {address.barangay},
                 {address.city}, {address.province}, {address.region}, {address.postalcode},
@@ -178,64 +262,47 @@ export function Checkoutpage(){
       <div className="border rounded p-3 mb-3">
         <div className="d-flex align-items-center mb-3">
           <div><strong>Product Orders</strong></div>
-          <div className="ms-auto d-flex gap-3" style={{ fontSize: '0.75rem', color: '#555' }}>
+          <div className="ms-auto d-flex gap-3 pe-3" style={{ fontSize: '0.75rem', color: '#555' }}>
             <div style={{ minWidth: 70, textAlign: 'right' }}>Unit Price</div>
             <div style={{ minWidth: 55, textAlign: 'center' }}>Quantity</div>
             <div style={{ minWidth: 80, textAlign: 'right' }}>Item Subtotal</div>
           </div>
-        </div>
-        {products.map((product) => (
-          <div key={product.id} className="d-flex align-items-center border rounded p-2 mb-2">
-            <input
-              type="checkbox"
-              className="form-check-input me-3"
-              checked={product.selected}
-              onChange={() =>
-                setProducts(prev => prev.map(p => p.id === product.id ? { ...p, selected: !p.selected } : p))
-              }
-            />
-            <div
-              style={{
-                width: 50,
-                height: 50,
-                backgroundColor: product.imageUrl ? 'transparent' : '#6c757d',
-                borderRadius: 5,
-                backgroundImage: product.imageUrl ? `url(${product.imageUrl})` : undefined,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
-            ></div>
-            <div className="flex-grow-1 ms-3" style={{ fontWeight: 600 }}>
-              {product.name}
-            </div>
-            <div style={{ minWidth: 70, textAlign: 'right' }}>
-              ₱ {product.unitPrice.toFixed(2)}
-            </div>
-            <div style={{ minWidth: 55, textAlign: 'center' }}>
-              <input
-                type="number"
-                min={1}
-                value={product.quantity}
-                onChange={(e) =>
-                  setProducts(prev =>
-                    prev.map(p =>
-                      p.id === product.id ? { ...p, quantity: parseInt(e.target.value) || 1 } : p
-                    )
-                  )
-                }
-                style={{ width: 50, textAlign: 'center' }}
-                disabled={!product.selected}
-              />
-            </div>
-            <div style={{ minWidth: 80, textAlign: 'right' }}>
-              ₱ {(product.unitPrice * product.quantity).toFixed(2)}
-            </div>
-          </div>
-        ))}
+          <div  style={{ minWidth: 70, fontSize: '0.75rem', color: '#555' }}>Delete Item</div>
+      </div>
+        {checkoutDetails.map((detail, index) => (
+  <div className="card mb-1 p-1" key={index}>
+    <div className="d-flex align-items-center rounded p-2 mb-2">
+      <img
+        src={detail.productImage}
+        style={{ maxWidth: "3rem", maxHeight: "2rem", minWidth: "3rem", minHeight: "3rem" }}
+        alt={detail.productName}
+      />
+      <div className="flex-grow-1 ms-3" style={{ fontWeight: 600 }}>
+        {detail.productName} ({detail.variationName})
+      </div>
+      <div style={{ minWidth: 70, textAlign: "right" }}>
+        ₱ {detail.productPrice.toFixed(2)}
+      </div>
+      <div style={{ minWidth: 55, textAlign: "center" }}>
+        {detail.quantity}
+      </div>
+      <div className="me-4" style={{ minWidth: 80, textAlign: "right" }}>
+        ₱ {detail.subtotal.toFixed(2)}
+      </div>
+      <button
+        className="btn btn-outline-danger btn-sm ms-3"
+        onClick={() => handleRemoveProduct(index)}
+        disabled={checkoutDetails.length <= 1} // Disable if only one product remains
+      >
+        <i className="bi bi-trash-fill"></i>
+      </button>
+    </div>
+  </div>
+))}
       </div>
 
 
-      <div className="border rounded p-3 mb-3" style={{ backgroundColor: '#f8f9fa', fontSize: '0.85rem' }}>
+      <div className="rounded p-3 mb-3" style={{ backgroundColor: '#f8f9fa', fontSize: '0.85rem' }}>
         <div className="d-flex">
           <div style={{ minWidth: 170, paddingRight: 10, borderRight: '1px solid #ced4da' }}>
             <div className="mb-2">
@@ -325,26 +392,35 @@ export function Checkoutpage(){
       <div className="border rounded p-3 d-flex justify-content-between align-items-center">
         <div style={{ fontSize: '0.85rem', color: '#555' }}>
           <div>
-            Merchandise Total: <strong>₱ {merchandiseTotal.toFixed(2)}</strong>
+            Merchandise Total: <strong>₱ {totalPrice.toFixed(2)}</strong>
           </div>
           <div>
             Shipping Total: <strong>₱ {shippingTotal.toFixed(2)}</strong>
           </div>
           <div>
-            Discounts: <strong>₱ {discount.toFixed(2)}</strong>
+            Discounts: <strong>₱ {discount.toFixed(2)}</strong><br></br>
+            _______________________________
           </div>
-          <div>
+          <div style={{fontSize:"20px"}}>
             Total: <strong>₱ {finalTotal.toFixed(2)}</strong>
           </div>
         </div>
+        <div className="row text-end ">
+        <Link 
+        className="btn btn-danger mb-2"
+        to={"/cartpage"}>
+          Cancel
+        </Link>
         <button
           type="button"
-          className="btn btn-light px-4"
+          className="btn btn-light py-4"
           style={{ fontWeight: '600', backgroundColor: '#FE7743', borderColor: '#FE7743', color: 'white' }}
           onClick={() => alert('Place order clicked')}
         >
           Place Order
         </button>
+        </div>
+        
       </div>
 
      
@@ -407,14 +483,37 @@ export function Checkoutpage(){
         </Modal.Header>
         <Modal.Body>
           <ListGroup>
-            {paymentMethods.map((method, idx) => (
+            {/* Cash on Delivery */}
+            <ListGroup.Item
+              action
+              onClick={() => selectPaymentMethod("Cash on Delivery")}
+              style={paymentMethod === "Cash on Delivery" ? { backgroundColor: '#FE7743', borderColor: '#FE7743', color: 'white' } : {}}
+            >
+              Cash on Delivery
+            </ListGroup.Item>
+
+            {/* E-wallets */}
+            {epayment.map((wallet, idx) => (
               <ListGroup.Item
                 key={idx}
                 action
-                onClick={() => selectPaymentMethod(method)}
-                style={method === paymentMethod ? { backgroundColor: '#FE7743', borderColor: '#FE7743', color: 'white' } : {}}
+                onClick={() => selectPaymentMethod((wallet.epaymenttype === 1 && "Gcash " || wallet.epaymenttype === 2 && "Paymaya ") + wallet.epaymentphone.slice(-4) )}
+                style={paymentMethod === wallet.epaymenttype ? { backgroundColor: '#FE7743', borderColor: '#FE7743', color: 'white' } : {}}
               >
-                {method}
+                <div className="fw-bold">{wallet.epaymenttype === 1 && "Gcash " || wallet.epaymenttype === 2 && "Paymaya "}</div>
+                {"Phone: 0" + wallet.epaymentphone}
+              </ListGroup.Item>
+            ))}
+
+            {/* Cards */}
+            {cardpayment.map((card, idx) => (
+              <ListGroup.Item
+                key={idx}
+                action
+                onClick={() => selectPaymentMethod(card.bankname + " " +card.cardnumber.slice(-4))}
+                style={paymentMethod === `Card ending in ${card.cardnumber}` ? { backgroundColor: '#FE7743', borderColor: '#FE7743', color: 'white' } : {}}
+              >
+                <div className="fw-bold">{card.bankname}</div>{"Card Number: ***** **** ****" + card.cardnumber.slice(-4)}
               </ListGroup.Item>
             ))}
           </ListGroup>

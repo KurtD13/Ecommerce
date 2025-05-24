@@ -61,3 +61,17 @@ export const deleteEwallet = async (req, res) => {
         res.status(500).json({message: 'Internal Server Error'});
     }
 };
+
+export const getUserEpayment = async (req, res) => {
+  try {
+    const consumerid = req.params.q;
+    const userEwallet = await Service.getUserEpayment(consumerid);
+    if (!userEwallet) {
+      return res.status(404).json({ message: "Wallet not found" });
+    }
+    res.status(200).json(userEwallet);
+  } catch (err) {
+    console.error("Error fetching user phone:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

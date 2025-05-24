@@ -103,3 +103,12 @@ export const validateUser = async (email, password) => {
     );
     return rows[0]; // Return the first matching user
 };
+
+
+export const getUserPhone = async (consumerid) => {
+  const { rows } = await query(
+    'SELECT consumerphone FROM consumer_profile WHERE consumerid = $1',
+    [consumerid]
+  );
+  return rows[0]; // Return the first matching row
+};

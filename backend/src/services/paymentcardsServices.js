@@ -33,3 +33,11 @@ export const deleteCards = async (paymentid) => {
         return rowCount > 0;
     
 }
+
+export const getUserCard = async (userkey) => {
+  const { rows } = await query(
+    'SELECT * FROM paymentmethod_cards WHERE userkey = $1',
+    [userkey]
+  );
+  return rows;
+};

@@ -85,3 +85,17 @@ export const loginUser = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
+export const getUserPhone = async (req, res) => {
+  try {
+    const consumerid = req.params.q; // Extract consumerid from the route parameter
+    const userPhone = await Service.getUserPhone(consumerid);
+    if (!userPhone) {
+      return res.status(404).json({ message: "Phone number not found" });
+    }
+    res.status(200).json(userPhone);
+  } catch (err) {
+    console.error("Error fetching user phone:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

@@ -31,3 +31,4 @@ export const deletePstatus = async (pstatusid) => {
         return rowCount > 0;
     
 }
+

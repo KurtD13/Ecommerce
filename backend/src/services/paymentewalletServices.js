@@ -32,3 +32,11 @@ export const deleteEwallet = async (epaymentid) => {
         return rowCount > 0;
     
 }
+
+export const getUserEpayment = async (userkey) => {
+  const { rows } = await query(
+    'SELECT * FROM paymentmethod_ewallet WHERE userkey = $1',
+    [userkey]
+  );
+  return rows;
+};
