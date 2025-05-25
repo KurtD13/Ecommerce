@@ -99,3 +99,18 @@ export const getUserPhone = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
+export const getuserSellerstatus = async (req, res) => {
+  try {
+    const consumerid = req.params.q; // Extract consumerid from the route parameter
+    const userSellerstatus = await Service.getuserSellerstatus(consumerid);
+    if (!userSellerstatus) {
+      return res.status(404).json({ message: "Sellerstatus not found" });
+    }
+    res.status(200).json(userSellerstatus);
+  } catch (err) {
+    console.error("Error fetching Sellerstatus:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

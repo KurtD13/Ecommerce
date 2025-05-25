@@ -1,12 +1,17 @@
 import { Link } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Contexts/AuthContext";
+import axios from "axios";
 
 export function Navbar() {
   const [searchTerm, setSearchTerm] = useState("");
   const { isLoggedIn } = useAuth(); // Access login state from context
+  const [isSeller, setIsSeller] = useState(false);
+  
   const navigate = useNavigate();
+  const userkey = localStorage.getItem("userkey");
+  let profilekey = userkey;
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -14,6 +19,27 @@ export function Navbar() {
       navigate(`/resultpage?q=${encodeURIComponent(searchTerm)}`);
     }
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3000/api/user/seller/${profilekey}`);
+        setIsSeller(response.data.consumersellerstatus); // Correctly set the seller status
+      } catch (err) {
+        console.error("Error fetching seller status:", err.message);
+      }
+    };
+
+
+      if (profilekey) {
+      fetchData(); // Call the function
+    }
+    
+  }, [profilekey]);
+  
+
+  
+
 
   
 
@@ -103,14 +129,16 @@ export function Navbar() {
 
             </>
           )}
-
-          <Link
+          {isSeller &&(
+              <Link
                   to="/sellerpage"
                   className="btn me-2"
                   style={{ background: "#FE7743", color: "#EFEEEA" }}
                 >
-              Seller
+              Shop
             </Link>
+          )}
+            
             
           </div>
         </div>

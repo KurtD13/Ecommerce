@@ -112,3 +112,11 @@ export const getUserPhone = async (consumerid) => {
   );
   return rows[0]; // Return the first matching row
 };
+
+export const getuserSellerstatus = async (consumerid) => {
+  const { rows } = await query(
+    'SELECT consumersellerstatus FROM consumer_profile WHERE consumerid = $1',
+    [consumerid]
+  );
+  return rows[0]; // Return the first matching row
+};

@@ -11,14 +11,14 @@ export function Carouselprods(){
             </div>
             <div className="carousel-inner" >
                 <div className="carousel-item active">
-                <img src="https://pulsephotography.com.au/wp-content/uploads/2017/10/16x9-placeholder.jpg" style={{maxHeight:'400px', objectFit:"cover"}} className="d-block w-100" alt="..."></img>
+                <img src="https://cf.shopee.ph/file/ph-11134258-7rase-m81cw67d8dy639_xxhdpi" style={{maxHeight:'400px', objectFit:"cover"}} className="d-block w-100" alt="..."></img>
                 <div className="carousel-caption d-none d-md-block">
                     <h5>First slide label</h5>
                     <p>Some representative placeholder content for the first slide.</p>
                 </div>
                 </div>
                 <div className="carousel-item">
-                <img src="https://pulsephotography.com.au/wp-content/uploads/2017/10/16x9-placeholder.jpg" style={{maxHeight:'400px', objectFit:"cover"}} className="d-block w-100" alt="..."></img>
+                <img src="https://img.lazcdn.com/g/tps/imgextra/i3/O1CN01mNRsAq1TQiVT5IuIH_!!6000000002377-0-tps-1976-688.jpg_2200x2200q80.jpg_.avif" style={{maxHeight:'400px', objectFit:"cover"}} className="d-block w-100" alt="..."></img>
                 <div className="carousel-caption d-none d-md-block">
                     <h5>Second slide label</h5>
                     <p>Some representative placeholder content for the second slide.</p>

@@ -10,5 +10,6 @@ router.delete('/user/:consumerid', controller.deleteUser);
 router.get('/user/search', controller.searchUser);
 router.post('/user/login', controller.loginUser);
 router.get('/user/phone/:q', controller.getUserPhone)
+router.get('/user/seller/:q', controller.getuserSellerstatus)
 
 export default router;

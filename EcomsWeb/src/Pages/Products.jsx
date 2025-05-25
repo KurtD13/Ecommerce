@@ -4,6 +4,7 @@ import axios from "axios";
 import { Navbar } from "../Components/Navbar";
 import { Productpreview } from "../Components/Productpreview";
 import { Footer } from "../Components/Footer";
+import { useNavigate } from "react-router-dom"; 
 
 export function Products() {
     const { productId } = useParams(); // Get the product ID from the URL
@@ -21,6 +22,26 @@ export function Products() {
     const userKey = localStorage.getItem("userkey"); // Get user key from localStorage
     const [previewImages, setPreviewImages] = useState([]);  
     const [selectedImage, setSelectedImage] = useState(null);
+    const navigate = useNavigate(); // Initialize navigate
+
+        const handleBuyNow = () => {
+            if (!product) {
+            alert("Product not found.");
+            return;
+            }
+
+            const checkoutData = [
+            {
+                productid: product.pid,
+                quantity: quantity,
+                variation: selectedVariation, // Pass the selected variation ID (if any)
+            },
+            ];
+
+            navigate("/checkout", { state: { checkoutData } }); // Navigate to Checkoutpage with data
+        };
+
+
 
         const handleExpandImage = (img) => {
             setSelectedImage(img);
@@ -473,7 +494,12 @@ export function Products() {
                             onClick={handleAddToCart}>
                                 Add to Cart
                             </button>
-                            <button className="btn btn-success">Buy Now</button>
+                            <button
+                                className="btn btn-success"
+                                onClick={handleBuyNow} // Call handleBuyNow on click
+                            >
+                                Buy Now
+                            </button>
                         </div>
                     </div>
                 </div>
