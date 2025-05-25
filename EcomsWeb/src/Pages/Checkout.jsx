@@ -20,8 +20,82 @@ export function Checkoutpage(){
   const [epayment, setePayment] = useState([]);
   const [cardpayment, setCardPayment] = useState([]);
 
-  
 
+const handlePlaceOrder = async () => {
+  try {
+    const userkey = localStorage.getItem("userkey");
+
+    // Determine payment type and payment ID
+    let paymenttype = 1; // Default to Cash on Delivery
+    let paymentid = null;
+
+    if (paymentMethod.includes("Gcash") || paymentMethod.includes("Paymaya")) {
+      paymenttype = 2; // E-wallet
+      const selectedWallet = epayment.find((wallet) =>
+        paymentMethod.includes(wallet.epaymentphone.slice(-4))
+      );
+      paymentid = selectedWallet?.epaymentid || null;
+    } else if (cardpayment.some((card) => paymentMethod.includes(card.cardnumber.slice(-4)))) {
+      paymenttype = 3; // Card
+      const selectedCard = cardpayment.find((card) =>
+        paymentMethod.includes(card.cardnumber.slice(-4))
+      );
+      paymentid = selectedCard?.paymentid || null;
+    }
+
+    // Prepare data for each product in checkoutDetails
+    const orderData = checkoutDetails.map((item) => {
+      const product = productData.find((p) => p.pname === item.productName);
+      const variation = productVariation.find(
+        (v) => v.pvname === item.variationName
+      );
+
+      // Calculate parcel cost
+      let parcelcost = item.productPrice * item.quantity + shippingTotal; // Include shipping cost by default
+
+      // Apply voucher if applicable
+      if (vouchers.length > 0) {
+        const voucher = vouchers[0]; // Use the first voucher
+        if (voucher.code === "DISCOUNT10") {
+          parcelcost -= item.productPrice * item.quantity * 0.1; // Apply 10% discount
+        } else if (voucher.code === "FREESHIP") {
+          parcelcost -= shippingTotal; // Apply free shipping
+        }
+      }
+
+      // Combine the shipping address into a single string
+      const shipaddress = `${address.housenumber} ${address.building}, ${address.streetname}, ${address.barangay}, ${address.city}, ${address.province}, ${address.region}, ${address.postalcode}, ${address.country}`;
+
+      // Get contact info
+      const contactinfo = userContact.length > 0 && userContact[0]?.consumerphone
+        ? userContact[0].consumerphone
+        : "No contact info";
+
+      console.log("Contact Info Sent to Backend:", contactinfo); // Debugging
+
+      return {
+        pstatus: paymenttype === 1 ? 2 : 1, // 1 for e-wallet/card, 2 for COD
+        userkey,
+        productkey: product?.pid,
+        itemquantity: item.quantity,
+        variation: variation?.pvid,
+        parcelcost,
+        paymenttype,
+        paymentid,
+        shipaddress, // Include the shipping address
+        contactinfo, // Include the contact info
+      };
+    });
+
+    // Send data to the backend
+    await axios.post("http://localhost:3000/api/pstatus", orderData);
+
+    alert("Order placed successfully!");
+  } catch (err) {
+    console.error("Error placing order:", err.message);
+    alert("Failed to place order. Please try again.");
+  }
+};
  
   const handleRemoveProduct = (index) => {
     setCheckoutDetails((prevDetails) => {
@@ -152,7 +226,7 @@ useEffect(() => {
     cost: 30.0,
   });
   const [paymentMethod, setPaymentMethod] = useState('Cash on Delivery');
-  const discountAmount = 30.0;
+  const discountAmount = 0;
 
   const shippingTotal = shippingOption.cost;
   const total = totalPrice + shippingTotal - discountAmount;
@@ -413,8 +487,8 @@ useEffect(() => {
         <button
           type="button"
           className="btn btn-light py-4"
-          style={{ fontWeight: '600', backgroundColor: '#FE7743', borderColor: '#FE7743', color: 'white' }}
-          onClick={() => alert('Place order clicked')}
+          style={{ fontWeight: "600", backgroundColor: "#FE7743", borderColor: "#FE7743", color: "white" }}
+          onClick={handlePlaceOrder}
         >
           Place Order
         </button>

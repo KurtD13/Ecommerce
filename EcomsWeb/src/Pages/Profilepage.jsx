@@ -3,6 +3,7 @@ import { Footer } from "../Components/Footer";
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { use } from "react";
+import { useNavigate } from "react-router-dom";
 
 export function Profilepage(){
    const userkey = localStorage.getItem("userkey");
@@ -1593,7 +1594,8 @@ const PurchaseSection = ({ userKey, status, productStatus }) => {
   const [userPurchase, setUserPurchase] = useState([]);
   const [productData, setProductData] = useState([]);
   const [variationData, setVariationData] = useState([]); 
-
+  const navigate = useNavigate();
+  
   useEffect(() => {
     const fetchUserPurchase = async () => {
       try {
@@ -1629,26 +1631,80 @@ const PurchaseSection = ({ userKey, status, productStatus }) => {
     fetchProductData();
   }, []);
 
-  // Filter purchases by userKey and pstatus, then enrich with product details
-  const enrichedPurchases = userPurchase
-    .filter(
-      (purchase) =>
-        purchase.userkey.toString() === purchasekey.toString() &&
-        purchase.pstatus === status
-    )
-    .map((purchase) => {
-      const product = productData.find((p) => p.pid === purchase.productkey);
-      const variation = variationData.find((v) => v.pvid === purchase.variation);
-      return {
-        purchase,
-        productName: product?.pname || "Unknown Product",
-        productPrice: (product?.pprice * purchase.itemquantity) || 0,
-        productImage: product?.pimageurl || "https://via.placeholder.com/150",
-        itemQuantity: purchase.itemquantity || 1,
-        variation: variation?.pvname || "No Variation",
-      };
+  const handleCancelOrder = async (purchaseId) => {
+  try {
+    const response = await axios.put(`http://localhost:3000/api/pstatus/cancel/${purchaseId}`, {
+      pstatus: 5, // Set pstatus to 5 (Cancelled)
     });
 
+    if (response.status === 200) {
+      // Update the local state to reflect the change
+      setUserPurchase((prevPurchases) =>
+        prevPurchases.map((purchase) =>
+          purchase.id === purchaseId ? { ...purchase, pstatus: 5 } : purchase
+        )
+      );
+      alert("Order cancelled successfully!");
+       window.location.reload();
+    }
+  } catch (err) {
+    console.error("Error cancelling order:", err.message);
+    alert("Failed to cancel order. Please try again.");
+  }
+};
+
+const handlePaynow = async (purchaseId) => {
+  try {
+    const response = await axios.put(`http://localhost:3000/api/pstatus/pay/${purchaseId}`, {
+      pstatus: 2, // Set pstatus to 2 (To Ship)
+    });
+
+    if (response.status === 200) {
+      // Update the local state to reflect the change
+      setUserPurchase((prevPurchases) =>
+        prevPurchases.map((purchase) =>
+          purchase.id === purchaseId ? { ...purchase, pstatus: 2 } : purchase
+        )
+      );
+      alert("Order paid successfully!");
+      window.location.reload(); // Refresh the page to reflect changes
+    }
+  } catch (err) {
+    console.error("Error paying order:", err.message);
+    alert("Failed to pay order. Please try again.");
+  }
+};
+
+const handlebuyagain = async (productID) => {
+  
+  navigate(`/products/${productID}`);
+};
+
+
+  
+
+  // Filter purchases by userKey and pstatus, then enrich with product details
+  const enrichedPurchases = userPurchase
+  .filter(
+    (purchase) =>
+      purchase.userkey.toString() === purchasekey.toString() &&
+      purchase.pstatus === status
+  )
+  .map((purchase) => {
+    const product = productData.find((p) => p.pid === purchase.productkey);
+    const variation = variationData.find((v) => v.pvid === purchase.variation);
+    return {
+      purchase,
+      productName: product?.pname || "Unknown Product",
+      productID: product?.pid,
+      productPrice: purchase.parcelcost || 0, 
+      shippinglocation: purchase.shipaddress,
+      contactinfo: purchase.contactinfo,
+      productImage: product?.pimageurl || "https://via.placeholder.com/150",
+      itemQuantity: purchase.itemquantity || 1,
+      variation: variation?.pvname || "No Variation",
+    };
+  });
   return (
     <section>
       <h2>{productStatus}</h2>
@@ -1665,28 +1721,57 @@ const PurchaseSection = ({ userKey, status, productStatus }) => {
                 />
               </div>
               <div className="col-md-7">
-                <h6 className="mb-1">{purchase.productName}</h6>
-                <p className="mb-0 text-muted">
+                <h6 className="mb-1" style={{fontSize:"20px"}}>{purchase.productName}</h6>
+                <p className="mb-0 text-muted" style={{fontSize: "12px"}}>
                   Variation: {purchase.variation }
                 </p>
-                <p className="mb-0 text-muted">
-                  Quantity: {purchase.itemQuantity || 1}
+                <p className="mb-0 text-muted" style={{fontSize: "12px"}}>
+                  Quantity: {purchase.itemQuantity || 1}x
+
+                </p>
+                <p className="mb-0 text-muted" style={{fontSize: "12px"}}>
+                  Contact: {purchase.contactinfo } <br/>
+                  Shipping Address: {purchase.shippinglocation }
                 </p>
               </div>
               <div className="col-md-3 text-end">
                 <p className="mb-2 fw-bold fs-5">
-                  ₱{purchase.productPrice.toFixed(2)}
+                  ₱{purchase.productPrice}
                 </p>
-                {status === 1 && (
-                  <button className="btn btn-outline-secondary btn-sm">
+                <div className="col">
+
+                  
+                  {(status === 2) && (
+                  <button className="btn btn-outline-secondary btn-sm px-2 mb-1">
                     Track Order
                   </button>
+                )} <br/>
+
+                
+                
+                 {(status === 1 || status === 2) && (
+                  <button className="btn btn-outline-danger btn-sm px-1 mb-1"
+                          onClick={() => handleCancelOrder(purchase.purchase.pstatusid)}
+                          >
+                    Cancel Order
+                  </button>
                 )}
+                
                 {(status === 4 || status === 5) && (
-                  <button className="btn btn-outline-primary btn-sm">
+                  <button className="btn btn-outline-primary btn-sm"
+                          onClick={() => handlebuyagain(purchase.productID)}>
                     Buy Again
                   </button>
                 )}
+                  <br/>
+                {(status === 1) && (
+                  <button className="btn btn-outline-success btn-sm px-2 mb-1"
+                  onClick={() => handlePaynow(purchase.purchase.pstatusid)}>
+                    Pay product
+                  </button>
+                )}
+                </div>
+                
               </div>
             </div>
           </div>

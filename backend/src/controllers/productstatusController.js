@@ -10,17 +10,18 @@ export const getPstatus = async (req, res) =>{
     }
 };
 
-export const createPstatus = async (req, res) => {
-    try{
-        console.log("REQ BODY:", req.body);
-        const pstatusInfo = req.body;
-        const newPstatus = await Service.createPstatus(pstatusInfo);
-        res.status(200).json(newPstatus);
 
-    }catch(err){
-        console.error("Error adding cart", err);
-        res.status(500).json({message: 'Internal Server Error'});
-    }
+export const createPstatus = async (req, res) => {
+  try {
+    const orderData = req.body; // Array of orders
+    const results = await Promise.all(
+      orderData.map((data) => Service.createPstatus(data))
+    );
+    res.status(201).json(results);
+  } catch (err) {
+    console.error("Error creating product status:", err.message);
+    res.status(500).json({ error: "Failed to create product status" });
+  }
 };
 
 
@@ -58,4 +59,36 @@ export const deletePstatus = async (req, res) => {
         console.error("Error deleting shop: ", err);
         res.status(500).json({message: 'Internal Server Error'});
     }
+};
+
+export const cancelOrder = async (req, res) => {
+  try {
+    const { pstatusid } = req.params;
+
+    const updatedPstatus = await Service.updatePstatusToCancelled(pstatusid);
+    if (!updatedPstatus) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.status(200).json(updatedPstatus);
+  } catch (err) {
+    console.error("Error cancelling order:", err.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const payOrder = async (req, res) => {
+  try {
+    const { pstatusid } = req.params;
+
+    const updatedPstatus = await Service.updatePstatusToPaid(pstatusid);
+    if (!updatedPstatus) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.status(200).json(updatedPstatus);
+  } catch (err) {
+    console.error("Error updating order to paid:", err.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };
