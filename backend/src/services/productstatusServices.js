@@ -7,10 +7,10 @@ export const getPstatus = async() =>{
 
 
 export const createPstatus = async(pstatusInfo) => {
-    const{ pstatus, userkey, productkey, itemquantity, variation} = pstatusInfo;
+    const{ pstatus, userkey, productkey, itemquantity, variation, parcelcost, paymenttype, paymentid} = pstatusInfo;
     const { rows } = await query (
-        'INSERT INTO product_statuslist (pstatus, userkey, productkey, itemquantity, variation) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-        [ pstatus, userkey, productkey, itemquantity, variation]
+        'INSERT INTO product_statuslist (pstatus, userkey, productkey, itemquantity, variation, parcelcost, paymenttype, paymentid) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+        [ pstatus, userkey, productkey, itemquantity, variation, parcelcost, paymenttype, paymentid]
     );
     return rows[0];
 }

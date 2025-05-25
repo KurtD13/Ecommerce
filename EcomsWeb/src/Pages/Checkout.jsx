@@ -123,7 +123,6 @@ useEffect(() => {
   streetname: "",
   housenumber: "",
   building: "",
-  streetname: "",
   barangay: "",
   city: "",
   province: "",

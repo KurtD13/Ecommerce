@@ -57,11 +57,14 @@ export function Productpreview({ filterTerm = "" }) {
               style={{
                 boxShadow:
                   "0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
+                minHeight:
+                  "18rem"
               }}
+              
             >
               <img
                 src={productInfo.pimageurl}
-                style={{ minHeight: "12rem", maxHeight: "10rem" }}
+                style={{ minHeight: "10rem", maxHeight: "10rem" }}
                 className="rounded-2"
                 alt={productInfo.pname}
               />
