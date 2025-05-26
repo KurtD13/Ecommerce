@@ -120,3 +120,11 @@ export const getuserSellerstatus = async (consumerid) => {
   );
   return rows[0]; // Return the first matching row
 };
+
+export const getUserNameImage = async (consumerid) => {
+  const { rows } = await query(
+    'SELECT consumerfirstname, consumerimage FROM consumer_profile WHERE consumerid = $1',
+    [consumerid]
+  );
+  return rows[0]; // Return the first matching row
+};

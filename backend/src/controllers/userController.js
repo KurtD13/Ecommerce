@@ -114,3 +114,17 @@ export const getuserSellerstatus = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const getUserNameImage = async (req, res) => {
+  try {
+    const consumerid = req.params.q; // Extract consumerid from the route parameter
+    const userNameImage = await Service.getUserNameImage(consumerid);
+    if (!userNameImage) {
+      return res.status(404).json({ message: "name image not found" });
+    }
+    res.status(200).json(userNameImage);
+  } catch (err) {
+    console.error("Error fetching image name:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
