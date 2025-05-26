@@ -6,7 +6,7 @@ const Sidebar = () => {
     display: "block",
     padding: "8px 12px",
     borderRadius: "6px",
-    color: "#6c757d", 
+    color: "#273F4F", 
     textDecoration: "none",
     marginBottom: "8px",
     transition: "all 0.2s ease",
@@ -23,12 +23,11 @@ const Sidebar = () => {
   return (
     <div
       className="d-flex flex-column p-3"
-      style={{ width: "220px", backgroundColor: "#EFEEEA", height: "100vh" }}
+      style={{ width: "220px", backgroundColor: "#EFEEEA", height: "100vh"}}
     >
-      <div className="mb-4 fw-bold" style={{ color: "#4a4a4a" }}>
-        Dashboard
-      </div>
+
       {[
+        { to: "/sellerdash", label: "Dashboard"},
         { to: "/my-shop", label: "My Shop" },
         { to: "/sellerproducts", label: "My Products" },
         { to: "/orders", label: "Orders" },

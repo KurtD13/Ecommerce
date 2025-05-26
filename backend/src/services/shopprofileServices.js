@@ -31,3 +31,11 @@ export const deleteShop = async (shopid) => {
         return rowCount > 0;
     
 }
+
+export const getShopID = async (userkey) => {
+  const { rows } = await query(
+    'SELECT shopid FROM shop_profile WHERE userkey = $1',
+    [userkey]
+  );
+  return rows[0];
+};

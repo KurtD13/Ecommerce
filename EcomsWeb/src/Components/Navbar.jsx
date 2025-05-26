@@ -131,7 +131,7 @@ export function Navbar() {
           )}
           {isSeller &&(
               <Link
-                  to="/sellerpage"
+                  to="/sellerdash"
                   className="btn me-2"
                   style={{ background: "#FE7743", color: "#EFEEEA" }}
                 >

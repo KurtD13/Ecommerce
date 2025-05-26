@@ -83,3 +83,17 @@ export const getProductById = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
+export const getShopProducts = async (req, res) => {
+  try {
+    const shopkey = req.params.q; // Extract reviews from the route parameter
+    const shopproducts = await Service.getShopProducts(shopkey);
+    if (!shopproducts) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.status(200).json(shopproducts);
+  } catch (err) {
+    console.error("Error fetching Product:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

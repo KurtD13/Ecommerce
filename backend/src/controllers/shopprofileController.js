@@ -59,3 +59,17 @@ export const deleteShop = async (req, res) => {
         res.status(500).json({message: 'Internal Server Error'});
     }
 };
+
+export const getShopkey = async (req, res) => {
+  try {
+    const userkey = req.params.q; // Extract userkey from the route parameter
+    const shopUserkey = await Service.getShopID(userkey);
+    if (!shopUserkey) {
+      return res.status(404).json({ message: "shopid not found" });
+    }
+    res.status(200).json(shopUserkey);
+  } catch (err) {
+    console.error("Error fetching shopid:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

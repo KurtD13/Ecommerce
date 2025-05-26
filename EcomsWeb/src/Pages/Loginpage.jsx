@@ -19,13 +19,21 @@ export function Loginpage() {
         email: useremail,
         password: userpass,
       });
+      const shopresponse = await axios.get(`http://localhost:3000/api/shop/userkey/${response.data.consumerid}`);
+        
+      
+      
+
 
       if (response.data && response.data.consumerid) {
       
         localStorage.setItem("userkey", response.data.consumerid);
-
         // Update login state
         setIsLoggedIn(true);
+        localStorage.setItem("shopkey", shopresponse.data.shopid);
+        
+        
+   
 
         // Close the modal
         const modalElement = document.getElementById("loginModal");
@@ -39,8 +47,10 @@ export function Loginpage() {
       }
     } catch (err) {
       console.error("Login error:", err);
-      setErrorMessage("An error occurred during login. Please try again.");
+      setErrorMessage("Password or Email Incorrect. Please try again.");
     }
+
+
   };
 
   return (

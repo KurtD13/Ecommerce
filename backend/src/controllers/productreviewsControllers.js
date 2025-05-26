@@ -58,3 +58,17 @@ export const deleteReviews = async (req, res) => {
         res.status(500).json({message: 'Internal Server Error'});
     }
 };
+
+export const getProductReviews = async (req, res) => {
+  try {
+    const productkey = req.params.q; // Extract reviews from the route parameter
+    const Productreview = await Service.getProductReviews(productkey);
+    if (!Productreview) {
+      return res.status(404).json({ message: "Reviews not found" });
+    }
+    res.status(200).json(Productreview);
+  } catch (err) {
+    console.error("Error fetching reviews:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

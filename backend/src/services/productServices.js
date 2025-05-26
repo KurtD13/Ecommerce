@@ -50,3 +50,11 @@ export const getProductById = async (productId) => {
     return rows[0];
 };
 
+
+export const getShopProducts = async (shopkey) => {
+  const { rows } = await query(
+    'SELECT pid FROM products_info WHERE shopkey = $1',
+    [shopkey]
+  );
+  return rows;
+};

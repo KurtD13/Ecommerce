@@ -7,5 +7,6 @@ router.get('/shop', controller.getShop);
 router.post('/shop', controller.createShop);
 router.put('/shop/:shopid', controller.updateShop);
 router.delete('/shop/:shopid', controller.deleteShop);
+router.get('/shop/userkey/:q', controller.getShopkey)
 
 export default router;

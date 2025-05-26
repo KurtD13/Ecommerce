@@ -31,3 +31,11 @@ export const deleteReviews = async (previewsid) => {
     
 }
 
+export const getProductReviews = async (productkey) => {
+  const { rows } = await query(
+    'SELECT * FROM product_reviews WHERE productkey = $1',
+    [productkey]
+  );
+  return rows;
+};
+

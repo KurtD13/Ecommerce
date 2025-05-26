@@ -7,6 +7,7 @@ router.get('/reviews', controller.getReviews);
 router.post('/reviews', controller.createReviews);
 router.put('/reviews/:userkey', controller.updateReviews);
 router.delete('/reviews/:previewsid', controller.deleteReviews);
+router.get('/reviews/product/:q', controller.getProductReviews);
 
 
 export default router;

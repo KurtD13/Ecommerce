@@ -604,7 +604,7 @@ export function Products() {
                                             style={{ minHeight: "200px", maxHeight: "200px", overflowY: "auto", overflowX: "hidden" }}
                                         >
                                             <div className="row">
-                                                <div className="col-5 d-flex align-items-center mb-2">
+                                                <div className="col-6 d-flex align-items-center mb-2">
                                                     {reviewer ? (
                                                         <>
                                                             <img
@@ -619,13 +619,8 @@ export function Products() {
                                                         <p className="text-muted">Unknown Reviewer</p>
                                                     )}
                                                 </div>
-                                                <div className="col-5 text-end pt-2">
-                                                    <span className="text-muted">{review.reviewscore} </span>
-                                                    {"★".repeat(review.reviewscore)}
-                                                    {"☆".repeat(5 - review.reviewscore)}
-                                                </div>
                                                 {userKey.toString() === review.userkey.toString() && (
-                                                    <div className="col-2 text-end pt-2 pe-2">
+                                                    <div className="col-6 text-end pt-2 pe-2">
                                                         <button
                                                             className="btn btn-sm btn-outline-danger"
                                                             onClick={() => handleDelete(review.previewsid)}
@@ -641,6 +636,11 @@ export function Products() {
                                             <div className="card p-1">
                                                 <p className="small p-1">{review.reviewdesc}</p>
                                             </div>
+                                            <div className="pt-2">
+                                                    <span className="text-muted">{review.reviewscore} </span>
+                                                    {"★".repeat(review.reviewscore)}
+                                                    {"☆".repeat(5 - review.reviewscore)}
+                                                </div>
                                             {/* Inline images row */}
                                             {reviewImages.length > 0 && (
                                                 <div style={{ display: "flex", gap: "5px", flexWrap: "wrap", marginTop: "5px" }}>

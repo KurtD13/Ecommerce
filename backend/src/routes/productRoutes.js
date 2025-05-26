@@ -9,4 +9,5 @@ router.put('/product/:pid', controller.updateProduct);
 router.delete('/product/:pid', controller.deleteProduct);
 router.get('/product/search', controller.searchProduct);
 router.get('/product/:pid', controller.getProductById);
+router.get('/product/shop/:q', controller.getShopProducts);
 export default router;
