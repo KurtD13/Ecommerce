@@ -146,21 +146,12 @@ export function Products() {
         userkey: userKey,      // userKey from localStorage
         });
 
-        const refreshReviews = async () => {
-            try {
-                const response = await axios.get("http://localhost:3000/api/reviews");
-                setReviewData(response.data || []);
-            } catch (err) {
-                console.error("Error refreshing reviews:", err);
-            }
-        };
-
+        
         const handleUpdateReview = async (e) => {
         e.preventDefault();
         try {
             const response = await axios.put(`http://localhost:3000/api/reviews/${userKey}`, updateReview);
             setUpdateData([...updateData, response.data]);
-            await refreshReviews();
             setUpdateReview({
             reviewtitle: "",
             reviewdesc: "",
@@ -604,7 +595,7 @@ export function Products() {
                                             style={{ minHeight: "200px", maxHeight: "200px", overflowY: "auto", overflowX: "hidden" }}
                                         >
                                             <div className="row">
-                                                <div className="col-6 d-flex align-items-center mb-2">
+                                                <div className="col-6 d-flex align-items-center mb-2 ps-3 pt-1">
                                                     {reviewer ? (
                                                         <>
                                                             <img
@@ -620,7 +611,7 @@ export function Products() {
                                                     )}
                                                 </div>
                                                 {userKey.toString() === review.userkey.toString() && (
-                                                    <div className="col-6 text-end pt-2 pe-2">
+                                                    <div className="col-6 text-end pt-2 pe-3">
                                                         <button
                                                             className="btn btn-sm btn-outline-danger"
                                                             onClick={() => handleDelete(review.previewsid)}
@@ -631,7 +622,7 @@ export function Products() {
                                                 )}
                                             </div>
 
-                                            <p className="small fw-bold ps-1 mb-1">{review.reviewtitle || "No Title"}</p>
+                                            <p className="small fw-bold ps-1 mb-1">{'"'+review.reviewtitle+'"' || "No Title"}</p>
                                             <p className="small text-secondary ps-1 mb-0" style={{ fontSize: "10px" }}>Description</p>
                                             <div className="card p-1">
                                                 <p className="small p-1">{review.reviewdesc}</p>

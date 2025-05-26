@@ -53,7 +53,7 @@ export const getProductById = async (productId) => {
 
 export const getShopProducts = async (shopkey) => {
   const { rows } = await query(
-    'SELECT pid FROM products_info WHERE shopkey = $1',
+    'SELECT * FROM products_info WHERE shopkey = $1',
     [shopkey]
   );
   return rows;

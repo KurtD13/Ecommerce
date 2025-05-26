@@ -79,3 +79,12 @@ export const updatePstatusToPaid = async (pstatusid) => {
   );
   return rows[0];
 };
+
+
+export const getPstatusInfo = async (productkey) => {
+  const { rows } = await query(
+    'SELECT * FROM product_statuslist WHERE productkey = $1',
+    [productkey]
+  );
+  return rows;
+};

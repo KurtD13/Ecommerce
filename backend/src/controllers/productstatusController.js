@@ -92,3 +92,17 @@ export const payOrder = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const getProductStatusInfo = async (req, res) => {
+  try {
+    const productkey = req.params.q; // Extract reviews from the route parameter
+    const Productstatus = await Service.getPstatusInfo(productkey);
+    if (!Productstatus) {
+      return res.status(404).json({ message: "pstatus not found" });
+    }
+    res.status(200).json(Productstatus);
+  } catch (err) {
+    console.error("Error fetching pstatus:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

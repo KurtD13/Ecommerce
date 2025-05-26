@@ -2,6 +2,8 @@ import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Sellerheader";
 import { useState, useEffect } from "react";
 import { FaBox, FaTruck, FaPlane } from "react-icons/fa";
+import { SiCashapp } from "react-icons/si";
+import { FaPesoSign } from "react-icons/fa6";
 import sales from "../assets/sales.png";
 import axios from "axios";
 
@@ -9,7 +11,8 @@ export function SellerDashboard() {
   const [reviews, setReviews] = useState([]);
   const [productkey, setProductkey] = useState([]);
   const [ongoingDeliveries, setOngoingDeliveries] = useState([]);
-  const [userInfo, setUserInfo] = useState([]); // Combined reviews and user info
+  const [userInfo, setUserInfo] = useState([]);
+  const [productStatus, setProductStatus] = useState([]);
   const shopKey = localStorage.getItem("shopkey");
 
   const shopkey = shopKey;
@@ -62,6 +65,53 @@ export function SellerDashboard() {
     }
   }, [reviews, productkey]);
 
+ useEffect(() => {
+  const fetchProductstatus = async () => {
+    try {
+      // Map over productkey to fetch product status for each product
+      const productStatusPromises = productkey.map(async (product) => {
+        const response = await axios.get(`http://localhost:3000/api/pstatus/product/${product.pid}`);
+        console.log("API Response for Product:", response.data); // Debugging log
+
+        if (Array.isArray(response.data)) {
+          // Map over the array of product statuses and include product data
+          const productStatusesWithUserInfo = await Promise.all(
+            response.data.map(async (status) => {
+              // Fetch user info for each userkey in the product status
+              const userResponse = await axios.get(`http://localhost:3000/api/user/review/${status.userkey}`);
+              return {
+                ...product, // Include product data
+                ...status, // Include product status data
+                consumerfirstname: userResponse.data.consumerfirstname || null,
+                consumerimage: userResponse.data.consumerimage || null,
+                
+              };
+            })
+          );
+
+          return productStatusesWithUserInfo;
+        } else {
+          console.warn(`Unexpected response format for product with pid: ${product.pid}`);
+          return [];
+        }
+      });
+
+      // Resolve all promises and flatten the resulting arrays
+      const combinedData = (await Promise.all(productStatusPromises)).flat();
+      console.log("Combined Product Status Data with User Info:", combinedData); // Debugging log
+      setProductStatus(combinedData); // Update the state with the combined data
+    } catch (err) {
+      console.error("Error fetching product status:", err.message);
+    }
+  };
+
+  if (productkey.length > 0) {
+    fetchProductstatus();
+  }
+}, [productkey]);
+
+  console.log("Product Status:", productStatus);
+
   const [shopStatus, setShopStatus] = useState({
     completedOrders: 0,
     ongoingDeliveries: 0,
@@ -91,13 +141,9 @@ export function SellerDashboard() {
       totalOrders: 250,
     });
 
-    setOngoingDeliveries([
-      { id: 1, icon: <FaBox />, status: "To be Delivered", consumer: "Consumer Name", date: "01.01.25" },
-      { id: 2, icon: <FaTruck />, status: "In Transit", consumer: "Consumer Name", date: "01.01.25" },
-      { id: 3, icon: <FaPlane />, status: "Shipped", consumer: "Consumer Name", date: "01.01.25" },
-    ]);
   }, []);
 
+    
   return (
     <>
       <Header />
@@ -178,14 +224,14 @@ export function SellerDashboard() {
                   className="p-2 m-1 border rounded"
                   style={{ width: "30%", backgroundColor: "#EFEEEA" }}
                 >
-                  <div className="d-flex align-items-center mb-2">
+                  <div className="d-flex align-items-center mb-2 pt-1 ps-1">
                     <img
                       src={review.consumerimage}
                       alt="User"
                       className="rounded-circle"
                       style={{ width: 30, height: 30 }}
                     />
-                    <div className="ms-2">{review.consumerfirstname}</div>
+                    <div className="ms-2 fw-bold">{review.consumerfirstname}</div>
                   </div>
                   <div className="ms-1 small fw-bold">{review.reviewtitle}</div>
                   <div className="card p-1" style={{ height: 60, marginBottom: 10, fontSize: "0.7rem" }}>
@@ -193,7 +239,9 @@ export function SellerDashboard() {
                   </div>
                   <div className="d-flex justify-content-between align-items-center">
                     <div>
-                      {review.reviewscore} <span style={{ color: "#FE7743" }}>★★★★☆</span>
+                      {review.reviewscore} <span style={{ color: "#FE7743" }}>
+                        {"★".repeat(review.reviewscore)}{/* Solid stars */}
+                      </span>
                     </div>
                     <div>↻</div>
                   </div>
@@ -212,21 +260,47 @@ export function SellerDashboard() {
             }}
           >
             <h6>Ongoing Deliveries</h6>
-            {ongoingDeliveries.map((d) => (
+            {productStatus.map((d) => (
+              
+              (d.pstatus !== 5 && d.pstatus !== 4) && 
+
               <div
-                key={d.id}
-                className="d-flex align-items-center justify-content-between my-2 p-2 bg-white rounded"
+                className="align-items-center justify-content-between my-2 p-2 bg-white rounded"
               >
-                <div>{d.icon}</div>
-                <div className="ms-2 flex-grow-1" style={{ fontSize: "0.8rem" }}>
-                  <div>
-                    <strong>{d.status}</strong>
+                <div className="row m-1">
+                  <div className="col-10">
+                    <strong>{
+                   (d.pstatus === 1) && "To Pay by " + d.consumerfirstname  || 
+                  (d.pstatus === 2) &&  "Shipped to " + d.consumerfirstname|| 
+                  (d.pstatus === 3) &&  "To be Receive by " + d.consumerfirstname
+                  }</strong>
                   </div>
-                  <div>{d.consumer}</div>
+                  <div className="col-2 text-end">
+                    <div className="mx-2">{
+                      (d.pstatus === 1) &&  <FaPesoSign/> || 
+                      (d.pstatus === 2) &&  <FaPlane /> || 
+                      (d.pstatus === 3) &&  <FaTruck />
+                  
+                      }</div>
+                  </div>
                 </div>
-                <div style={{ fontSize: "0.7rem", color: "gray" }}>{d.date}</div>
+                
+                <div className="row m-1 flex-grow-1" style={{ fontSize: "1rem" }}>
+                   
+                  <div>
+                    <strong>{d.pname}</strong>
+                  </div>
+                  
+                  <div style={{ fontSize: "0.7rem", color: "gray" }}>{d.shipaddress +" 0"+d.contactinfo}</div>
+                  <div className="text-end fw-bold" style={{fontSize:"1rem"}}>{"₱ "+ d.parcelcost}</div>
+                </div>
+                
               </div>
+              
+            
             ))}
+            
+            
           </div>
         </aside>
       </div>
