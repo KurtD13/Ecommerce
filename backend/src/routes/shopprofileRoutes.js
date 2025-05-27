@@ -8,5 +8,6 @@ router.post('/shop', controller.createShop);
 router.put('/shop/:shopid', controller.updateShop);
 router.delete('/shop/:shopid', controller.deleteShop);
 router.get('/shop/userkey/:q', controller.getShopkey)
-
+router.get('/shop/shopdata/:shopkey', controller.getShopData);
+router.put('/shop/shopratings/:shopid', controller.updateShopRatings);
 export default router;

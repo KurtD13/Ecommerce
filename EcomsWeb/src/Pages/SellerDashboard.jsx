@@ -143,14 +143,22 @@ export function SellerDashboard() {
 
   }, []);
 
+  const cardStyle = {
+    backgroundColor: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
+    padding: '24px',
+    marginBottom: '16px'
+  };
+
     
   return (
     <>
       <Header />
+      
       <div
         style={{
           flexGrow: 1,
-          padding: "1rem",
           display: "flex",
           gap: "1rem",
           overflowY: "auto",
@@ -158,9 +166,8 @@ export function SellerDashboard() {
         }}
       >
         <Sidebar />
-
         <div style={{ flex: 3, display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <section className="p-3 rounded" style={{ backgroundColor: "white" }}>
+          <section className="p-3 rounded mt-4" style={cardStyle}>
             <h5>Shop Status</h5>
             <div className="d-flex justify-content-between text-center mt-3">
               <div>
@@ -186,7 +193,7 @@ export function SellerDashboard() {
             </div>
           </section>
 
-          <section className="p-3 rounded" style={{ backgroundColor: "white" }}>
+          <section className="p-3 rounded" style={cardStyle}>
             <h5>Business Analytics</h5>
             <div className="d-flex justify-content-between text-center mt-3" style={{ fontSize: "1.2rem" }}>
               <div>
@@ -215,13 +222,13 @@ export function SellerDashboard() {
             </div>
           </section>
 
-          <section className="p-3 rounded" style={{ backgroundColor: "white" }}>
+          <section className="p-3 rounded" style={cardStyle}>
             <h5>Reviews</h5>
-            <div className="d-flex justify-content-between mt-1">
+            <div className="d-flex mt-1">
               {userInfo.map((review) => (
                 <div
                   key={review.previewsid}
-                  className="p-2 m-1 border rounded"
+                  className="card p-2 m-1 rounded shadow"
                   style={{ width: "30%", backgroundColor: "#EFEEEA" }}
                 >
                   <div className="d-flex align-items-center mb-2 pt-1 ps-1">
@@ -234,8 +241,8 @@ export function SellerDashboard() {
                     <div className="ms-2 fw-bold">{review.consumerfirstname}</div>
                   </div>
                   <div className="ms-1 small fw-bold">{review.reviewtitle}</div>
-                  <div className="card p-1" style={{ height: 60, marginBottom: 10, fontSize: "0.7rem" }}>
-                    {review.reviewdesc}
+                  <div className="card p-1" style={{ height: 60, marginBottom: 10, fontSize: "0.8rem" }}>
+                    <span className="text-secondary" style={{fontSize:"0.5rem"}}>Description</span>{review.reviewdesc}
                   </div>
                   <div className="d-flex justify-content-between align-items-center">
                     <div>
@@ -259,13 +266,14 @@ export function SellerDashboard() {
               borderRadius: "8px",
             }}
           >
-            <h6>Ongoing Deliveries</h6>
+            <h6 className="card p-2 bg-white border-2 border-black mt-2 text-center" style={{boxShadow:""}}>Ongoing Deliveries</h6>
             {productStatus.map((d) => (
               
               (d.pstatus !== 5 && d.pstatus !== 4) && 
 
               <div
                 className="align-items-center justify-content-between my-2 p-2 bg-white rounded"
+                style={cardStyle}
               >
                 <div className="row m-1">
                   <div className="col-10">

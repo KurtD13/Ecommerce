@@ -10,4 +10,5 @@ router.delete('/product/:pid', controller.deleteProduct);
 router.get('/product/search', controller.searchProduct);
 router.get('/product/:pid', controller.getProductById);
 router.get('/product/shop/:q', controller.getShopProducts);
+router.put('/product/pratings/:pid', controller.updateProductRatings);
 export default router;

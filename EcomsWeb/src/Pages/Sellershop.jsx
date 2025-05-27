@@ -1,10 +1,64 @@
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Sellerheader";
 import React, { useEffect, useState } from 'react';
+import axios from "axios";
+
 
 
 export function Sellershop(){
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [shopData, setShopData] = useState([]);
+  const [product, setProduct] = useState([]);
+  const [consumerData, setConsumerData] = useState([]);
+  const shopKey = localStorage.getItem("shopkey");
+  const userkey = localStorage.getItem("userkey");
+  
+  useEffect(() => {
+      const fetchshopData = async () => {
+        try {
+        const response = await axios.get(`http://localhost:3000/api/shop/shopdata/${shopKey}`);
+        setShopData(response.data);
+
+        const productresponse = await axios.get(`http://localhost:3000/api/product/shop/${shopKey}`);
+        setProduct(productresponse.data);
+
+        const consumerResponse = await axios.get(`http://localhost:3000/api/user/phone/${userkey}`);
+        setConsumerData([consumerResponse.data]);
+    } catch (error) {
+      console.error('Error fetching shop data:', error);
+    }
+  };
+  fetchshopData();
+  }, [shopKey]);
+
+  // Calculate the average product rating
+  const shopReviewScore = product
+        .map((item) => Number(item.pratings)) // Convert to number
+        .filter((score) => typeof score === "number" && !isNaN(score)); // Ensure valid numeric scores
+
+    const shopAverageReviewScore =
+        shopReviewScore.length > 0
+            ? shopReviewScore.reduce((sum, score) => sum + score, 0) / shopReviewScore.length
+            : 0;
+
+    // Round the average score to one decimal place
+    const roundedAverageScore = Math.round(shopAverageReviewScore * 10) / 10;
+  
+  // Update shop rating whenever roundedAverageScore (and shopkey) changes
+      useEffect(() => {
+          if (shopKey) {
+              const updateShopRatings = async () => {
+                  try {
+                      await axios.put(`http://localhost:3000/api/shop/shopratings/${shopKey}`, {
+                          shopratings: roundedAverageScore,
+                      });
+                  } catch (err) {
+                      console.error("Error updating shop rating:", err);
+                  }
+              };
+              updateShopRatings();
+          }
+      }, [roundedAverageScore, shopKey]);
   
   const profileData = {
     avatar: '',
@@ -63,19 +117,7 @@ export function Sellershop(){
     setCurrentSlide((prev) => (prev - 1 + highlights.length) % highlights.length);
   };
 
-  const renderStars = (rating) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    
-    for (let i = 0; i < 5; i++) {
-      if (i < fullStars) {
-        stars.push(<span key={i} style={{ color: '#ffc107' }}>★</span>);
-      } else {
-        stars.push(<span key={i} style={{ color: '#dee2e6' }}>☆</span>);
-      }
-    }
-    return stars;
-  };
+
 
   const buttonStyle = {
     background: 'none',
@@ -89,17 +131,19 @@ export function Sellershop(){
   const cardStyle = {
     backgroundColor: 'white',
     borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
     padding: '24px',
     marginBottom: '16px'
   };
     return(
         <>
+        
         <Header />
+        
         <div style={{ 
-      backgroundColor: '#f8f9fa',
-      minHeight: '100vh',
-      display: 'flex'
+        backgroundColor: "#EFEEEA",
+        minHeight: '100vh',
+        display: 'flex'
     }}>
         <Sidebar/>
       <div style={{ 
@@ -118,6 +162,8 @@ export function Sellershop(){
             </div>
             
             {/* Banner */}
+             {shopData.map((shop) => (
+              <>
             <div style={{ 
               width: '100%', 
               height: '200px', 
@@ -128,7 +174,7 @@ export function Sellershop(){
               position: 'relative'
             }}>
               <img 
-                src="" 
+                src={shop.shopbanner}
                 alt="Profile Banner"
                 style={{
                   width: '100%',
@@ -151,11 +197,11 @@ export function Sellershop(){
                 📷 Change Banner
               </div>
             </div>
-            
+           
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
               <div style={{ position: 'relative', marginRight: '16px' }}>
                 <img 
-                  src={profileData.avatar} 
+                  src={shop.shoplogo} 
                   alt="Profile" 
                   style={{ 
                     width: '60px', 
@@ -178,8 +224,9 @@ export function Sellershop(){
                 ></span>
               </div>
               <div>
+                
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
-                  <h5 style={{ margin: '0 8px 0 0', fontSize: '20px', fontWeight: '600' }}>{profileData.name}</h5>
+                  <h5 style={{ margin: '0 8px 0 0', fontSize: '20px', fontWeight: '600' }}>{shop.shopname}</h5>
                   {profileData.verified && (
                     <span style={{
                       backgroundColor: '#007bff',
@@ -193,18 +240,23 @@ export function Sellershop(){
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', color: '#6c757d' }}>
                   <div style={{ marginRight: '8px' }}>
-                    {renderStars(profileData.rating)}
+                    {roundedAverageScore + " "}
+                    <span style={{ color: "#FE7743" }}>
+                        {"★".repeat(roundedAverageScore)}{/* Solid stars */}
+                      </span>
                   </div>
                   <span style={{ fontSize: '14px' }}>{profileData.responseRate}</span>
                 </div>
               </div>
             </div>
-
+           </>
+          ))} 
             <div style={{ display: 'flex', textAlign: 'center' }}>
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ marginRight: '8px', fontSize: '18px' }}>📦</span>
+                
                 <div>
-                  <div style={{ fontWeight: '600', fontSize: '16px' }}>{profileData.products}</div>
+                  <div style={{ fontWeight: '600', fontSize: '16px' }}> {product.length}</div>
                   <div style={{ fontSize: '12px', color: '#6c757d' }}>Products</div>
                 </div>
               </div>
@@ -217,12 +269,15 @@ export function Sellershop(){
               </div>
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ marginRight: '8px', fontSize: '18px' }}>👤</span>
+                {shopData.map((shop) => (
                 <div>
                   <div style={{ fontWeight: '600', fontSize: '16px' }}>Joined</div>
-                  <div style={{ fontSize: '12px', color: '#6c757d' }}>{profileData.joinedDate}</div>
+                  <div style={{ fontSize: '12px', color: '#6c757d' }}>{"Since "+(shop.create_timestamp).substring(0, 4)}</div>
                 </div>
+                ))}
               </div>
             </div>
+            
           </div>
 
           <div style={cardStyle}>
@@ -231,32 +286,33 @@ export function Sellershop(){
               <button style={buttonStyle}>✏️</button>
             </div>
             
-            <div style={{ position: 'relative', overflow: 'hidden' }}>
+            <div  style={{ position: 'relative', overflow: 'hidden' }}>
               <div style={{ display: 'flex', transition: 'transform 0.3s ease', transform: `translateX(-${currentSlide * 33.333}%)` }}>
-                {highlights.map((item, index) => (
-                  <div key={item.id} style={{ flex: '0 0 200px', marginRight: '16px' }}>
+                {product.map((products) => (
+                  <div className="card p-3 shadow" style={{ flex: '0 0 200px', marginRight: '16px' }}>
                     <div style={{ 
                       backgroundColor: 'white',
                       borderRadius: '8px',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                       overflow: 'hidden'
                     }}>
                       <img 
-                        src={item.image} 
-                        alt={`Highlight ${index + 1}`}
+                        src={products.pimageurl} 
                         style={{ 
                           width: '100%',
                           height: '120px', 
                           objectFit: 'cover'
                         }}
                       />
-                      <div style={{ padding: '8px' }}>
+                      {products.pname}
+                      <div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <strong style={{ marginRight: '4px' }}>{item.rating}</strong>
-                            {renderStars(item.rating)}
+                            <strong className="pe-1">{products.pratings}</strong>
+                           <span style={{ color: "#FE7743" }}>
+                            {"★".repeat(products.pratings)}{/* Solid stars */}
+                          </span>
                           </div>
-                          <small style={{ color: '#6c757d' }}>({item.reviews})</small>
+                          <small style={{ color: '#6c757d' }}></small>
                         </div>
                       </div>
                     </div>
@@ -385,8 +441,42 @@ export function Sellershop(){
             ))}
           </div>
           </div>
-
           <div style={{ flex: '1 1 35%', minWidth: '280px' }}>
+
+            <div style={cardStyle}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h5 style={{ margin: '0', fontSize: '18px', fontWeight: '600' }}>Seller Info</h5>
+                <button style={buttonStyle}>✏️</button>
+              </div>
+             
+              <div style={{ marginBottom: '24px' }}>
+                 {shopData.map((shop) => (
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ marginRight: '8px', fontSize:"20px"}}><i class="bi bi-person-fill"></i></span>
+                  <span style={{ color: '#6c757d', fontSize:"16px" }}>{shop.sellername} </span>
+                </div>
+                ))}
+                {consumerData.map((consumer) => (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <span style={{ marginRight: '8px',  fontSize:"20px"}}><i class="bi bi-telephone-fill"></i></span>
+                      <span style={{ color: '#6c757d', fontSize:"16px" }}>{"+63 "+consumer.consumerphone}</span><br/>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <span style={{ marginRight: '8px',  fontSize:"20px"}}><i class="bi bi-envelope-fill"></i></span>
+                      <span style={{ color: '#6c757d', fontSize:"16px" }}>{consumer.consumeremail}</span><br/>
+                    </div>
+                  </>
+                
+                ))}
+              </div>
+
+              <div style={{ color: '#6c757d', lineHeight: '1.5' }}>
+                <p></p>
+              </div>
+            </div>
+             {shopData.map((shop) => (
+              <>
             <div style={cardStyle}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <h5 style={{ margin: '0', fontSize: '18px', fontWeight: '600' }}>Description</h5>
@@ -396,19 +486,18 @@ export function Sellershop(){
               <div style={{ marginBottom: '24px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
                   <span style={{ marginRight: '8px', fontSize: '16px' }}>📍</span>
-                  <span style={{ color: '#6c757d' }}>Location</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <span style={{ marginRight: '8px', fontSize: '16px' }}>✉️</span>
-                  <span style={{ color: '#6c757d' }}>Contact</span>
+                  <span style={{ color: '#6c757d' }}>Shipping Location: {shop.shippinglocation}</span>
                 </div>
               </div>
 
               <div style={{ color: '#6c757d', lineHeight: '1.5' }}>
-                <p>Store description and additional information would be displayed here...</p>
+                <p>{shop.shopdesc}</p>
               </div>
             </div>
+            </>
+              ))}
           </div>
+        
         </div>
       </div>
     </div>

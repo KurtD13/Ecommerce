@@ -152,17 +152,6 @@ export function Products() {
         try {
             const response = await axios.put(`http://localhost:3000/api/reviews/${userKey}`, updateReview);
             setUpdateData([...updateData, response.data]);
-            setUpdateReview({
-            reviewtitle: "",
-            reviewdesc: "",
-            reviewimage1: "",
-            reviewimage2: "",
-            reviewimage3: "",
-            reviewimage4: "",
-            reviewscore: 5,
-            productkey: productId,
-            userkey: userKey,
-            });
             const modalEl = document.getElementById("updateReviewModal");
             const modal = bootstrap.Modal.getInstance(modalEl);
             modal.hide();
@@ -308,7 +297,7 @@ export function Products() {
         if (product) {
             const updateProductRating = async () => {
                 try {
-                    await axios.put(`http://localhost:3000/api/product/${product.pid}`, {
+                    await axios.put(`http://localhost:3000/api/product/pratings/${productId}`, {
                         pratings: roundedAverageScore,
                     });
                 } catch (err) {

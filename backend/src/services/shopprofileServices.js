@@ -39,3 +39,21 @@ export const getShopID = async (userkey) => {
   );
   return rows[0];
 };
+
+export const getShopData = async (shopkey) => {
+  const { rows } = await query(
+    'SELECT * FROM shop_profile WHERE shopid = $1',
+    [shopkey]
+  );
+  return rows;
+};
+
+export const updateShopRatings = async(shopinfo, shopid) => {
+    const{ shopratings } = shopinfo;
+    const { rows } = await query (
+        'UPDATE shop_profile SET shopratings = $1 WHERE shopid = $2 RETURNING *',
+        [shopratings, shopid ]
+    );
+    return rows[0];
+}
+

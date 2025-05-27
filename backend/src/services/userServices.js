@@ -109,7 +109,7 @@ export const validateUser = async (email, password) => {
 
 export const getUserPhone = async (consumerid) => {
   const { rows } = await query(
-    'SELECT consumerphone FROM consumer_profile WHERE consumerid = $1',
+    'SELECT consumerphone, consumeremail FROM consumer_profile WHERE consumerid = $1',
     [consumerid]
   );
   return rows[0]; // Return the first matching row

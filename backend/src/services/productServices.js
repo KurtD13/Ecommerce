@@ -58,3 +58,14 @@ export const getShopProducts = async (shopkey) => {
   );
   return rows;
 };
+
+
+export const updateProductRatings = async(productinfo, pid) => {
+    const{ pratings } = productinfo;
+    const { rows } = await query (
+        'UPDATE products_info SET pratings = $1 WHERE pid = $2 RETURNING *',
+        [pratings, pid ]
+    );
+    return rows[0];
+}
+
