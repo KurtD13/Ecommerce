@@ -128,3 +128,21 @@ export const getUserNameImage = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const updateSellerStatus = async (req, res) => {
+  try {
+    const consumerid = req.params.consumerid;
+    const sellerstatus = req.body;
+
+    const updatesellerstatus = await Service.updateSellerStatus(sellerstatus, consumerid);
+
+    if (!updatesellerstatus || updatesellerstatus.length === 0) {
+      return res.status(404).json({ message: "User not found or no rows updated" });
+    }
+
+    res.status(200).json(updatesellerstatus);
+  } catch (err) {
+    console.error("Error updating seller status:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

@@ -6,10 +6,10 @@ export const getShop = async() =>{
 }
 
 export const createShop = async(shopInfo) => {
-    const{ shopname, shopdesc, shopbanner, sellerkey } = shopInfo;
+    const{ sellername, shippinglocation, shopname, shopdesc, shopbanner, shoplogo, userkey } = shopInfo;
     const { rows } = await query (
-        'INSERT INTO shop_profile (shopname, shopdesc, shopbanner, sellerkey) VALUES ($1, $2, $3, $4) RETURNING *',
-        [shopname, shopdesc, shopbanner, sellerkey ]
+        'INSERT INTO shop_profile (sellername, shippinglocation, shopname, shopdesc, shopbanner, shoplogo, userkey) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+        [sellername, shippinglocation, shopname, shopdesc, shopbanner, shoplogo, userkey ]
     );
     return rows[0];
 }

@@ -13,45 +13,50 @@ export function Loginpage() {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post("http://localhost:3000/api/user/login", {
-        email: useremail,
-        password: userpass,
-      });
-      const shopresponse = await axios.get(`http://localhost:3000/api/shop/userkey/${response.data.consumerid}`);
-        
-      
-      
+  e.preventDefault();
+  try {
+    const response = await axios.post("http://localhost:3000/api/user/login", {
+      email: useremail,
+      password: userpass,
+    });
 
+    // Check if the login response contains a valid consumer ID
+    if (response.data && response.data.consumerid) {
+      localStorage.setItem("userkey", response.data.consumerid);
 
-      if (response.data && response.data.consumerid) {
-      
-        localStorage.setItem("userkey", response.data.consumerid);
-        // Update login state
-        setIsLoggedIn(true);
-        localStorage.setItem("shopkey", shopresponse.data.shopid);
-        
-        
-   
-
-        // Close the modal
-        const modalElement = document.getElementById("loginModal");
-        const modalInstance = bootstrap.Modal.getInstance(modalElement);
-        modalInstance.hide();
-
-        // Redirect to the homepage or another page
-        navigate("/");
-      } else {
-        setErrorMessage("Invalid email or password.");
+      // Fetch shop information
+      let shopresponse = null;
+      try {
+        shopresponse = await axios.get(`http://localhost:3000/api/shop/userkey/${response.data.consumerid}`);
+      } catch (err) {
+        console.warn("Shop response is null or failed to fetch:", err.message);
       }
-    } catch (err) {
-      console.error("Login error:", err);
-      setErrorMessage("Password or Email Incorrect. Please try again.");
+
+      // Handle shopkey based on shopresponse
+      if (shopresponse && shopresponse.data && shopresponse.data.shopid !== null) {
+        localStorage.setItem("shopkey", shopresponse.data.shopid);
+      } else {
+        localStorage.setItem("shopkey", "0"); // Default value if no shop exists
+      }
+
+      // Update login state
+      setIsLoggedIn(true);
+
+      // Close the modal
+      const modalElement = document.getElementById("loginModal");
+      const modalInstance = bootstrap.Modal.getInstance(modalElement);
+      modalInstance.hide();
+
+      // Redirect to the homepage or another page
+      navigate("/");
+    } else {
+      setErrorMessage("Invalid email or password.");
     }
-
-
-  };
+  } catch (err) {
+    console.error("Login error:", err);
+    setErrorMessage("Password or Email Incorrect. Please try again.");
+  }
+};
 
   return (
     <>

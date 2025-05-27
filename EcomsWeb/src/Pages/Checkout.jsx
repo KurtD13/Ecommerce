@@ -23,6 +23,20 @@ export function Checkoutpage(){
 
 const handlePlaceOrder = async () => {
   try {
+    // Validate the delivery address
+    if (
+      !address.streetname ||
+      !address.housenumber ||
+      !address.city ||
+      !address.province ||
+      !address.region ||
+      !address.postalcode ||
+      !address.country
+    ) {
+      alert("Please provide a valid delivery address before placing the order.");
+      return; // Stop the checkout process
+    }
+
     const userkey = localStorage.getItem("userkey");
 
     // Determine payment type and payment ID

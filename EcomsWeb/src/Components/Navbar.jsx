@@ -37,10 +37,6 @@ export function Navbar() {
     
   }, [profilekey]);
 
-  console.log("Is Seller:", isSeller);
-  
-
-  
 
 
   

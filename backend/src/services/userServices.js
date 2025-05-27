@@ -14,6 +14,8 @@ export const createUser = async(userInfo) => {
     return rows[0];
 }
 
+
+
 export const updateUser = async (consumerid, userInfo) => {
   const {
     consumerusername,
@@ -127,4 +129,18 @@ export const getUserNameImage = async (consumerid) => {
     [consumerid]
   );
   return rows[0]; // Return the first matching row
+};
+
+
+export const updateSellerStatus = async (sellerinfo, consumerid) => {
+  const sellerstatus = sellerinfo.sellerstatus || sellerinfo.consumersellerstatus;
+
+  const { rows } = await query(
+    `UPDATE consumer_profile SET consumersellerstatus = $1 WHERE consumerid = $2 RETURNING *`,
+    [sellerstatus, consumerid]
+  );
+
+  console.log("Query result:", rows);
+
+  return rows;
 };

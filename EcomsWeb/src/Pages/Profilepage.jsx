@@ -7,7 +7,10 @@ import { useNavigate } from "react-router-dom";
 
 export function Profilepage(){
    const userkey = localStorage.getItem("userkey");
+   const shopkey = localStorage.getItem("shopkey");
    let profilekey = userkey;
+   
+
     return(
         <>
         
@@ -22,9 +25,75 @@ export function Profilepage(){
 }
 
 
+
+
+
 const ProfileSection = ({ onEdit, userKey }) => {
   const [userData, setUserdata] = useState([]);
   let userkey = userKey;
+  const shopkey = localStorage.getItem("shopkey");
+  const [newShop, setNewShop] = useState({
+    sellername: "",
+    shippinglocation: "",
+    shopname: "",
+    shopdescription: "",
+    shopbanner: "",
+    shoplogo: "",
+    userkey: userkey
+  });
+
+ const handleCreateShop = async (e) => {
+  e.preventDefault();
+  try {
+    // Create the shop
+    const response = await axios.post("http://localhost:3000/api/shop", newShop);
+    if (response.status === 200) {
+      alert("Shop created successfully!");
+
+      // Reset the form fields
+      setNewShop({
+        sellername: "",
+        shippinglocation: "",
+        shopname: "",
+        shopdescription: "",
+        shopbanner: "",
+        shoplogo: "",
+        userkey: userkey,
+      });
+
+      // Update the consumersellerstatus
+      try {
+        const sellerStatusResponse = await axios.put(
+          `http://localhost:3000/api/user/sellerstatus/${userkey}`,
+          { consumersellerstatus: true } // Set the seller status to true
+        );
+        if (sellerStatusResponse.data) {
+          console.log("Seller status updated:", sellerStatusResponse.data);
+        }
+      } catch (err) {
+        console.error("Error updating seller status:", err.message);
+      }
+
+      // Update the shopkey in localStorage
+      try {
+        const shopResponse = await axios.get(`http://localhost:3000/api/shop/userkey/${userkey}`);
+        if (shopResponse.data && shopResponse.data.shopid !== null) {
+          localStorage.setItem("shopkey", shopResponse.data.shopid);
+          console.log("Shopkey updated in localStorage:", shopResponse.data.shopid);
+        }
+      } catch (err) {
+        console.error("Error updating shopkey in localStorage:", err.message);
+      }
+
+      // Reload the page to reflect changes
+      window.location.reload();
+    }
+  } catch (err) {
+    console.error("Error creating shop:", err);
+    alert("Failed to create shop. Please try again.");
+  }
+};
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,6 +123,9 @@ const ProfileSection = ({ onEdit, userKey }) => {
     );
   }
 
+ 
+
+
   return (
     <>
       {filtered.map((userInfo) => (
@@ -79,10 +151,13 @@ const ProfileSection = ({ onEdit, userKey }) => {
                 <p><strong>Birthdate:</strong> {userInfo.consumerbirthdate.substring(0, 10)}</p>
                 <p><strong>Phone Number:</strong> {userInfo.consumerphone}</p>
               </div>
-              <div>
-                <button onClick={onEdit} className="btn btn-warning"><i class="bi bi-pencil-square"></i></button>
+              <div className="text-end ">
+                <div className="row">
+                  
+                </div>
+                <button onClick={onEdit} className="btn btn-warning px-3"><i class="bi bi-pencil-square"></i></button>
                 <button
-                    className="btn btn-danger text-start ms-2"
+                    className="btn btn-danger text-start ms-1 px-4"
                    
                     onClick={() => {
                       localStorage.setItem("userkey", "0");
@@ -90,10 +165,142 @@ const ProfileSection = ({ onEdit, userKey }) => {
                     }}
                     >
                     Logout
+                </button><br/>
+                    {(shopkey === null || shopkey === "0" || shopkey === undefined) && 
+                
+                  <button
+                  className="btn btn-success mt-1 px-4 fw-bold"
+                  data-bs-toggle="modal"
+                  data-bs-target="#createShopModal"
+                >
+                  Create a Shop
                 </button>
+            }
+
               </div>
             </div>
           </div>
+
+          {/* Create Shop Modal */}
+              <div
+                className="modal fade"
+                id="createShopModal"
+                tabIndex="-1"
+                aria-labelledby="createShopModalLabel"
+                aria-hidden="true"
+              >
+                <div className="modal-dialog">
+                  <form className="modal-content" onSubmit={handleCreateShop}>
+                    <div className="modal-header">
+                      <h5 className="modal-title" id="createShopModalLabel">
+                        Create a Shop
+                      </h5>
+                      <button
+                        type="button"
+                        className="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                      ></button>
+                    </div>
+                    <div className="modal-body">
+                      <div className="row">
+                        {/* Seller Name */}
+                        <div className="col-md-6 mb-3">
+                          <label className="form-label">Seller Name</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={newShop.sellername}
+                            onChange={(e) =>
+                              setNewShop({ ...newShop, sellername: e.target.value })
+                            }
+                            required
+                          />
+                        </div>
+                        {/* Shipping Location */}
+                        <div className="col-md-6 mb-3">
+                          <label className="form-label">Shipping Location</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={newShop.shippinglocation}
+                            onChange={(e) =>
+                              setNewShop({ ...newShop, shippinglocation: e.target.value })
+                            }
+                            required
+                          />
+                        </div>
+                      </div>
+                      {/* Shop Name */}
+                      <div className="mb-3">
+                        <label className="form-label">Shop Name</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={newShop.shopname}
+                          onChange={(e) =>
+                            setNewShop({ ...newShop, shopname: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                      {/* Shop Description */}
+                      <div className="mb-3">
+                        <label className="form-label">Shop Description</label>
+                        <textarea
+                          className="form-control"
+                          rows="3"
+                          value={newShop.shopdescription}
+                          onChange={(e) =>
+                            setNewShop({ ...newShop, shopdescription: e.target.value })
+                          }
+                          required
+                        ></textarea>
+                      </div>
+                      {/* Shop Banner */}
+                      <div className="mb-3">
+                        <label className="form-label">Shop Banner (URL)</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="https://example.com/banner.jpg"
+                          value={newShop.shopbanner}
+                          onChange={(e) =>
+                            setNewShop({ ...newShop, shopbanner: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                      {/* Shop Logo */}
+                      <div className="mb-3">
+                        <label className="form-label">Shop Logo (URL)</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="https://example.com/logo.jpg"
+                          value={newShop.shoplogo}
+                          onChange={(e) =>
+                            setNewShop({ ...newShop, shoplogo: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="modal-footer">
+                      <button type="submit" className="btn btn-success">
+                        Create Shop
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
         </section>
       ))}
     </>
@@ -1788,15 +1995,17 @@ const handlebuyagain = async (productID) => {
 const ProfilePage = (profilekey) => {
   const [active, setActive] = useState("profile");
   let userkey = profilekey.userkey;
-
+ 
+  
+  
   return (
-    <div className="container-fluid bg-light ">
-      <div className="row min-vh-100 ">
-        <nav className="col-md-3 col-lg-2 d-md-block bg-white border-end pt-4 ">
-          <div className="px-3">
-            <h5 className="fw-bold">Account</h5>
+    <div className="container-fluid bg-light " >
+      <div className="row min-vh-100 " style={{backgroundColor: "#eaecfe"}}>
+        <nav className="col-md-3 col-lg-2 d-md-block border-end pt-4 "style={{backgroundColor: "#eaecfe"}} >
+          <div className="px-3 "  >
+            <h5 className="fw-bold" >Account</h5>
             <ul className="nav flex-column mb-4">
-              <li className="nav-item">
+              <li className="nav-item ">
                 <button
                   className="nav-link btn btn-link text-start"
                   onClick={() => setActive("profile")}
