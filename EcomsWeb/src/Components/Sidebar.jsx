@@ -29,7 +29,7 @@ const Sidebar = () => {
         Dashboard
       </div>
       {[
-        { to: "/my-shop", label: "My Shop" },
+        { to: "/sellershop", label: "My Shop" },
         { to: "/sellerproducts", label: "My Products" },
         { to: "/orders", label: "Orders" },
         { to: "/refund-returns", label: "Cancelled Orders" },

@@ -9,6 +9,7 @@ import { Signup } from './Pages/Signup'
 import { Checkoutpage } from './Pages/Checkout'
 import { SellerDashboard } from './Pages/SellerDashboard'
 import { Sellerproducts } from './Pages/Sellerproducts'
+import { Sellershop } from './Pages/Sellershop'
 
 function App() {
 
@@ -27,6 +28,7 @@ function App() {
           <Route path="/signup" element={<Signup/>}/>
           <Route path="/sellerpage" element={<SellerDashboard/>}/>
           <Route path="/sellerproducts" element={<Sellerproducts/>}/>
+          <Route path="/sellershop" element={<Sellershop/>}/>
         </Routes>
       </Router>
      
