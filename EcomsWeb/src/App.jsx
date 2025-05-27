@@ -12,6 +12,7 @@ import { AuthProvider } from './Contexts/AuthContext'; // Import AuthProvider
 import { useState } from 'react'
 import { SellerDashboard } from './Pages/SellerDashboard'
 import { Sellerproducts } from './Pages/Sellerproducts'
+import { Sellershop } from './Pages/Sellershop'
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
           <Route path="/signup" element={<Signup/>}/>
           <Route path="/sellerdash" element={<SellerDashboard/>}/>
           <Route path="/sellerproducts" element={<Sellerproducts/>}/>
+          <Route path="/sellershop" element={<Sellershop/>}/>
         </Routes>
       </Router>
     </AuthProvider>
