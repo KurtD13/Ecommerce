@@ -31,8 +31,8 @@ const Sidebar = () => {
       {[
         { to: "/sellershop", label: "My Shop" },
         { to: "/sellerproducts", label: "My Products" },
-        { to: "/orders", label: "Orders" },
-        { to: "/refund-returns", label: "Cancelled Orders" },
+        { to: "/sellerorders", label: "Orders" },
+        { to: "/sellercancel", label: "Cancelled Orders" },
       ].map(({ to, label }, i) => (
         <Link
           key={to}

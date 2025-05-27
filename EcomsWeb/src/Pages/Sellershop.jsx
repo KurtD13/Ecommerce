@@ -2,7 +2,6 @@ import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Sellerheader";
 import React, { useEffect, useState } from 'react';
 
-
 export function Sellershop(){
   const [currentSlide, setCurrentSlide] = useState(0);
   
