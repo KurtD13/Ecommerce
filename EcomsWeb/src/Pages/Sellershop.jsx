@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import axios from "axios";
 
 
-
 export function Sellershop(){
   const [currentSlide, setCurrentSlide] = useState(0);
   const [shopData, setShopData] = useState([]);

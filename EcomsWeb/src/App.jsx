@@ -13,6 +13,8 @@ import { useState } from 'react'
 import { SellerDashboard } from './Pages/SellerDashboard'
 import { Sellerproducts } from './Pages/Sellerproducts'
 import { Sellershop } from './Pages/Sellershop'
+import { Sellerorders } from './Pages/Sellerorders'
+import { Sellercancel } from './Pages/Sellercancel'
 
 function App() {
   return (
@@ -40,6 +42,8 @@ function App() {
           <Route path="/sellerdash" element={<SellerDashboard/>}/>
           <Route path="/sellerproducts" element={<Sellerproducts/>}/>
           <Route path="/sellershop" element={<Sellershop/>}/>
+          <Route path="/sellerorders" element={<Sellerorders/>}/>
+          <Route path="/sellercancel" element={<Sellercancel/>}/>
         </Routes>
       </Router>
     </AuthProvider>
