@@ -31,3 +31,9 @@ export const deleteVariation = async (pvid) => {
         return rowCount > 0;
     
 }
+
+export const getVariationProduct = async(productkey) =>{
+    const{rows} = await query('SELECT * FROM product_variation WHERE productkey = $1',
+    [productkey]);
+    return rows;
+}

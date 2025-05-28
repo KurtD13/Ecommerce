@@ -6,10 +6,10 @@ export const getProducts = async() =>{
 }
 
 export const createProducts = async(productInfo) => {
-    const{ pname, pprice, pdesc, pimageurl, stock, is_available } = productInfo;
+    const{ pname, pprice, pimageurl, pdesc, stock, shopkey} = productInfo;
     const { rows } = await query (
-        'INSERT INTO products_info (pname, pprice, pdesc, pimageurl, stock, is_available) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-        [pname, pprice, pdesc, pimageurl, stock, is_available]
+        'INSERT INTO products_info (pname, pprice, pimageurl, pdesc, stock, shopkey) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+        [pname, pprice, pimageurl, pdesc, stock, shopkey]
     );
     return rows[0];
 }

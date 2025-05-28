@@ -59,3 +59,17 @@ export const deleteVariation = async (req, res) => {
         res.status(500).json({message: 'Internal Server Error'});
     }
 };
+
+export const getVariationProduct = async (req, res) => {
+  try {
+    const productkey = req.params.q; // Extract consumerid from the route parameter
+    const Variation = await Service.getVariationProduct(productkey);
+    if (!Variation) {
+      return res.status(404).json({ message: "Variation not found" });
+    }
+    res.status(200).json(Variation);
+  } catch (err) {
+    console.error("Error fetching Variation:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

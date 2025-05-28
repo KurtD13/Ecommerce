@@ -1,42 +1,64 @@
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Sellerheader";
 import React, { useState, useEffect } from 'react';
+import axios from "axios";
+
 
 export function Sellerproducts(){
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(false);
+    
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [activeTab, setActiveTab] = useState('All');
     const [searchTerm, setSearchTerm] = useState('');
     const [priceFilter, setPriceFilter] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('');
     const [filterOption, setFilterOption] = useState('');
+    const [variationInfo, setVariationInfo] = useState('');
+    const [productsInfo, setProductsInfo] = useState([]);
+    const shopKey = localStorage.getItem("shopkey");
+    const userkey = localStorage.getItem("userkey");
+
+    const [newProduct, setNewProduct] = useState({
+    pname: "",
+    pprice: "",
+    pimageurl: "",
+    pdesc: "",
+    stock: 0,
+    shopkey: shopKey
+    });
+
+     const handleCreateProduct = async (e) => {
+      e.preventDefault();
+      try {
+        // Create the shop
+        const response = await axios.post("http://localhost:3000/api/product", newProduct);
+        if (response.status === 200) {
+          alert("Product created successfully!");
+
+        }
+      } catch (err) {
+        console.error("Error creating shop:", err);
+        alert("Failed to create shop. Please try again.");
+      }
+    };
+
+
+    useEffect(() => {
+      const fetchshopData = async () => {
+        try {
+        const productresponse = await axios.get(`http://localhost:3000/api/product/shop/${shopKey}`);
+        setProductsInfo(productresponse.data);
+
+        const variationResponse = await axios.get(`http://localhost:3000/api/variation`);
+        setVariationInfo(variationResponse.data);
+
+    } catch (error) {
+      console.error('Error fetching shop data:', error);
+    }
+  };
+  fetchshopData();
+  }, [shopKey]);
 
  
-  const mockProducts = [
-    {
-      id: 1,
-      name: 'Product Name',
-      productId: 'ID:012986377',
-      sku: 'Pink',
-      quantity: 392,
-      retailPrice: 19999.99,
-      updatedOn: '03/09/2025\n12:11 PM',
-      status: 'Active',
-      itemCount: 5
-    },
-    {
-      id: 2,
-      name: 'Product Name', 
-      productId: 'ID:012986377',
-      sku: '128GB',
-      quantity: 21,
-      retailPrice: 104000.99,
-      updatedOn: '01/02/2025\n03:21 AM',
-      status: 'Inactive',
-      itemCount: 2
-    }
-  ];
 
   const tabCounts = {
     All: 3298,
@@ -47,13 +69,11 @@ export function Sellerproducts(){
     Deleted: ''
   };
 
-  useEffect(() => {
-    setProducts(mockProducts);
-  }, []);
+  
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedProducts(products.map(p => p.id));
+      setSelectedProducts(productsInfo.map(p => p.pid));
     } else {
       setSelectedProducts([]);
     }
@@ -95,7 +115,10 @@ export function Sellerproducts(){
               fontSize: '12px',
               padding: '6px 12px',
               fontWeight: '500'
+              
             }}
+             data-bs-toggle="modal"
+             data-bs-target="#createProduct"
           >
             Add new product
           </button>
@@ -320,39 +343,33 @@ export function Sellerproducts(){
               </tr>
             </thead>
             <tbody>
-              {products.map((product, index) => (
-                <React.Fragment key={product.id}>
+              {productsInfo.map((product) => (
+                <React.Fragment key={product.pid}>
                   <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
                     <td style={{ padding: '16px 12px', verticalAlign: 'middle' }}>
                       <input
                         type="checkbox"
                         className="form-check-input"
-                        checked={selectedProducts.includes(product.id)}
-                        onChange={() => handleSelectProduct(product.id)}
+                        checked={selectedProducts.includes(product.pid)}
+                        onChange={() => handleSelectProduct(product.pid)}
                       />
                     </td>
                     <td style={{ padding: '16px 12px', verticalAlign: 'middle' }}>
                       <div className="d-flex align-items-center">
-                        <div 
+                        <img 
                           className="me-3"
+                          src={product.pimageurl}
                           style={{ 
                             width: '48px', 
                             height: '48px', 
                             backgroundColor: '#f5f5f5',
-                            border: '1px solid #e0e0e0',
                             borderRadius: '4px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center'
                           }}
                         >
-                          <div style={{ 
-                            width: '24px', 
-                            height: '24px', 
-                            backgroundColor: '#ddd',
-                            borderRadius: '2px'
-                          }} />
-                        </div>
+                        </img>
                         <div>
                           <div style={{ 
                             fontSize: '14px', 
@@ -360,10 +377,10 @@ export function Sellerproducts(){
                             color: '#212121',
                             marginBottom: '2px'
                           }}>
-                            {product.name}
+                            {product.pname}
                           </div>
                           <div style={{ fontSize: '12px', color: '#757575' }}>
-                            {product.productId}
+                            Product Id: {product.pid}
                           </div>
                         </div>
                       </div>
@@ -374,7 +391,7 @@ export function Sellerproducts(){
                       padding: '16px 12px', 
                       verticalAlign: 'middle' 
                     }}>
-                      {product.sku}
+                      {/* {product.sku} */}
                     </td>
                     <td style={{ 
                       fontSize: '14px', 
@@ -382,7 +399,7 @@ export function Sellerproducts(){
                       padding: '16px 12px', 
                       verticalAlign: 'middle' 
                     }}>
-                      {product.quantity} 
+                      {product.stock} 
                       <i className="fas fa-edit ms-2" style={{ fontSize: '12px', color: '#999' }} />
                     </td>
                     <td style={{ 
@@ -391,7 +408,7 @@ export function Sellerproducts(){
                       padding: '16px 12px', 
                       verticalAlign: 'middle' 
                     }}>
-                      {formatPrice(product.retailPrice)} 
+                      {formatPrice(product.pprice)} 
                       <i className="fas fa-edit ms-2" style={{ fontSize: '12px', color: '#999' }} />
                     </td>
                     <td style={{ 
@@ -401,21 +418,21 @@ export function Sellerproducts(){
                       verticalAlign: 'middle',
                       whiteSpace: 'pre-line'
                     }}>
-                      {product.updatedOn}
+                      {(product.update_timestamp).substring(0,10)}
                     </td>
                     <td style={{ padding: '16px 12px', verticalAlign: 'middle' }}>
                       <div className="d-flex align-items-center">
                         <span 
                           className="badge me-3"
                           style={{ 
-                            backgroundColor: product.status === 'Active' ? '#4CAF50' : '#f44336',
+                            backgroundColor: product.is_available  ? '#4CAF50' : '#f44336',
                             color: 'white',
                             fontSize: '11px',
                             padding: '4px 8px',
                             fontWeight: '500'
                           }}
                         >
-                          {product.status}
+                          {product.is_available ? "Active" : "Inactive"}
                         </span>
                         <div className="dropdown">
                           <button 
@@ -448,12 +465,9 @@ export function Sellerproducts(){
                     <td colSpan="7" style={{ 
                       padding: '12px', 
                       backgroundColor: '#fafafa', 
-                      borderBottom: index === products.length - 1 ? 'none' : '1px solid #f0f0f0'
+                      // borderBottom: index === products.length - 1 ? 'none' : '1px solid #f0f0f0'
                     }}>
-                      <div className="d-flex justify-content-between align-items-center">
-                        <span style={{ fontSize: '12px', color: '#757575' }}>
-                          {product.itemCount} items
-                        </span>
+                      <div className="d-flex text-end">
                         <button 
                           className="btn btn-link p-0"
                           style={{ 
@@ -475,6 +489,116 @@ export function Sellerproducts(){
         </div>
       </div>
     </div>
+
+    {/* Create Product Modal */}
+              <div
+                className="modal fade"
+                id="createProduct"
+                tabIndex="-1"
+                aria-labelledby="createProductLabel"
+                aria-hidden="true"
+              >
+                <div className="modal-dialog">
+                  <form className="modal-content" onSubmit={handleCreateProduct}>
+                    <div className="modal-header">
+                      <h5 className="modal-title" id="createProductLabel">
+                        Create Product
+                      </h5>
+                      <button
+                        type="button"
+                        className="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                      ></button>
+                    </div>
+                    <div className="modal-body">
+                      <div className="row">
+                        {/* Product Name */}
+                        <div className="col-md-6 mb-3">
+                          <label className="form-label">Product Name</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={newProduct.pname}
+                            onChange={(e) =>
+                              setNewProduct({ ...newProduct, pname: e.target.value })
+                            }
+                            required
+                          />
+                        </div>
+                        {/* Product Image */}
+                        <div className="col-md-6 mb-3">
+                          <label className="form-label">Product Image</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={newProduct.pimageurl}
+                            onChange={(e) =>
+                              setNewProduct({ ...newProduct, pimageurl: e.target.value })
+                            }
+                            required
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Product Price */}
+                      <div className="mb-3">
+                        <label className="form-label">Product Cost</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={newProduct.pprice}
+                          onChange={(e) =>
+                            setNewProduct({ ...newProduct, pprice: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                      
+                      {/* Product Description */}
+                      <div className="mb-3">
+                        <label className="form-label">Product Description</label>
+                        <textarea
+                          className="form-control"
+                          rows="3"
+                          value={newProduct.pdesc}
+                          onChange={(e) =>
+                            setNewProduct({ ...newProduct, pdesc: e.target.value })
+                          }
+                          required
+                        ></textarea>
+                      </div>
+                      
+                      {/* Stock */}
+                      <div className="mb-3">
+                        <label className="form-label">Stock</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={newProduct.stock}
+                          onChange={(e) =>
+                            setNewProduct({ ...newProduct, stock: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                      
+                    </div>
+                    <div className="modal-footer">
+                      <button type="submit" className="btn btn-success">
+                        Create Product
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
         
         </>
         
