@@ -43,21 +43,22 @@ export const updateVariation = async (req, res) => {
 };
 
 export const deleteVariation = async (req, res) => {
-    try{
-        console.log("REQ BODY:", req.body);
-        const pvid = req.params.pvid;
-        const variationInfo = req.body;   
-        const deleted = await Service.deleteVariation(pvid);
-        if (!deleted){
-            return res.status(404).json({message : 'shop not found'})
-        }
-        res.status(200).send();
-
-    }catch(err){
-        
-        console.error("Error deleting shop: ", err);
-        res.status(500).json({message: 'Internal Server Error'});
+  try {
+    const pvid = req.params.pvid;
+    if (!pvid) {
+      return res.status(400).json({ message: "Missing variation ID" });
     }
+
+    const deleted = await Service.deleteVariation(pvid);
+    if (!deleted) {
+      return res.status(404).json({ message: "Variation not found" });
+    }
+
+    res.status(200).json({ message: "Variation deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting variation: ", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };
 
 export const getVariationProduct = async (req, res) => {

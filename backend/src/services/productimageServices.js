@@ -30,3 +30,8 @@ export const deleteImage = async (pimageid) => {
         return rowCount > 0;
     
 }
+
+export const getImages = async(productkey) =>{
+    const{rows} = await query('SELECT * FROM product_imagelist WHERE productkey = $1', [productkey]);
+    return rows;
+}

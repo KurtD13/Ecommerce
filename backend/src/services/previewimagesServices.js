@@ -6,10 +6,10 @@ export const getImage = async() =>{
 }
 
 export const createImage = async(imageinfo) => {
-    const{ pimages, productkey, previewname } = imageinfo;
+    const{ previewname, pimages, productkey } = imageinfo;
     const { rows } = await query (
-        'INSERT INTO images_preview (pimages, productkey, previewname) VALUES ($1, $2, $3) RETURNING *',
-        [pimages, productkey, previewname]
+        'INSERT INTO images_preview (previewname, pimages, productkey) VALUES ($1, $2, $3) RETURNING *',
+        [previewname, pimages, productkey]
     );
     return rows[0];
 }

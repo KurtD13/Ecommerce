@@ -59,3 +59,17 @@ export const deleteImage = async (req, res) => {
         res.status(500).json({message: 'Internal Server Error'});
     }
 };
+
+export const getImages = async (req, res) => {
+  try {
+    const productkey = req.params.q;
+    const ImageInfo = await Service.getImages(productkey);
+    if (!ImageInfo) {
+      return res.status(404).json({ message: "Image not found" });
+    }
+    res.status(200).json(ImageInfo);
+  } catch (err) {
+    console.error("Error fetching Image:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
