@@ -88,3 +88,16 @@ export const getPstatusInfo = async (productkey) => {
   );
   return rows;
 };
+
+
+export const updatePstatusSeller = async (pstatusInfo, pstatusid) => {
+  const{ pstatus } = pstatusInfo;
+  const { rows } = await query(
+    `UPDATE product_statuslist 
+     SET pstatus = $1 
+     WHERE pstatusid = $2 
+     RETURNING *`,
+    [pstatus ,pstatusid] 
+  );
+  return rows[0];
+};

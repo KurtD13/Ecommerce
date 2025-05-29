@@ -106,3 +106,21 @@ export const getProductStatusInfo = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const updatePstatusSeller = async (req, res) => {
+    try{
+        console.log("REQ BODY:", req.body);
+        const pstatusid = req.params.pstatusid;
+        const pstatusInfo = req.body;   
+        const updatedPstatusinfo = await Service.updatePstatusSeller(pstatusInfo, pstatusid );
+        if(!updatedPstatusinfo){
+            return res.status(404).json({message: 'status not found'});
+        }
+        res.status(200).json(updatedPstatusinfo);
+
+    }catch(err){
+        
+        console.error("Error updating status: ", err);
+        res.status(500).json({message: 'Internal Server Error'});
+    }
+};

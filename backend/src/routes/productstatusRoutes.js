@@ -10,4 +10,5 @@ router.delete('/pstatus/:pstatusid', controller.deletePstatus);
 router.put('/pstatus/cancel/:pstatusid', controller.cancelOrder);
 router.put('/pstatus/pay/:pstatusid', controller.payOrder);
 router.get('/pstatus/product/:q', controller.getProductStatusInfo);
+router.put('/pstatus/seller/:pstatusid', controller.updatePstatusSeller);
 export default router;

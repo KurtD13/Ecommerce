@@ -29,6 +29,10 @@ export function Sellerproducts(){
       setSelectedPreviews(imageid === selectedPreviews ? null : imageid); // toggle selection
     };
 
+     const handleSelectVariation = (pvid) => {
+      setSelectedpvid(pvid === selectedpvid ? null : pvid); // toggle selection
+    };
+
 
     const [newProduct, setNewProduct] = useState({
     pname: "",
@@ -203,6 +207,19 @@ export function Sellerproducts(){
       }
     };
 
+    const handleDeleteVariation = async (e) => {
+      try {
+        const productResponse = await axios.delete(`http://localhost:3000/api/variation/${selectedpvid}`);
+        if (productResponse.status === 200) {
+          alert("Variation is deleted successfully!");
+
+        }
+      } catch (err) {
+        console.error("Error deleting variation:", err);
+        alert("Failed deleting variation . Please try again.");
+      }
+    };
+
    useEffect(() => {
   const fetchshopData = async () => {
     try {
@@ -225,6 +242,7 @@ export function Sellerproducts(){
           .map(variation => ({
             pvname: variation.pvname,
             pvimage: variation.pvimage,
+            pvid: variation.pvid,
             productkey: variation.productkey
           })),
           
@@ -276,11 +294,8 @@ export function Sellerproducts(){
   };
 
   const handleSelectProduct = (productId) => {
-    setSelectedProducts(prev => 
-      prev.includes(productId) 
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId]
-    );
+    setSelectedPid(productId === selectedPid ? "" : productId); // toggle selection
+    
   };
 
   const formatPrice = (price) => {
@@ -606,7 +621,7 @@ export function Sellerproducts(){
                           <ul className="dropdown-menu dropdown-menu-end">
                             <li><button
                               key={product.pid}
-                              className="btn"
+                              className="dropdown-item"
                               data-bs-toggle="modal"
                               data-bs-target="#createVariation"
                               onClick={() => setSelectedPid(product.pid)}
@@ -963,13 +978,7 @@ export function Sellerproducts(){
                       <button type="submit" className="btn btn-success">
                         Create Product
                       </button>
-                      <button
-                        type="button"
-                        className="btn btn-secondary"
-                        data-bs-dismiss="modal"
-                      >
-                        Cancel
-                      </button>
+                      
                     </div>
                   </form>
                 </div>
@@ -1037,13 +1046,7 @@ export function Sellerproducts(){
                         }>
                         Add Image
                       </button>
-                      <button
-                        type="button"
-                        className="btn btn-secondary"
-                        data-bs-dismiss="modal"
-                      >
-                        Cancel
-                      </button>
+                      
                     </div>
                   </form>
                 </div>
@@ -1110,13 +1113,7 @@ export function Sellerproducts(){
                         }>
                         Add Image
                       </button>
-                      <button
-                        type="button"
-                        className="btn btn-secondary"
-                        data-bs-dismiss="modal"
-                      >
-                        Cancel
-                      </button>
+                      
                     </div>
                   </form>
                 </div>
@@ -1255,13 +1252,7 @@ export function Sellerproducts(){
                       <button type="submit" className="btn btn-success">
                         Update Product
                       </button>
-                      <button
-                        type="button"
-                        className="btn btn-secondary"
-                        data-bs-dismiss="modal"
-                      >
-                        Cancel
-                      </button>
+                      
                     </div>
                   </form>
                 </div>
@@ -1328,13 +1319,6 @@ export function Sellerproducts(){
                       >
                         Create Variation
                       </button>
-                      <button
-                        type="button"
-                        className="btn btn-secondary"
-                        data-bs-dismiss="modal"
-                      >
-                        Cancel
-                      </button>
                     </div>
 
                   </form>
@@ -1342,7 +1326,66 @@ export function Sellerproducts(){
               </div>
 
               {/* Delete Variation Modal */}
-              
+              <div
+                className="modal fade"
+                id="deleteVariation"
+                tabIndex="-1"
+                aria-labelledby="deleteVariationLabel"
+                aria-hidden="true"
+              >
+                <div className="modal-dialog">
+                  <form className="modal-content" onSubmit={handleDeleteVariation}>
+                    <div className="modal-header">
+                      <h5 className="modal-title" id="deleteVariation">
+                        Delete Variation
+                      </h5>
+                      <button
+                        type="button"
+                        className="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                      ></button>
+                    </div>
+                    <div className="modal-body">
+                      <div className="row">
+                        {/* Variation Name */}
+                        {productsInfo.map((product) => (
+                           
+                            product.variations.map((vari) => (
+                              vari.productkey === selectedPid && (
+                                  <div className="col-3 pt-2">
+                                    <div
+                                    key={vari.pvid}
+                                    value={vari.pvid}
+                                    onClick={() => handleSelectVariation(vari.pvid)}
+                                    className={`${selectedpvid === vari.pvid ? 'card text-center border-3 border border-warning' : 'text-center card'}`}
+                                    style={{
+                                      cursor: 'pointer',
+                                  }}
+                                  alt=""
+                                    >
+                                      {vari.pvname}
+                                    </div>
+
+                                </div>
+                              )
+                                
+                              ))
+                            ))}
+                      </div>
+                    </div>
+                    <div className="modal-footer">
+                      <button
+                        type="submit"
+                        className="btn btn-danger"
+                      >
+                        Delete Variation
+                      </button>
+                    </div>
+
+                  </form>
+                </div>
+              </div>
              
 
           

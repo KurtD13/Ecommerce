@@ -1,8 +1,78 @@
 import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Sellerheader";
+import axios from "axios";
 
 export function Sellerorders() {
+  const [productStatus, setProductStatus] = useState([]);
+  const [productkey, setProductkey] = useState([]);
+  const [variations, setVariations] = useState([]);
+  const [products, setProducts] = useState([]);
+  const shopKey = localStorage.getItem("shopkey");
+  const [selectedProductId, setSelectedProductId] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState(null);
+
+const handleArrangeStatus = async () => {
+  console.log("Selected Product ID:", selectedProductId); // Debugging log
+  console.log("Selected Status:", selectedStatus); // Debugging log
+
+  if (!selectedProductId || !selectedStatus) {
+    alert("Please select a status to update.");
+    return;
+  }
+
+  try {
+    const response = await axios.put(
+      `http://localhost:3000/api/pstatus/seller/${selectedProductId}`,
+      { pstatus: parseInt(selectedStatus) }
+    );
+
+    if (response.status === 200) {
+      alert("Status updated successfully!");
+      // Update the local state to reflect the change
+      const updatedProductStatus = productStatus.map((status) =>
+        status.productstatusid === selectedProductId
+          ? { ...status, pstatus: parseInt(selectedStatus) }
+          : status
+      );
+      setProductStatus(updatedProductStatus);
+    }
+  } catch (err) {
+    console.error("Error updating status:", err);
+    alert("Failed to update status. Please try again.");
+  }
+};
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch products under the shop
+        const productResponse = await axios.get(
+          `http://localhost:3000/api/product/shop/${shopKey}`
+        );
+        setProducts(productResponse.data);
+
+        const productStatusPromises = productResponse.data.map(async (product) => {
+          const response = await axios.get(
+            `http://localhost:3000/api/pstatus/product/${product.pid}`
+          );
+          return response.data;
+        });
+
+        const productStatuses = await Promise.all(productStatusPromises);
+        setProductStatus(productStatuses.flat());
+
+        const variationResponse = await axios.get(
+          `http://localhost:3000/api/variation`
+        );
+        setVariations(variationResponse.data);
+
+      } catch (err) {
+        console.error("Error fetching data:", err.message);
+      }
+    };
+    fetchData();
+  }, [shopKey]);
+
   const ordersSummaryData = {
     shipWithin24: 25,
     autoCancel24: 5,
@@ -12,53 +82,35 @@ export function Sellerorders() {
     returnRefundRequests: 1,
   };
 
-  const productsMock = [
-    {
-      id: 1,
-      name: "Product A",
-      variation: "Red, Large",
-      quantity: 10,
-      totalPrice: "₱1,000.00",
-      status: "To Ship",
-      shippingChannel: "Standard Local",
-    },
-    {
-      id: 2,
-      name: "Product B",
-      variation: "Blue, Medium",
-      quantity: 5,
-      totalPrice: "₱500.00",
-      status: "Shipped",
-      shippingChannel: "Express",
-    },
-    {
-      id: 3,
-      name: "Product C",
-      variation: "Green, Small",
-      quantity: 2,
-      totalPrice: "₱200.00",
-      status: "Completed",
-      shippingChannel: "Standard Local",
-    },
-    {
-      id: 4,
-      name: "Product D",
-      variation: "Black, XL",
-      quantity: 7,
-      totalPrice: "₱700.00",
-      status: "To Ship",
-      shippingChannel: "Standard Local",
-    },
-    {
-      id: 5,
-      name: "Product E",
-      variation: "Yellow, Medium",
-      quantity: 1,
-      totalPrice: "₱100.00",
-      status: "Canceled",
-      shippingChannel: "Standard Local",
-    },
-  ];
+  const productsData = productStatus.map((status) => {
+    const product = products.find((p) => p.pid === status.productkey);
+    const variation = variations.find((v) => v.productkey === status.productkey);
+
+    return {
+      id: status.pstatusid,
+      name: product ? product.pname : "Unknown Product",
+      variation: variation ? variation.pvname : "No Variation",
+      quantity: status.itemquantity,
+      totalPrice: status.parcelcost,
+      status: (() => {
+        switch (status.pstatus) {
+          case 1:
+            return "Pending";
+          case 2:
+            return "To Ship";
+          case 3:
+            return "Shipped";
+          case 4:
+            return "Completed";
+          case 5:
+            return "Canceled";
+          default:
+            return "Unknown";
+        }
+      })(),
+      shippingChannel: status.shipaddress,
+    };
+  });
 
   const tabs = ["All", "To Ship", "Shipped", "Completed", "Pending", "Canceled"];
 
@@ -69,8 +121,8 @@ export function Sellerorders() {
 
   const filteredProducts =
     activeTab === "All"
-      ? productsMock
-      : productsMock.filter(
+      ? productsData
+      : productsData.filter(
           (p) => p.status.toLowerCase() === activeTab.toLowerCase()
         );
 
@@ -82,25 +134,9 @@ export function Sellerorders() {
     selectAllRef.current.indeterminate = isIndeterminate;
   }, [selectedProducts, filteredProducts]);
 
-  const toggleSelectAll = () => {
-    if (selectAll) {
-      setSelectedProducts([]);
-    } else {
-      setSelectedProducts(filteredProducts.map((p) => p.id));
-    }
-    setSelectAll(!selectAll);
-  };
+  
 
-  const toggleSelectProduct = (id) => {
-    if (selectedProducts.includes(id)) {
-      setSelectedProducts(selectedProducts.filter((pid) => pid !== id));
-      setSelectAll(false);
-    } else {
-      const newSelected = [...selectedProducts, id];
-      setSelectedProducts(newSelected);
-      if (newSelected.length === filteredProducts.length) setSelectAll(true);
-    }
-  };
+ 
 
   return (
     <div className="d-flex flex-column vh-100">
@@ -118,7 +154,6 @@ export function Sellerorders() {
             borderRadius: "8px",
           }}
         >
-
           <section
             className="bg-light p-4 rounded mb-4"
             style={{ marginBottom: "30px" }}
@@ -204,21 +239,12 @@ export function Sellerorders() {
               borderBottom: "2px solid #ccc",
             }}
           >
-            <div style={{ width: "4%" }}>
-              <input
-                type="checkbox"
-                ref={selectAllRef}
-                checked={selectAll}
-                onChange={toggleSelectAll}
-                style={{ width: "18px", height: "18px" }}
-                aria-label="Select all products"
-              />
-            </div>
+            
             <div style={{ flexGrow: 1, minWidth: "250px" }}>Product/s</div>
             <div style={{ width: "10%" }}>Quantity</div>
             <div style={{ width: "15%" }}>Total Price</div>
             <div style={{ width: "12%" }}>Status</div>
-            <div style={{ width: "20%" }}>Shipping Channel</div>
+            <div style={{ width: "20%" }}>Shipping Location</div>
             <div style={{ width: "14%" }} className="text-center">
               Actions
             </div>
@@ -237,13 +263,7 @@ export function Sellerorders() {
                 }}
               >
                 <div style={{ width: "4%" }}>
-                  <input
-                    type="checkbox"
-                    checked={selectedProducts.includes(product.id)}
-                    onChange={() => toggleSelectProduct(product.id)}
-                    style={{ width: "18px", height: "18px" }}
-                    aria-label={`Select product ${product.name}`}
-                  />
+                  
                 </div>
                 <div
                   style={{ flexGrow: 1, minWidth: "250px" }}
@@ -282,15 +302,24 @@ export function Sellerorders() {
                   {product.shippingChannel}
                 </div>
                 <div style={{ width: "14%", fontSize: "0.9rem" }} className="text-center">
+                {(product.status === "To Ship" ||
+                  product.status === "Pending" ||
+                  product.status === "Shipped") && (
                   <button
                     type="button"
                     className="btn btn-sm btn-outline-secondary"
                     style={{ fontSize: "0.85rem", padding: "0.3rem 0.75rem" }}
-                    aria-label={`Arrange pickup for ${product.name}`}
+                    data-bs-toggle="modal"
+                    data-bs-target="#arrangeStatusModal"
+                    onClick={() => {
+                      console.log("Setting Selected Product ID:", product.id); // Debugging log
+                      setSelectedProductId(product.id); // Use product.pid instead of product.id
+                    }}
                   >
-                    Arrange Pickup
+                    Arrange Status
                   </button>
-                </div>
+                )}
+              </div>
               </div>
             ))}
 
@@ -299,6 +328,98 @@ export function Sellerorders() {
                 No orders found.
               </div>
             )}
+
+            <div
+  className="modal fade"
+  id="arrangeStatusModal"
+  tabIndex="-1"
+  aria-labelledby="arrangeStatusModalLabel"
+  aria-hidden="true"
+>
+  <div className="modal-dialog">
+    <div className="modal-content">
+      <div className="modal-header">
+        <h5 className="modal-title" id="arrangeStatusModalLabel">
+          Arrange Status
+        </h5>
+        <button
+          type="button"
+          className="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div className="modal-body">
+        <p>Select the new status for this order:</p>
+        <div className="form-check">
+  <input
+    className="form-check-input"
+    type="radio"
+    name="status"
+    id="toShip"
+    value="2"
+    onChange={(e) => {
+      console.log("Selected Status:", e.target.value); // Debugging log
+      setSelectedStatus(e.target.value);
+    }}
+  />
+  <label className="form-check-label" htmlFor="toShip">
+    To Ship
+  </label>
+</div>
+<div className="form-check">
+  <input
+    className="form-check-input"
+    type="radio"
+    name="status"
+    id="shipped"
+    value="3"
+    onChange={(e) => {
+      console.log("Selected Status:", e.target.value); // Debugging log
+      setSelectedStatus(e.target.value);
+    }}
+  />
+  <label className="form-check-label" htmlFor="shipped">
+    Shipped
+  </label>
+</div>
+<div className="form-check">
+  <input
+    className="form-check-input"
+    type="radio"
+    name="status"
+    id="completed"
+    value="4"
+    onChange={(e) => {
+      console.log("Selected Status:", e.target.value); // Debugging log
+      setSelectedStatus(e.target.value);
+    }}
+  />
+  <label className="form-check-label" htmlFor="completed">
+    Completed
+  </label>
+</div>
+      </div>
+      <div className="modal-footer">
+        <button
+          type="button"
+          className="btn btn-secondary"
+          data-bs-dismiss="modal"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={handleArrangeStatus}
+        >
+          Update Status
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+            
           </div>
         </main>
       </div>
