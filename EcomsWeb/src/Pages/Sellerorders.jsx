@@ -155,51 +155,9 @@ const handleArrangeStatus = async () => {
           }}
         >
           <section
-            className="bg-light p-4 rounded mb-4"
-            style={{ marginBottom: "30px" }}
+            className="bg-light p-4 rounded"
           >
-            <h6
-              className="mb-4"
-              style={{
-                fontSize: "1.3rem",
-                fontWeight: "700",
-                letterSpacing: "0.02em",
-              }}
-            >
-              Orders Summary
-            </h6>
-            <div
-              className="d-flex justify-content-between text-center flex-wrap"
-              style={{ fontSize: "1rem", gap: "20px" }}
-            >
-              {Object.entries(ordersSummaryData).map(([key, value]) => {
-                const label = {
-                  shipWithin24: "Ship within 24 hours",
-                  autoCancel24: "Auto Cancel within 24 hours",
-                  shippingOverdue: "Shipping Overdue",
-                  cancellationRequest: "Cancellation Request",
-                  abnormalPackages: "Abnormal Packages",
-                  returnRefundRequests: "Return/Refund Requests",
-                }[key];
-                return (
-                  <div
-                    key={key}
-                    style={{ minWidth: "140px", flexGrow: 1, flexBasis: "140px" }}
-                  >
-                    <strong
-                      style={{
-                        fontSize: "1.5rem",
-                        display: "block",
-                        marginBottom: "6px",
-                      }}
-                    >
-                      {value}
-                    </strong>
-                    <div style={{ fontSize: "1rem", color: "#444" }}>{label}</div>
-                  </div>
-                );
-              })}
-            </div>
+           <h2>Manage Orders</h2> 
           </section>
 
           <nav

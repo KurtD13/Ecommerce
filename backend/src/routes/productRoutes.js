@@ -11,4 +11,5 @@ router.get('/product/search', controller.searchProduct);
 router.get('/product/:pid', controller.getProductById);
 router.get('/product/shop/:q', controller.getShopProducts);
 router.put('/product/pratings/:pid', controller.updateProductRatings);
+router.put('/product/available/:pid', controller.updateProductAvailability);
 export default router;

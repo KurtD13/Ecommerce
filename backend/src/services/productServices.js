@@ -69,3 +69,11 @@ export const updateProductRatings = async(productinfo, pid) => {
     return rows[0];
 }
 
+export const updateProductAvailability = async(productinfo, pid) => {
+    const{ is_available } = productinfo;
+    const { rows } = await query (
+        'UPDATE products_info SET is_available = $1 WHERE pid = $2 RETURNING *',
+        [is_available, pid ]
+    );
+    return rows[0];
+}

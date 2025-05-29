@@ -20,6 +20,7 @@ export function Sellerproducts(){
     const [selectedpvid, setSelectedpvid] = useState("");  
     const [selectedImageId, setSelectedImageId] = useState(null);
     const [selectedPreviews, setSelectedPreviews] = useState(null);
+    const [filteredProducts, setFilteredProducts] = useState([]);
    
     const handleSelect = (pimageid) => {
             setSelectedImageId(pimageid === selectedImageId ? null : pimageid); // toggle selection
@@ -143,6 +144,47 @@ export function Sellerproducts(){
       });
     };
 
+    const handleActivateProducts = async () => {
+      try {
+        for (const pid of selectedProducts) {
+          await axios.put(`http://localhost:3000/api/product/available/${pid}`, { is_available: true });
+        }
+        alert("Selected products have been activated!");
+        setSelectedProducts([]); // Clear selection
+        fetchshopData(); // Refresh product data
+      } catch (err) {
+        console.error("Error activating products:", err);
+        alert("Failed to activate products. Please try again.");
+      }
+    };
+
+    const handleDeactivateProducts = async () => {
+      try {
+        for (const pid of selectedProducts) {
+          await axios.put(`http://localhost:3000/api/product/available/${pid}`, { is_available: false });
+        }
+        alert("Selected products have been deactivated!");
+        setSelectedProducts([]); // Clear selection
+        fetchshopData(); // Refresh product data
+      } catch (err) {
+        console.error("Error deactivating products:", err);
+        alert("Failed to deactivate products. Please try again.");
+      }
+    };
+
+    const handleDeleteSelectedProducts = async () => {
+      try {
+        for (const pid of selectedProducts) {
+          await axios.delete(`http://localhost:3000/api/product/${pid}`);
+        }
+        alert("Selected products have been deleted!");
+        setSelectedProducts([]); // Clear selection
+        fetchshopData(); // Refresh product data
+      } catch (err) {
+        console.error("Error deleting products:", err);
+        alert("Failed to delete products. Please try again.");
+      }
+    };
     
      
       
@@ -220,7 +262,7 @@ export function Sellerproducts(){
       }
     };
 
-   useEffect(() => {
+ 
   const fetchshopData = async () => {
     try {
       const productresponse = await axios.get(`http://localhost:3000/api/product/shop/${shopKey}`);
@@ -271,8 +313,37 @@ export function Sellerproducts(){
       console.error('Error fetching shop data:', error);
     }
   };
+  useEffect(() => {
   fetchshopData();
 }, [shopKey]);
+
+
+useEffect(() => {
+  let filtered = [...productsInfo];
+
+  // Apply search filter
+  if (searchTerm) {
+    filtered = filtered.filter((product) =>
+      product.pname.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
+
+  // Apply price filter
+  if (priceFilter === "low-to-high") {
+    filtered.sort((a, b) => a.pprice - b.pprice);
+  } else if (priceFilter === "high-to-low") {
+    filtered.sort((a, b) => b.pprice - a.pprice);
+  }
+
+  // Apply additional filter options
+  if (filterOption === "newest") {
+    filtered.sort((a, b) => new Date(b.update_timestamp) - new Date(a.update_timestamp));
+  } else if (filterOption === "oldest") {
+    filtered.sort((a, b) => new Date(a.update_timestamp) - new Date(b.update_timestamp));
+  }
+
+  setFilteredProducts(filtered);
+}, [productsInfo, searchTerm, priceFilter, filterOption]);
 
   const tabCounts = {
     All: 3298,
@@ -294,13 +365,21 @@ export function Sellerproducts(){
   };
 
   const handleSelectProduct = (productId) => {
-    setSelectedPid(productId === selectedPid ? "" : productId); // toggle selection
-    
-  };
+  setSelectedProducts((prevSelected) => {
+    if (prevSelected.includes(productId)) {
+      // If the product is already selected, remove it
+      return prevSelected.filter((id) => id !== productId);
+    } else {
+      // Otherwise, add it to the selected list
+      return [...prevSelected, productId];
+    }
+  });
+};
 
-  const formatPrice = (price) => {
-    return `Php ${price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-  };
+ const formatPrice = (price) => {
+  return `Php ${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
+
     return(
         <>
         <Header />
@@ -335,30 +414,7 @@ export function Sellerproducts(){
           </button>
         </div>
 
-        <div className="mb-4">
-          <ul className="nav" style={{ borderBottom: '2px solid #ddd', paddingBottom: '0' }}>
-            {Object.entries(tabCounts).map(([tab, count]) => (
-              <li className="nav-item me-4" key={tab}>
-                <button
-                  className={`nav-link ${activeTab === tab ? 'active' : ''}`}
-                  onClick={() => setActiveTab(tab)}
-                  style={{ 
-                    backgroundColor: 'transparent',
-                    color: '#666',
-                    border: 'none',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    padding: '8px 0',
-                    borderBottom: activeTab === tab ? '2px solid #2196F3' : 'none',
-                    marginBottom: '-2px'
-                  }}
-                >
-                  {tab} {count && <span style={{ color: '#999' }}>{count}</span>}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
+      
 
         <div className="d-flex align-items-center gap-3 mb-3 flex-wrap">
           <div style={{ flex: '1', minWidth: '250px', maxWidth: '300px' }}>
@@ -406,22 +462,6 @@ export function Sellerproducts(){
             </select>
           </div>
           
-          <div style={{ minWidth: '120px' }}>
-            <select 
-              className="form-select"
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              style={{ 
-                fontSize: '14px',
-                height: '38px',
-                border: '1px solid #ddd'
-              }}
-            >
-              <option value="">Category</option>
-              <option value="electronics">Electronics</option>
-              <option value="clothing">Clothing</option>
-            </select>
-          </div>
           
           <div style={{ minWidth: '120px' }}>
             <div className="position-relative">
@@ -474,47 +514,53 @@ export function Sellerproducts(){
           </div>
         </div>
 
-        <div className="d-flex align-items-center mb-3">
-          <span style={{ fontSize: '14px', color: '#666', marginRight: '16px' }}>
-            Selected: 0
-          </span>
-          <button 
-            className="btn me-2"
-            style={{ 
-              backgroundColor: '#4CAF50', 
-              color: 'white', 
-              fontSize: '12px',
-              padding: '6px 12px',
-              border: 'none'
-            }}
-          >
-            Activate
-          </button>
-          <button 
-            className="btn me-2"
-            style={{ 
-              backgroundColor: '#f44336', 
-              color: 'white', 
-              fontSize: '12px',
-              padding: '6px 12px',
-              border: 'none'
-            }}
-          >
-            Deactivate
-          </button>
-          <button 
-            className="btn"
-            style={{ 
-              backgroundColor: '#757575', 
-              color: 'white', 
-              fontSize: '12px',
-              padding: '6px 12px',
-              border: 'none'
-            }}
-          >
-            Delete
-          </button>
-        </div>
+          <div className="d-flex align-items-center mb-3">
+            <span style={{ fontSize: '14px', color: '#666', marginRight: '16px' }}>
+              Selected: {selectedProducts.length}
+            </span>
+            <button
+              className="btn me-2"
+              style={{
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                fontSize: '12px',
+                padding: '6px 12px',
+                border: 'none',
+              }}
+              onClick={handleActivateProducts}
+              disabled={selectedProducts.length === 0} // Disable if no products are selected
+            >
+              Activate
+            </button>
+            <button
+              className="btn me-2"
+              style={{
+                backgroundColor: '#f44336',
+                color: 'white',
+                fontSize: '12px',
+                padding: '6px 12px',
+                border: 'none',
+              }}
+              onClick={handleDeactivateProducts}
+              disabled={selectedProducts.length === 0} // Disable if no products are selected
+            >
+              Deactivate
+            </button>
+            <button
+              className="btn"
+              style={{
+                backgroundColor: '#757575',
+                color: 'white',
+                fontSize: '12px',
+                padding: '6px 12px',
+                border: 'none',
+              }}
+              onClick={handleDeleteSelectedProducts}
+              disabled={selectedProducts.length === 0} // Disable if no products are selected
+            >
+              Delete
+            </button>
+          </div>
 
         <div style={{ backgroundColor: 'white', borderRadius: '4px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
           <table className="table mb-0" style={{ fontSize: '14px' }}>
@@ -554,326 +600,312 @@ export function Sellerproducts(){
               </tr>
             </thead>
             <tbody>
-              {productsInfo.map((product) => (
-                <React.Fragment key={product.pid}>
-                  <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
-                    <td style={{ padding: '16px 12px', verticalAlign: 'middle' }}>
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        checked={selectedProducts.includes(product.pid)}
-                        onChange={() => handleSelectProduct(product.pid)}
-                      />
-                    </td>
-                    <td style={{ padding: '16px 12px', verticalAlign: 'middle' }}>
-                      <div className="d-flex align-items-center">
-                        <img 
-                          className="me-3"
-                          src={product.pimageurl}
-                          style={{ 
-                            width: '48px', 
-                            height: '48px', 
-                            backgroundColor: '#f5f5f5',
-                            borderRadius: '4px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                        >
-                        </img>
-                        <div>
-                          <div style={{ 
-                            fontSize: '14px', 
-                            fontWeight: '500', 
-                            color: '#212121',
-                            marginBottom: '2px'
-                          }}>
-                            {product.pname}
-                          </div>
-                          <div style={{ fontSize: '12px', color: '#757575' }}>
-                            Product Id: {product.pid}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td style={{ 
-                      fontSize: '14px', 
-                      color: '#424242', 
-                      padding: '16px 12px', 
-                      verticalAlign: 'middle' 
-                    }}>
+  {filteredProducts.map((product) => (
+    <React.Fragment key={product.pid}>
+      <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
+        <td style={{ padding: '16px 12px', verticalAlign: 'middle' }}>
+          <input
+            type="checkbox"
+            className="form-check-input"
+            checked={selectedProducts.includes(product.pid)}
+            onChange={() => handleSelectProduct(product.pid)}
+          />
+        </td>
+        <td style={{ padding: '16px 12px', verticalAlign: 'middle' }}>
+          <div className="d-flex align-items-center">
+            <img
+              className="me-3"
+              src={product.pimageurl}
+              style={{
+                width: '48px',
+                height: '48px',
+                backgroundColor: '#f5f5f5',
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              alt=""
+            />
+            <div>
+              <div
+                style={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#212121',
+                  marginBottom: '2px',
+                }}
+              >
+                {product.pname}
+              </div>
+              <div style={{ fontSize: '12px', color: '#757575' }}>
+                Product Id: {product.pid}
+              </div>
+            </div>
+          </div>
+        </td>
+        <td style={{ fontSize: '14px', color: '#424242', padding: '16px 12px', verticalAlign: 'middle' }}>
+          <div className="row">
+            <div className="col-2 me-2">
+              <div className="dropdown">
+                <button
+                  className="btn dropdown-toggle "
+                  type="button"
+                  data-bs-toggle="dropdown"
+                  style={{
+                    backgroundColor: '#757575',
+                    color: 'white',
+                    fontSize: '11px',
+                    border: 'none',
+                  }}
+                >
+                  <i className="bi bi-pencil-fill"></i>
+                </button>
+                <ul className="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <button
+                      key={product.pid}
+                      className="dropdown-item"
+                      data-bs-toggle="modal"
+                      data-bs-target="#createVariation"
+                      onClick={() => setSelectedPid(product.pid)}
+                    >
+                      Add
+                    </button>
+                  </li>
+                  <li>
+                    <hr className="dropdown-divider" />
+                  </li>
+                  <li>
+                    <button
+                      className="dropdown-item text-danger"
+                      data-bs-toggle="modal"
+                      data-bs-target="#deleteVariation"
+                      onClick={() => setSelectedPid(product.pid)}
+                    >
+                      Delete
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div className="col-5">
+              <select
+                className="form-select form-select-sm w-auto"
+                value={product.variation || ''}
+              >
+                {product.variations && product.variations.length > 0 ? (
+                  product.variations.map((variation, index) => (
+                    <option
+                      key={index}
+                      value={variation.pvname}
+                      onClick={() => setActiveTab(variation.pvname)}
+                    >
+                      {variation.pvname}
+                    </option>
+                  ))
+                ) : (
+                  <option>No Variations</option>
+                )}
+              </select>
+            </div>
+          </div>
+        </td>
+        <td style={{ fontSize: '14px', color: '#424242', padding: '16px 12px', verticalAlign: 'middle' }}>
+          {product.stock}
+        </td>
+        <td style={{ fontSize: '14px', color: '#424242', padding: '16px 12px', verticalAlign: 'middle' }}>
+          {formatPrice(product.pprice)}
+        </td>
+        <td style={{ fontSize: '12px', color: '#757575', padding: '16px 12px', verticalAlign: 'middle', whiteSpace: 'pre-line' }}>
+          {product.update_timestamp.substring(0, 10)}
+        </td>
+        <td style={{ padding: '16px 12px', verticalAlign: 'middle' }}>
+          <div className="d-flex align-items-center">
+            <span
+              className="badge me-3"
+              style={{
+                backgroundColor: product.is_available ? '#4CAF50' : '#f44336',
+                color: 'white',
+                fontSize: '11px',
+                padding: '4px 8px',
+                fontWeight: '500',
+              }}
+            >
+              {product.is_available ? 'Active' : 'Inactive'}
+            </span>
+            <div className="dropdown">
+              <button
+                className="btn dropdown-toggle"
+                type="button"
+                data-bs-toggle="dropdown"
+                style={{
+                  backgroundColor: '#757575',
+                  color: 'white',
+                  fontSize: '11px',
+                  padding: '4px 8px',
+                  border: 'none',
+                  fontWeight: '500',
+                }}
+              >
+                More
+              </button>
+              <ul className="dropdown-menu dropdown-menu-end">
+                <li>
+                  <button
+                    className="dropdown-item"
+                    data-bs-toggle="modal"
+                    data-bs-target="#updateProduct"
+                    onClick={() => {
+                      handleEditButtonClick(product);
+                      setSelectedPid(product.pid);
+                    }}
+                  >
+                    Edit
+                  </button>
+                </li>
+                <li>
+                  <hr className="dropdown-divider" />
+                </li>
+                <li>
+                  <button
+                    className="dropdown-item text-danger"
+                    onClick={() => {
+                      handleDeleteProducts();
+                      setSelectedPid(product.pid);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td colSpan="7" style={{ padding: '12px', backgroundColor: '#fafafa' }}>
+          <div className="mb-2">
+            <div className="d-flex justify-content-between align-items-center">
+              <span>{product.name}</span>
+              <button
+                className="btn btn-link p-0"
+                style={{
+                  fontSize: '12px',
+                  color: '#2196F3',
+                  textDecoration: 'none',
+                  fontWeight: '500',
+                }}
+                data-bs-toggle="collapse"
+                data-bs-target={`#collapseImages-${product.pid}`}
+                aria-expanded="false"
+                aria-controls={`collapseImages-${product.pid}`}
+                onClick={() => setSelectedPid(product.pid)}
+              >
+                Expand <i className="fas fa-chevron-down ms-1" style={{ fontSize: '10px' }} />
+              </button>
+            </div>
+            <div className="collapse" id={`collapseImages-${product.pid}`}>
+              <div className="row d-flex">
+                <div className="col-2 card">
+                  <p className="fw-bold text-center pt-2">Product Description Images</p>
+                  <button
+                    className="btn btn-outline-success w-100 mb-1"
+                    data-bs-toggle="modal"
+                    data-bs-target={`#productImage`}
+                    onClick={() => setSelectedPid(product.pid)}
+                  >
+                    Add Pictures
+                  </button>
+                  <button
+                    className="btn btn-outline-danger w-100"
+                    disabled={!selectedImageId}
+                    onClick={handleDelete}
+                  >
+                    Delete Picture
+                  </button>
+                </div>
+                <div className="col-4 card gap-2">
                   <div className="row">
-                    <div className="col-2">
-                       <div className="dropdown">
-                          <button 
-                            className="btn dropdown-toggle"
-                            type="button"
-                            data-bs-toggle="dropdown"
-                            style={{ 
-                              backgroundColor: '#757575',
-                              color: 'white',
-                              fontSize: '11px',
-                              border: 'none'
+                    {product.images && product.images.length > 0 ? (
+                      product.images.map((image) => (
+                        <div className="col-3 pt-2" key={image.pimageid}>
+                          <img
+                            src={image.pimage}
+                            onClick={() => handleSelect(image.pimageid)}
+                            className={`img-thumbnail ${
+                              selectedImageId === image.pimageid ? 'border border-3 border-primary' : ''
+                            }`}
+                            style={{
+                              maxHeight: '100px',
+                              maxWidth: '100px',
+                              minHeight: '100px',
+                              minWidth: '100px',
+                              cursor: 'pointer',
                             }}
-                          >
-                            <i class="bi bi-pencil-fill"></i>
-                          </button>
-                          <ul className="dropdown-menu dropdown-menu-end">
-                            <li><button
-                              key={product.pid}
-                              className="dropdown-item"
-                              data-bs-toggle="modal"
-                              data-bs-target="#createVariation"
-                              onClick={() => setSelectedPid(product.pid)}
-                            >
-                            Add
-                            </button></li>
-                            <li><hr className="dropdown-divider" /></li>
-                            <li><button 
-                            className="dropdown-item text-danger" 
-                            data-bs-toggle="modal"
-                            data-bs-target="#deleteVariation"
-                            onClick={() => setSelectedPid(product.pid)}
-                            >Delete</button>
-                            </li>
-                          </ul>
+                            alt=""
+                          />
                         </div>
-                    </div>
-                    <div className="col-5"> <select
-                          className="form-select form-select-sm w-auto "
-                          value={product.variation || ""}
-                        >
-                          {product.variations && product.variations.length > 0 ? (
-                            product.variations.map((variation, index) => (
-                              <option key={index} value={variation.pvname} onClick={() => setActiveTab(variation.pvname)}>
-                                {variation.pvname}
-                              </option>
-                            ))
-                          ) : (
-                            <option>No Variations</option>
-                          )}
-                        </select></div>
-                    
-                  </div>  
-                    </td>
-                    <td style={{ 
-                      fontSize: '14px', 
-                      color: '#424242', 
-                      padding: '16px 12px', 
-                      verticalAlign: 'middle' 
-                    }}>
-                      {product.stock} 
-    
-                    </td>
-                    <td style={{ 
-                      fontSize: '14px', 
-                      color: '#424242', 
-                      padding: '16px 12px', 
-                      verticalAlign: 'middle' 
-                    }}>
-                      {formatPrice(product.pprice)} 
-        
-                    </td>
-                    <td style={{ 
-                      fontSize: '12px', 
-                      color: '#757575', 
-                      padding: '16px 12px', 
-                      verticalAlign: 'middle',
-                      whiteSpace: 'pre-line'
-                    }}>
-                      {(product.update_timestamp).substring(0,10)}
-                    </td>
-                    <td style={{ padding: '16px 12px', verticalAlign: 'middle' }}>
-                      <div className="d-flex align-items-center">
-                        <span 
-                          className="badge me-3"
-                          style={{ 
-                            backgroundColor: product.is_available  ? '#4CAF50' : '#f44336',
-                            color: 'white',
-                            fontSize: '11px',
-                            padding: '4px 8px',
-                            fontWeight: '500'
-                          }}
-                        >
-                          {product.is_available ? "Active" : "Inactive"}
-                        </span>
-                        <div className="dropdown">
-                          <button 
-                            className="btn dropdown-toggle"
-                            type="button"
-                            data-bs-toggle="dropdown"
-                            style={{ 
-                              backgroundColor: '#757575',
-                              color: 'white',
-                              fontSize: '11px',
-                              padding: '4px 8px',
-                              border: 'none',
-                              fontWeight: '500'
+                      ))
+                    ) : (
+                      <div>No Images</div>
+                    )}
+                  </div>
+                </div>
+                <div className="col-2 card pt-2">
+                  <p className="fw-bold text-center">Product Preview Images</p>
+                  <button
+                    className="btn btn-outline-success w-100 mb-1"
+                    data-bs-toggle="modal"
+                    data-bs-target={`#previewImage`}
+                    onClick={() => setSelectedPid(product.pid)}
+                  >
+                    Add Pictures
+                  </button>
+                  <button
+                    className="btn btn-outline-danger w-100"
+                    disabled={!selectedPreviews}
+                    onClick={handlePreviewsDelete}
+                  >
+                    Delete Picture
+                  </button>
+                </div>
+                <div className="col-4 card gap-2">
+                  <div className="row">
+                    {product.preview && product.preview.length > 0 ? (
+                      product.preview.map((images) => (
+                        <div className="col-3 border-0" key={images.imageid}>
+                          <img
+                            src={images.pimages}
+                            onClick={() => handleSelectPreview(images.imageid)}
+                            className={`img-thumbnail ${
+                              selectedPreviews === images.imageid ? 'border border-3 border-primary' : ''
+                            }`}
+                            style={{
+                              maxHeight: '100px',
+                              maxWidth: '100px',
+                              minHeight: '100px',
+                              minWidth: '100px',
+                              cursor: 'pointer',
                             }}
-                          >
-                            More
-                          </button>
-                          <ul className="dropdown-menu dropdown-menu-end">
-                            <li><button 
-                            className="dropdown-item" 
-                            data-bs-toggle="modal"
-                            data-bs-target="#updateProduct"
-                            onClick={() => {
-                                      handleEditButtonClick(product);
-                                      setSelectedPid(product.pid);
-                                    }}
-                            >
-                            Edit</button></li>
-                            <li><hr className="dropdown-divider" /></li>
-                            <li><button 
-                            className="dropdown-item text-danger"
-                            onClick={() => {
-                                      handleDeleteProducts();
-                                      setSelectedPid(product.pid);}}
-                            
-                            >Delete</button></li>
-                          </ul>
+                            alt=""
+                          />
                         </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                          <td colSpan="7" style={{ 
-                            padding: '12px', 
-                            backgroundColor: '#fafafa', 
-                            // borderBottom: index === products.length - 1 ? 'none' : '1px solid #f0f0f0'
-                          }}>
-                      
-                            <div className="mb-2">
-                              {/* Row content */}
-                              <div className="d-flex justify-content-between align-items-center">
-                                <span>{product.name}</span>
-                                
-                                {/* Expand Button */}
-                                <button 
-                                  className="btn btn-link p-0"
-                                  style={{ 
-                                    fontSize: '12px', 
-                                    color: '#2196F3', 
-                                    textDecoration: 'none',
-                                    fontWeight: '500'
-                                  }}
-                                  data-bs-toggle="collapse" 
-                                  data-bs-target={`#collapseImages-${product.pid}`} 
-                                  aria-expanded="false" 
-                                  aria-controls={`collapseImages-${product.pid}`}
-                                  onClick={() => setSelectedPid(product.pid)}
-                                >
-                                  Expand <i className="fas fa-chevron-down ms-1" style={{ fontSize: '10px' }} />
-                                </button>
-                              </div>
+                      ))
+                    ) : (
+                      <div>No Images</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </React.Fragment>
+  ))}
+</tbody>
 
-                              <div className="collapse" id={`collapseImages-${product.pid}`}>
-                                <div className="row d-flex">
-                                        <div className="col-2 card">
-                                          <p className="fw-bold text-center pt-2">Product Description Images</p>
-                                          <button 
-                                          className="btn btn-outline-success w-100 mb-1"
-                                          data-bs-toggle="modal" 
-                                          data-bs-target={`#productImage`} 
-                                          onClick={() => setSelectedPid(product.pid)}
-                                          >Add Pictures</button>
-                                          <button
-                                            className="btn btn-outline-danger w-100"
-                                            disabled={!selectedImageId}
-                                            onClick={handleDelete}
-                                          >
-                                            Delete Picture
-                                          </button>
-                                            </div>
-
-                                        <div className="col-4 card gap-2">
-                                          <div className="row">
-                                          {product.images && product.images.length > 0 ? (
-                                            product.images.map((image) => (
-                                               <div className="col-3 pt-2">
-                                                  <img
-                                                key={image.pimageid}
-                                                src={image.pimage}
-                                                onClick={() => handleSelect(image.pimageid)}
-                                                className={`img-thumbnail ${selectedImageId === image.pimageid ? 'border border-3 border-primary' : ''}`}
-                                                style={{
-                                                  maxHeight: '100px',
-                                                  maxWidth: '100px',
-                                                  minHeight: '100px',
-                                                  minWidth: '100px',
-                                                  cursor: 'pointer',
-                                                }}
-                                                alt=""
-                                              />
-                                              </div>
-                                              
-                                            ))
-                                          ) : (
-                                            <div>No Images</div>
-                                          )}
-                                           </div>
-                                        </div>
-
-
-                                        <div className="col-2 card pt-2">
-                                          <p className="fw-bold text-center">Product Preview Images</p>
-                                          <button 
-                                          className="btn btn-outline-success w-100 mb-1"
-                                          data-bs-toggle="modal" 
-                                          data-bs-target={`#previewImage`} 
-                                          onClick={() => setSelectedPid(product.pid)}
-                                          >Add Pictures</button>
-                                          <button
-                                            className="btn btn-outline-danger w-100"
-                                            disabled={!selectedPreviews}
-                                            onClick={handlePreviewsDelete}
-                                          >
-                                            Delete Picture
-                                          </button>
-                                            </div>
-
-                                        <div className="col-4 card gap-2">
-                                          <div className="row">
-                                            
-
-                                            
-                                          {product.preview && product.preview.length > 0 ? (
-                                            product.preview.map((images) => (
-                                              <div className="col-3 border-0">
-                                              <img
-                                                key={images.imageid}
-                                                src={images.pimages}
-                                                onClick={() => handleSelectPreview(images.imageid)}
-                                                className={`img-thumbnail ${selectedPreviews === images.imageid ? 'border border-3 border-primary' : ''}`}
-                                                style={{
-                                                  maxHeight: '100px',
-                                                  maxWidth: '100px',
-                                                  minHeight: '100px',
-                                                  minWidth: '100px',
-                                                  cursor: 'pointer',
-                                                }}
-                                              />
-                                               </div>
-                                            ))
-                                          ) : (
-                                            <div>No Images</div>
-                                          )}
-
-                                         
-                                          </div>
-                                        </div>
-                                    </div>
-                                  </div>
-                            </div>
-                          
-
-
-                    </td>
-                  </tr>
-                </React.Fragment>
-              ))}
-            </tbody>
           </table>
         </div>
       </div>

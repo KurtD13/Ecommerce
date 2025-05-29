@@ -151,6 +151,12 @@ export function SellerDashboard() {
     marginBottom: '16px'
   };
 
+  const formatPrice = (price) => {
+  return `₱ ${Number(price).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })}`;
+};
     
   return (
     <>
@@ -300,7 +306,11 @@ export function SellerDashboard() {
                   </div>
                   
                   <div style={{ fontSize: "0.7rem", color: "gray" }}>{d.shipaddress +" 0"+d.contactinfo}</div>
-                  <div className="text-end fw-bold" style={{fontSize:"1rem"}}>{"₱ "+ d.parcelcost}</div>
+                  <div className="text-end fw-bold" style={{ fontSize: "1rem" }}>
+                    {formatPrice(d.parcelcost)}
+                  </div>
+
+
                 </div>
                 
               </div>

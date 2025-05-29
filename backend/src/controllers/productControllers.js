@@ -116,3 +116,24 @@ export const updateProductRatings = async (req, res) => {
         res.status(500).json({message: 'Internal Server Error'});
     }
 };
+
+
+
+export const updateProductAvailability = async (req, res) => {
+    try{
+        console.log("REQ BODY:", req.body);
+        const pid = req.params.pid;
+        const productinfo = req.body;   
+        const updatedProduct = await Service.updateProductAvailability(productinfo, pid)
+        if(!updatedProduct){
+            return res.status(404).json({message: 'Product not found'});
+        }
+        res.status(200).json(updatedProduct);
+
+    }catch(err){
+        
+        console.error("Error updating product: ", err);
+        res.status(500).json({message: 'Internal Server Error'});
+    }
+};
+

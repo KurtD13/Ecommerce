@@ -15,10 +15,10 @@ export const createShop = async(shopInfo) => {
 }
 
 export const updateShop = async(shopid, shopInfo) => {
-    const{ shopname, shopdesc, shopbanner, sellerkey } = shopInfo;
+    const{ shopname, shopdesc, shopbanner, shoplogo, shippinglocation, sellername  } = shopInfo;
     const { rows } = await query (
-        'UPDATE shop_profile SET shopname = $1, shopdesc = $2, shopbanner = $3, sellerkey = $4 WHERE shopid = $5 RETURNING *',
-        [ shopname, shopdesc, shopbanner, sellerkey, shopid ]
+        'UPDATE shop_profile SET shopname = $1, shopdesc = $2, shopbanner = $3, shoplogo = $4,  shippinglocation = $5, sellername = $6 WHERE shopid = $7 RETURNING *',
+        [ shopname, shopdesc, shopbanner, shoplogo, shippinglocation, sellername, shopid ]
     );
     return rows[0];
 }

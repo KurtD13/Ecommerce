@@ -484,20 +484,25 @@ export function Products() {
                     </div>
                 </div>
 
-                {/* Seller Info */}
+                {/* Shop Info */}
                 <div className="card mb-4 shadow-lg" id="seller-info">
                     {filteredShop.map((shop) => (
-                        <div className="card-body d-flex align-items-center">
+                        <div className="card-body d-flex" style={{ cursor: 'pointer' }} onClick={() => navigate(`/shoppage/${shop.shopid}`)} key={shop.shopid}>
                             <img
                                 src={shop.shoplogo || "https://cdn-icons-png.flaticon.com/512/2474/2474161.png"}
                                 className="pfp me-3 rounded-circle"
                                 alt="Seller"
                                 style={{ width: "50px", height: "50px" }}
+                                
                             />
                             <div>
                                 <strong>{shop.shopname}</strong>
                                 <br />
-                                <span className="text-muted">{product.sellerType}</span>
+                                <span className="text-muted"> {(shop.shopratings > 0) ?
+                                ( shop.shopratings + " " +
+                                "★".repeat(shop.shopratings))
+                                : "No ratings yet"}
+                                </span>
                             </div>
                         </div>
                     ))}

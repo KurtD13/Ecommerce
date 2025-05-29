@@ -46,6 +46,14 @@ export function Productpreview({ filterTerm = "" }) {
     return <p style={{ color: "red" }}>Error: {error}</p>;
   }
 
+  const formatPrice = (price) => {
+  return `₱ ${Number(price).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })}`;
+};
+
+
   return (
     <>
       {filtered.map((productInfo) => (
@@ -71,22 +79,37 @@ export function Productpreview({ filterTerm = "" }) {
               <div className="card-body">
                 <div className="row">
                   <div
-                    className="card-title text-start px-0 ellipsis"
+                    className="card-title text-start px-0 ellipsis fw-bold"
                     style={{ fontSize: "20px" }}
                   >
                     {productInfo.pname}
                   </div>
                 </div>
                 <div className="row">
-                  <div className="col px-0">
+                    <div className="col-8 px-0">
                     <div
-                      className="card-text text-start fw-bold"
+                      className="card-text text-start"
+                      style={{ fontSize: "15px" }}
+                    >
+                      {(productInfo.pratings > 0) ?
+                     ( productInfo.pratings + " " +
+                       "★".repeat(productInfo.pratings))
+                      : "No ratings yet"}
+                    </div>
+                     </div>
+                </div>
+                <div className="row">
+                  
+                    <div className="col px-0">
+                    <div
+                      className="card-text text-start"
                       style={{ fontSize: "17px" }}
                     >
-                      ₱{productInfo.pprice}.00
+                      {formatPrice(productInfo.pprice)}
                     </div>
+                 
                   </div>
-                  <div className="col px-0">
+                  <div className="col-4 px-0">
                     <div
                       className="card-text text-end"
                       style={{ fontSize: "15px" }}

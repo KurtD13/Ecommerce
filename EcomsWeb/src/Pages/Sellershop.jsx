@@ -30,6 +30,47 @@ export function Sellershop(){
   fetchshopData();
   }, [shopKey]);
 
+    const handleEditShopClick = (shopId) => {
+  const shop = shopData.find((s) => s.shopid === shopId); // Find the shop by ID
+  if (shop) {
+    setUpdateShop({
+      shopname: shop.shopname,
+      shopdesc: shop.shopdesc,
+      shopbanner: shop.shopbanner,
+      shoplogo: shop.shoplogo,
+      shippinglocation: shop.shippinglocation,
+      sellername: shop.sellername,
+      shopid: shop.shopid,
+    });
+  }
+};
+
+
+    const [updateShop, setUpdateShop] = useState({
+      shopname : "", 
+      shopdesc : "", 
+      shopbanner : "", 
+      shoplogo : "", 
+      shippinglocation : "", 
+      sellername : "",
+      shopid : shopKey
+      });
+
+    const handleEditShop = async (e) => {
+      e.preventDefault();
+      try {
+        const productResponse = await axios.put(`http://localhost:3000/api/shop/${shopKey}`, updateShop);
+        if (productResponse.status === 200) {
+          alert("Product is updated successfully!");
+
+        }
+      } catch (err) {
+        console.error("Error updating Product:", err);
+        alert("Failed to updating Product. Please try again.");
+      }
+    };
+
+
   // Calculate the average product rating
   const shopReviewScore = product
         .map((item) => Number(item.pratings)) // Convert to number
@@ -157,7 +198,17 @@ export function Sellershop(){
           <div style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
               <h5 style={{ margin: '0', fontSize: '18px', fontWeight: '600' }}>Banner</h5>
-              <button style={buttonStyle}>✏️</button>
+             {shopData.map((shop) => (
+              <button
+                key={shop.shopid}
+                data-bs-toggle="modal"
+                data-bs-target="#editShopModal"
+                style={buttonStyle}
+                onClick={() => handleEditShopClick(shop.shopid)} // Pass the shop ID
+              >
+                ✏️
+              </button>
+            ))}
             </div>
             
             {/* Banner */}
@@ -182,19 +233,6 @@ export function Sellershop(){
                   objectPosition: 'center'
                 }}
               />
-              <div style={{
-                position: 'absolute',
-                top: '12px',
-                right: '12px',
-                backgroundColor: 'rgba(0,0,0,0.5)',
-                borderRadius: '4px',
-                padding: '8px',
-                color: 'white',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}>
-                📷 Change Banner
-              </div>
             </div>
            
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
@@ -282,7 +320,6 @@ export function Sellershop(){
           <div style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <h5 style={{ margin: '0', fontSize: '18px', fontWeight: '600' }}>Highlight</h5>
-              <button style={buttonStyle}>✏️</button>
             </div>
             
             <div  style={{ position: 'relative', overflow: 'hidden' }}>
@@ -366,86 +403,13 @@ export function Sellershop(){
             </div>
           </div>
 
-          <div style={cardStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h6 style={{ margin: '0', fontSize: '16px', fontWeight: '600' }}>Promotions</h6>
-              <button style={buttonStyle}>✏️</button>
-            </div>
-            
-            {banners.map((banner, index) => (
-              <div key={banner.id} style={{ marginBottom: '16px' }}>
-                <div 
-                  style={{ 
-                    background: banner.bgColor,
-                    borderRadius: '8px',
-                    padding: '24px',
-                    color: 'white',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    minHeight: '120px'
-                  }}
-                >
-                  <div 
-                    style={{
-                      position: 'absolute',
-                      top: '20px',
-                      right: '20px',
-                      width: '60px',
-                      height: '60px',
-                      background: 'rgba(255,255,255,0.1)',
-                      borderRadius: '50%'
-                    }}
-                  ></div>
-                  
-                  <div 
-                    style={{
-                      position: 'absolute',
-                      bottom: '10px',
-                      left: '20px',
-                      width: '40px',
-                      height: '40px',
-                      background: 'rgba(255,255,255,0.1)',
-                      borderRadius: '50%'
-                    }}
-                  ></div>
 
-                  <div style={{ position: 'relative', zIndex: 2 }}>
-                    <h1 style={{ 
-                      fontSize: '48px', 
-                      fontWeight: 'bold', 
-                      margin: '0 0 8px 0',
-                      lineHeight: '1'
-                    }}>{banner.title}</h1>
-                    <h4 style={{ 
-                      fontSize: '24px', 
-                      fontWeight: 'bold',
-                      margin: '0'
-                    }}>{banner.subtitle}</h4>
-                    
-                    <div 
-                      style={{
-                        position: 'absolute',
-                        bottom: '10px',
-                        right: '20px',
-                        backgroundColor: '#28a745',
-                        borderRadius: '20px',
-                        padding: '6px 16px'
-                      }}
-                    >
-                      <small style={{ fontWeight: 'bold', fontSize: '12px' }}>SALE</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
           </div>
           <div style={{ flex: '1 1 35%', minWidth: '280px' }}>
 
             <div style={cardStyle}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <h5 style={{ margin: '0', fontSize: '18px', fontWeight: '600' }}>Seller Info</h5>
-                <button style={buttonStyle}>✏️</button>
               </div>
              
               <div style={{ marginBottom: '24px' }}>
@@ -479,7 +443,7 @@ export function Sellershop(){
             <div style={cardStyle}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <h5 style={{ margin: '0', fontSize: '18px', fontWeight: '600' }}>Description</h5>
-                <button style={buttonStyle}>✏️</button>
+               
               </div>
               
               <div style={{ marginBottom: '24px' }}>
@@ -500,6 +464,134 @@ export function Sellershop(){
         </div>
       </div>
     </div>
+    
+
+    {/* Edit Shop Modal */}
+              <div
+  className="modal fade"
+  id="editShopModal"
+  tabIndex="-1"
+  aria-labelledby="editShopModalLabel"
+  aria-hidden="true"
+>
+  <div className="modal-dialog">
+    <form className="modal-content" onSubmit={handleEditShop}>
+      <div className="modal-header">
+        <h5 className="modal-title" id="editShopModalLabel">
+          Edit Shop
+        </h5>
+        <button
+          type="button"
+          className="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div className="modal-body">
+        {/* Shop Name */}
+        <div className="mb-3">
+          <label className="form-label">Shop Name</label>
+          <input
+            type="text"
+            className="form-control"
+            value={updateShop.shopname}
+            onChange={(e) =>
+              setUpdateShop({ ...updateShop, shopname: e.target.value })
+            }
+            required
+          />
+        </div>
+
+        {/* Shop Description */}
+        <div className="mb-3">
+          <label className="form-label">Shop Description</label>
+          <textarea
+            className="form-control"
+            rows="3"
+            value={updateShop.shopdesc}
+            onChange={(e) =>
+              setUpdateShop({ ...updateShop, shopdesc: e.target.value })
+            }
+            required
+          ></textarea>
+        </div>
+
+        {/* Shop Banner */}
+        <div className="mb-3">
+          <label className="form-label">Shop Banner URL</label>
+          <input
+            type="text"
+            className="form-control"
+            value={updateShop.shopbanner}
+            onChange={(e) =>
+              setUpdateShop({ ...updateShop, shopbanner: e.target.value })
+            }
+            required
+          />
+        </div>
+
+        {/* Shop Logo */}
+        <div className="mb-3">
+          <label className="form-label">Shop Logo URL</label>
+          <input
+            type="text"
+            className="form-control"
+            value={updateShop.shoplogo}
+            onChange={(e) =>
+              setUpdateShop({ ...updateShop, shoplogo: e.target.value })
+            }
+            required
+          />
+        </div>
+
+        {/* Shipping Location */}
+        <div className="mb-3">
+          <label className="form-label">Shipping Location</label>
+          <input
+            type="text"
+            className="form-control"
+            value={updateShop.shippinglocation}
+            onChange={(e) =>
+              setUpdateShop({
+                ...updateShop,
+                shippinglocation: e.target.value,
+              })
+            }
+            required
+          />
+        </div>
+
+        {/* Seller Name */}
+        <div className="mb-3">
+          <label className="form-label">Seller Name</label>
+          <input
+            type="text"
+            className="form-control"
+            value={updateShop.sellername}
+            onChange={(e) =>
+              setUpdateShop({ ...updateShop, sellername: e.target.value })
+            }
+            required
+          />
+        </div>
+      </div>
+      <div className="modal-footer">
+        <button
+          type="button"
+          className="btn btn-secondary"
+          data-bs-dismiss="modal"
+        >
+          Cancel
+        </button>
+        <button type="submit" className="btn btn-primary">
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+    
     </>
   );
 };
