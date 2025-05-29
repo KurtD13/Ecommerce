@@ -105,3 +105,21 @@ export const updateShopRatings = async (req, res) => {
         res.status(500).json({message: 'Internal Server Error'});
     }
 };
+
+export const updateShopStatus = async (req, res) => {
+    try{
+        console.log("REQ BODY:", req.body);
+        const shopid = req.params.shopid;
+        const shopinfo = req.body;   
+        const updatedshop = await Service.updateShopStatus(shopinfo, shopid)
+        if(!updatedshop){
+            return res.status(404).json({message: 'shop not found'});
+        }
+        res.status(200).json(updatedshop);
+
+    }catch(err){
+        
+        console.error("Error updating shop: ", err);
+        res.status(500).json({message: 'Internal Server Error'});
+    }
+};

@@ -15,11 +15,6 @@ export function Landingpage(){
             <div className="row mt-1" >
                 <Carouselprods/>
             </div>
-            <div className="row">
-            <Categorycard/>
-                
-                
-            </div>
             <div className="row ">
                 <h3 className="col text-center rounded-1 p-4 m-2 mb-3 shadow-lg"
                 style={{ 
@@ -27,7 +22,7 @@ export function Landingpage(){
                     background: "linear-gradient(to right, lightblue, #FE7743)", 
                     color: "white" 
                 }}>
-                    R a n d o m P r o d u c t s
+                    A  L  L  P  R  O  D  U  C  T  S
                 </h3>
             </div>
             <div className="row">

@@ -16,6 +16,7 @@ import { Sellershop } from './Pages/Sellershop'
 import { Sellerorders } from './Pages/Sellerorders'
 import { Sellercancel } from './Pages/Sellercancel'
 import { Shoppage } from './Pages/Shoppage';
+import { Adminpage } from './Pages/Adminpage';  
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
           <Route path="/sellerorders" element={<Sellerorders/>}/>
           <Route path="/sellercancel" element={<Sellercancel/>}/>
           <Route path="/shoppage/:shopid" element={<Shoppage/>}/>
+          <Route path="/adminpage" element={<Adminpage/>}/>
         </Routes>
       </Router>
     </AuthProvider>

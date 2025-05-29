@@ -384,11 +384,11 @@ useEffect(() => {
         <>
         <Header />
         
-        <div style={{ backgroundColor: '#f5f5f5', height: '100vh', padding: '0', display: 'flex' }}>
+        <div style={{ backgroundColor: "#EFEEEA", height: '100vh', padding: '0', display: 'flex' }}>
         <div style={{ width: '250px' }}>
             <Sidebar />
         </div>
-        <div style={{ backgroundColor: '#f5f5f5', flexGrow: 1, padding: '20px', overflowY: 'auto' }}>
+        <div style={{backgroundColor: "#EFEEEA", flexGrow: 1, padding: '20px', overflowY: 'auto' }}>
         
                 
         <div className="d-flex justify-content-between align-items-center mb-4">
@@ -396,13 +396,12 @@ useEffect(() => {
             Manage Products
           </h4>
           <button 
-            className="btn"
+            className="btn shadow"
             style={{ 
               backgroundColor: '#4CAF50', 
               color: 'white', 
               border: 'none',
               borderRadius: '4px',
-              fontSize: '12px',
               padding: '6px 12px',
               fontWeight: '500'
               
@@ -410,7 +409,7 @@ useEffect(() => {
              data-bs-toggle="modal"
              data-bs-target="#createProduct"
           >
-            Add new Product
+            Add Product
           </button>
         </div>
 
@@ -562,7 +561,7 @@ useEffect(() => {
             </button>
           </div>
 
-        <div style={{ backgroundColor: 'white', borderRadius: '4px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+        <div className="card rounded shadow" style={{ backgroundColor: 'white', borderRadius: '4px', overflow: 'hidden' }}>
           <table className="table mb-0" style={{ fontSize: '14px' }}>
             <thead style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #e0e0e0' }}>
               <tr>

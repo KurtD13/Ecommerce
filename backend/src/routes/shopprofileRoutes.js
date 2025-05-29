@@ -10,4 +10,5 @@ router.delete('/shop/:shopid', controller.deleteShop);
 router.get('/shop/userkey/:q', controller.getShopkey)
 router.get('/shop/shopdata/:shopkey', controller.getShopData);
 router.put('/shop/shopratings/:shopid', controller.updateShopRatings);
+router.put('/shop/shopstatus/:shopid', controller.updateShopStatus);
 export default router;

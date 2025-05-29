@@ -57,3 +57,13 @@ export const updateShopRatings = async(shopinfo, shopid) => {
     return rows[0];
 }
 
+
+export const updateShopStatus = async(shopinfo, shopid) => {
+    const{ shopstatus } = shopinfo;
+    const { rows } = await query (
+        'UPDATE shop_profile SET shopstatus = $1 WHERE shopid = $2 RETURNING *',
+        [shopstatus, shopid ]
+    );
+    return rows[0];
+}
+

@@ -13,6 +13,8 @@ router.get('/user/phone/:q', controller.getUserPhone)
 router.get('/user/seller/:q', controller.getuserSellerstatus)
 router.get('/user/review/:q', controller.getUserNameImage)
 router.put('/user/sellerstatus/:consumerid', controller.updateSellerStatus)
+router.get('/user/admin/:q', controller.getUserAdmin);
+
 
 
 export default router;

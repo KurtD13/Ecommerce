@@ -148,23 +148,23 @@ const handleArrangeStatus = async () => {
         <main
           className="flex-grow-1 p-4"
           style={{
-            backgroundColor: "#f5f5f5",
+            backgroundColor: "#EFEEEA",
             overflowY: "auto",
             minHeight: 0,
             borderRadius: "8px",
           }}
         >
           <section
-            className="bg-light p-4 rounded"
+            className="bg-light p-4 shadow"
+           
           >
            <h2>Manage Orders</h2> 
           </section>
 
           <nav
-            className="nav nav-tabs mb-4"
+            className="nav nav-tabs mb-4 shadow"
             style={{
-              backgroundColor: "#ddd",
-              borderRadius: "8px",
+              backgroundColor: "#EFEEEA",
               fontSize: "1rem",
               padding: "0.5rem 1rem",
               userSelect: "none",
@@ -189,7 +189,7 @@ const handleArrangeStatus = async () => {
           </nav>
 
           <div
-            className="d-flex align-items-center bg-light rounded-top px-4 py-3"
+            className="d-flex align-items-center bg-light rounded-top px-4 py-3 shadow"
             style={{
               fontSize: "0.95rem",
               fontWeight: "700",
@@ -208,7 +208,7 @@ const handleArrangeStatus = async () => {
             </div>
           </div>
 
-          <div className="bg-light rounded-bottom px-4 py-3">
+          <div className="bg-light rounded-bottom px-4 py-3 shadow">
             {filteredProducts.map((product) => (
               <div
                 key={product.id}

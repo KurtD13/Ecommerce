@@ -13,6 +13,8 @@ import productreviewsroutes from './routes/productreviewsRoutes.js';
 import productstatusroutes from './routes/productstatusRoutes.js';
 import cartlistroutes from './routes/cartlistRoutes.js';
 import previewimagesroutes from './routes/previewimagesRoutes.js';
+import reportsRoutes from './routes/reportsRoutes.js';
+import shopreportRoutes from './routes/shopreportRoutes.js';
 
 const port = 3000;
 const app = express();
@@ -34,6 +36,8 @@ app.use('/api', productreviewsroutes);
 app.use('/api', productstatusroutes);
 app.use('/api', cartlistroutes);
 app.use('/api', previewimagesroutes);
+app.use('/api', reportsRoutes);
+app.use('/api', shopreportRoutes);
 
 app.listen(port, () => {
     console.log('listening port 3000')

@@ -30,8 +30,7 @@ const Sidebar = () => {
         { to: "/sellerdash", label: "Dashboard"},
         { to: "/sellershop", label: "My Shop" },
         { to: "/sellerproducts", label: "My Products" },
-        { to: "/sellerorders", label: "Orders" },
-        { to: "/sellercancel", label: "Cancelled Orders" },
+        { to: "/sellerorders", label: "Orders" }
       ].map(({ to, label }, i) => (
         <Link
           key={to}

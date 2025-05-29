@@ -1,6 +1,6 @@
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Sellerheader";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { FaBox, FaTruck, FaPlane } from "react-icons/fa";
 import { SiCashapp } from "react-icons/si";
 import { FaPesoSign } from "react-icons/fa6";
@@ -14,6 +14,13 @@ export function SellerDashboard() {
   const [userInfo, setUserInfo] = useState([]);
   const [productStatus, setProductStatus] = useState([]);
   const shopKey = localStorage.getItem("shopkey");
+  const shopID = shopKey;
+  const [userReports, setUserReports] = useState([]);
+  const [adminReports, setAdminReports] = useState([]);
+  const [reportedShops, setReportedShops] = useState([]);
+  const [reportedProducts, setReportedProducts] = useState([]);
+  const [user, setUser] = useState([]);
+
 
   const shopkey = shopKey;
 
@@ -27,12 +34,88 @@ export function SellerDashboard() {
         // Fetch all reviews
         const reviewsResponse = await axios.get("http://localhost:3000/api/reviews");
         setReviews(reviewsResponse.data);
+
+
       } catch (err) {
         console.error(err.message);
       }
     };
     fetchData();
   }, [shopkey]);
+
+  useEffect(() => {
+  const calculateShopStatus = () => {
+    const completedOrders = productStatus.filter((status) => status.pstatus === 4).length;
+    const ongoingDeliveries = productStatus.filter((status) => status.pstatus === 2 || status.pstatus === 3).length;
+    const refundedOrders = productStatus.filter((status) => status.pstatus === 5).length;
+    const totalReviews = userInfo.length; // Use userInfo to count reviews for this shop
+
+    setShopStatus({
+      completedOrders,
+      ongoingDeliveries,
+      refundedOrders,
+      reviews: totalReviews,
+    });
+  };
+
+  if (productStatus.length > 0 || userInfo.length > 0) {
+    calculateShopStatus();
+  }
+}, [productStatus, userInfo]);
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const adminReportsResponse = await axios.get(`http://localhost:3000/api/shopreport`);
+        setAdminReports(adminReportsResponse.data);
+       
+      } catch (err) {
+        console.error("Error fetching reports:", err.message);
+
+      }
+    };
+    fetchReports();
+  }, []);
+
+  useEffect(() => {
+        const fetchProduct = async () => {
+            try {
+                const response = await axios.get(`http://localhost:3000/api/report`);
+                setUserReports(response.data); // Set the report data
+                const shopsResponse = await axios.get(`http://localhost:3000/api/shop`);
+                setReportedShops(shopsResponse.data); // Set the shop data
+                const productsResponse = await axios.get(`http://localhost:3000/api/product`); 
+                setReportedProducts(productsResponse.data); // Set the product data
+                const userReportResponse = await axios.get(`http://localhost:3000/api/user`);
+                setUser(userReportResponse.data); // Set the user report data
+            } catch (err) {
+                setError(err.message);
+            }
+        };
+        fetchProduct();
+    }, []);
+
+    const enrichedReports = userReports.map((report) => {
+      const shop = reportedShops.find((shop) => shop.shopid === report.shopkey);
+      const product = reportedProducts.find((product) => product.pid === report.productkey);
+      const consumer = user.find((user) => user.consumerid === report.userkey);
+
+      return {
+        reportId: report.reportid,
+        reportTitle: report.reporttitle,
+        consumerId: consumer?.consumerid || null,
+        consumerFirstName: consumer?.consumerfirstname || "Unknown",
+        shopName: shop?.shopname || "Unknown Shop",
+        productName: product?.pname || "Unknown Product",
+        reportdescription: report.reportdescription,
+        reportImsg: report.reportimage,    
+        shopkey: report.shopkey    ,
+        userimage: consumer?.consumerimage,
+        productimage: product?.pimageurl,
+        shopImage: shop?.shoplogo
+      };
+    });
+
+   
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -71,7 +154,7 @@ export function SellerDashboard() {
       // Map over productkey to fetch product status for each product
       const productStatusPromises = productkey.map(async (product) => {
         const response = await axios.get(`http://localhost:3000/api/pstatus/product/${product.pid}`);
-        console.log("API Response for Product:", response.data); // Debugging log
+       // Debugging log
 
         if (Array.isArray(response.data)) {
           // Map over the array of product statuses and include product data
@@ -110,7 +193,6 @@ export function SellerDashboard() {
   }
 }, [productkey]);
 
-  console.log("Product Status:", productStatus);
 
   const [shopStatus, setShopStatus] = useState({
     completedOrders: 0,
@@ -174,58 +256,96 @@ export function SellerDashboard() {
         <Sidebar />
         <div style={{ flex: 3, display: "flex", flexDirection: "column", gap: "1rem" }}>
           <section className="p-3 rounded mt-4" style={cardStyle}>
-            <h5>Shop Status</h5>
-            <div className="d-flex justify-content-between text-center mt-3">
-              <div>
-                <strong>{shopStatus.completedOrders}</strong>
-                <br />
-                Completed Orders
-              </div>
-              <div>
-                <strong>{shopStatus.ongoingDeliveries}</strong>
-                <br />
-                Ongoing Deliveries
-              </div>
-              <div>
-                <strong>{shopStatus.refundedOrders}</strong>
-                <br />
-                Refunded Orders
-              </div>
-              <div>
-                <strong>{shopStatus.reviews}</strong>
-                <br />
-                Reviews
-              </div>
+          <h5>Shop Status</h5>
+          <div className="d-flex justify-content-between text-center mt-3">
+            <div>
+              <strong>{shopStatus.completedOrders}</strong>
+              <br />
+              Completed Orders
             </div>
-          </section>
-
+            <div>
+              <strong>{shopStatus.ongoingDeliveries}</strong>
+              <br />
+              Ongoing Deliveries
+            </div>
+            <div>
+              <strong>{shopStatus.refundedOrders}</strong>
+              <br />
+              Refunded Orders
+            </div>
+            <div>
+              <strong>{shopStatus.reviews}</strong>
+              <br />
+              Reviews
+            </div>
+          </div>
+        </section>
+     
           <section className="p-3 rounded" style={cardStyle}>
-            <h5>Business Analytics</h5>
-            <div className="d-flex justify-content-between text-center mt-3" style={{ fontSize: "1.2rem" }}>
-              <div>
-                <strong>₱{businessAnalytics.totalSales}</strong>
-                <br />
-                Total Sales
+            <h5>Reports</h5>
+            <div className="row">
+              <div className="col-6">
+                <span className="text-secondary">User Reports</span>
+                 <div className="row">
+                  {enrichedReports.map((report) => (
+                    (report.shopkey == shopKey) && (
+                     
+                        <div className="col-6">
+                            <div className="card p-2 my-1 rounded shadow">
+                              <div className="d-flex align-items-center mb-2 pt-1 ps-1">
+                                <div className="fw-bold" style={{fontSize:"10px"}}>
+                                  <img
+                                    src={report.userimage}
+                                    alt="User"
+                                    style={{ width: 30, height: 30, borderRadius: "50%" }}
+                                    className="me-2 mb-1"
+                                    />
+                                  {report.consumerFirstName} <br/>
+                                  {report.productName} "{report.reportTitle}"
+                               </div>
+                              </div>
+                            
+                              <div className="card p-1" style={{ height: 60, fontSize: "0.8rem" }}>
+                                <span className="text-secondary" style={{fontSize:"0.5rem"}}>Description</span>{report.reportdescription  }
+                              </div>
+                              {report.reportImsg && (
+                              <img
+                              src={report.reportImsg}
+                              alt="Report"  
+                              style={{ width: "100%", height: "auto", borderRadius: "8px" }}
+                              />
+                              )}
+                              <div className="d-flex justify-content-between align-items-center">
+                                <div>
+                                </div>
+                              </div>
+                            </div>
+                        </div>
+                      
+                      
+                  )))}
+                  </div>
               </div>
-              <div>
-                <strong>{businessAnalytics.shopVisitors}</strong>
-                <br />
-                Shop Visitors
-              </div>
-              <div>
-                <strong>
-                  <img src={sales} alt="Sales Icon" style={{ width: 25, height: 25 }} />
-                  {businessAnalytics.salesStatus}%
-                </strong>
-                <br />
-                Sales Status (Weekly)
-              </div>
-              <div>
-                <strong>{businessAnalytics.totalOrders}</strong>
-                <br />
-                Total Orders
+              <div className="col-6 ">
+                <span className="text-secondary">Admin Notification</span>
+                {adminReports.map((report) => (
+                    (report.shopkey == shopKey) && (
+                      <div className="card p-2 m-1 rounded shadow">
+                        <div className="d-flex align-items-center mb-2 pt-1 ps-1">
+                          <div className="fw-bold">{report.reportname}</div>
+                        </div>
+                        <div className="card p-1" style={{ height: 60, marginBottom: 10, fontSize: "0.8rem" }}>
+                          <span className="text-secondary" style={{fontSize:"0.5rem"}}>Description</span>{report.reportdesc}
+                        </div>
+                        <div className="d-flex justify-content-between align-items-center">
+                          <div>
+                          </div>
+                        </div>
+                      </div>
+                  )))}
               </div>
             </div>
+            
           </section>
 
           <section className="p-3 rounded" style={cardStyle}>

@@ -22,6 +22,7 @@ export function Products() {
     const userKey = localStorage.getItem("userkey"); // Get user key from localStorage
     const [previewImages, setPreviewImages] = useState([]);  
     const [selectedImage, setSelectedImage] = useState(null);
+
     const navigate = useNavigate(); // Initialize navigate
 
         const handleBuyNow = () => {
@@ -93,6 +94,40 @@ export function Products() {
             alert("Failed to delete review. Please try again.");
         }
     };
+    const [newReport, setNewReport] = useState({
+        reporttitle: "",
+        reportdescription: "",
+        productkey: productId,
+        shopkey: "",
+        userkey: userKey,
+        reportimage: "",
+        reportstatus: false
+        });
+
+    const handleSubmitReport = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post("http://localhost:3000/api/report", newReport);    
+            alert("Report submitted successfully.");
+            // Reset the report fields
+            setNewReport({
+            reporttitle: "",
+            reportdescription: "",
+            productkey: productId,
+            shopkey: "",
+            userkey: userKey,
+            reportimage: "",
+            reportstatus: false
+            });
+            // Hide the modal programmatically
+            const modalEl = document.getElementById("createReportModal");
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+        } catch (err) {
+            console.error("Error submitting report:", err);
+            alert("Error submitting report.");
+        }
+    };
 
     const [newReview, setNewReview] = useState({
         reviewtitle: "",
@@ -147,7 +182,7 @@ export function Products() {
         });
 
         
-        const handleUpdateReview = async (e) => {
+    const handleUpdateReview = async (e) => {
         e.preventDefault();
         try {
             const response = await axios.put(`http://localhost:3000/api/reviews/${userKey}`, updateReview);
@@ -404,7 +439,18 @@ export function Products() {
                                     <h4>{product.pname}</h4>
                                 </div>
                                 <div className="col text-end">
-                                    <button className="btn btn-sm btn-outline-danger report-icon" title="Report">
+                                    <button 
+                                    className="btn btn-sm btn-outline-danger report-icon"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#createReportModal"
+                                    title="Report"
+                                    onClick={() => {
+                                        setNewReport({
+                                            ...newReport,
+                                            shopkey: product.shopkey, // Set the shop key for the report
+                                        });
+                                    }}
+                                    >
                                         Report
                                     </button>
                                 </div>
@@ -854,6 +900,83 @@ export function Products() {
                 </form>
             </div>
             </div>
+
+            {/* Create Report Modal */}
+              <div
+                className="modal fade"
+                id="createReportModal"
+                tabIndex="-1"
+                aria-labelledby="createReportModalLabel"
+                aria-hidden="true"
+              >
+                <div className="modal-dialog">
+                  <form className="modal-content" onSubmit={handleSubmitReport}>
+                    <div className="modal-header">
+                      <h5 className="modal-title" id="createReportModalLabel">
+                        Create Report
+                      </h5>
+                      <button
+                        type="button"
+                        className="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                      ></button>
+                    </div>
+                    <div className="modal-body">
+                      <div className="row">
+                        {/* Report Title */}
+                        <div className="col-md-6 mb-3">
+                          <label className="form-label">Report Title</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={newReport.reporttitle}
+                            onChange={(e) =>
+                              setNewReport({ ...newReport, reporttitle: e.target.value })
+                            }
+                            required
+                          />
+                        </div>
+                        {/* Report Description */}
+                        <div className="col-md-6 mb-3">
+                          <label className="form-label">Report Description</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={newReport.reportdescription}
+                            onChange={(e) =>
+                              setNewReport({ ...newReport, reportdescription: e.target.value })
+                            }
+                          
+                          />
+                        </div>
+                        {/* Report Image */}
+                        <div className="col-md-6 mb-3">
+                          <label className="form-label">Report Image</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={newReport.reportimage}
+                            onChange={(e) =>
+                              setNewReport({ ...newReport, reportimage: e.target.value })
+                            }
+                          
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="modal-footer">
+                      <button
+                        type="submit"
+                        className="btn btn-success"
+                      >
+                        Create Report
+                      </button>
+                    </div>
+
+                  </form>
+                </div>
+              </div>
 
             <Footer/>
         </>

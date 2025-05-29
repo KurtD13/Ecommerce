@@ -8,6 +8,7 @@ export function Navbar() {
   const [searchTerm, setSearchTerm] = useState("");
   const { isLoggedIn } = useAuth(); // Access login state from context
   const [isSeller, setIsSeller] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   const navigate = useNavigate();
   const userkey = localStorage.getItem("userkey");
@@ -25,6 +26,10 @@ export function Navbar() {
       try {
         const response = await axios.get(`http://localhost:3000/api/user/seller/${profilekey}`);
         setIsSeller(response.data.consumersellerstatus); // Correctly set the seller status
+
+        const userAdminresponse = await axios.get(`http://localhost:3000/api/user/admin/${profilekey}`);
+        setIsAdmin(userAdminresponse.data.consumerstatus); // Correctly set the admin status
+
       } catch (err) {
         console.error("Error fetching seller status:", err.message);
       }
@@ -136,6 +141,17 @@ export function Navbar() {
               Shop
             </Link>
           )}
+
+          {isAdmin &&(
+              <Link
+                  to="/adminpage"
+                  className="btn me-2"
+                  style={{ background: "#FE7743", color: "#EFEEEA" }}
+                >
+              Admin
+            </Link>
+          )}
+            
             
             
           </div>
