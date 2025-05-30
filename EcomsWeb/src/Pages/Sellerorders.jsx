@@ -13,6 +13,12 @@ export function Sellerorders() {
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [isSeller, setIsSeller] = useState(false);
   const userkey = localStorage.getItem("userkey");
+  const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
+    const speak = (text) => {
+      if (!isTTSEnabled) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -201,6 +207,7 @@ const handleArrangeStatus = async () => {
                   setActiveTab(tab);
                   setSelectAll(false);
                   setSelectedProducts([]);
+                  speak(`Switched to ${tab} tab`); // Speak the tab name
                 }}
                 className={`nav-link ${activeTab === tab ? "active" : ""}`}
                 style={{ fontSize: "1rem", padding: "0.5rem 1rem", cursor: "pointer" }}
@@ -241,6 +248,7 @@ const handleArrangeStatus = async () => {
                   gap: "15px",
                   borderRadius: "8px",
                 }}
+                onClick={() => {speak(`Selected order for ${product.name } with status ${product.status} `);}}
               >
                 <div style={{ width: "4%" }}>
                   
@@ -294,6 +302,7 @@ const handleArrangeStatus = async () => {
                     onClick={() => {
                       console.log("Setting Selected Product ID:", product.id); // Debugging log
                       setSelectedProductId(product.id); // Use product.pid instead of product.id
+                      speak(`Arranging status for order of ${product.name}`);
                     }}
                   >
                     Arrange Status
@@ -391,7 +400,7 @@ const handleArrangeStatus = async () => {
         <button
           type="button"
           className="btn btn-primary"
-          onClick={handleArrangeStatus}
+          onClick={() => {handleArrangeStatus(); speak("Status updated successfully!");} }
         >
           Update Status
         </button>

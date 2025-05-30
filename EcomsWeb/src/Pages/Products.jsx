@@ -22,7 +22,15 @@ export function Products() {
     const userKey = localStorage.getItem("userkey"); // Get user key from localStorage
     const [previewImages, setPreviewImages] = useState([]);  
     const [selectedImage, setSelectedImage] = useState(null);
+    
+const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
+    const speak = (text) => {
+      if (!isTTSEnabled) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    };
 
+   
     const navigate = useNavigate(); // Initialize navigate
 
         const handleBuyNow = () => {
@@ -450,7 +458,7 @@ export function Products() {
                         </div>
                         <div className="col-md-7">
                             <div className="row">
-                                <div className="col">
+                                <div className="col" onClick={() => speak( product.pname)}>
                                     <h4>{product.pname}</h4>
                                 </div>
                                 <div className="col text-end">
@@ -460,10 +468,10 @@ export function Products() {
                                     data-bs-target="#createReportModal"
                                     title="Report"
                                     onClick={() => {
-                                        setNewReport({
+                                        {setNewReport({
                                             ...newReport,
                                             shopkey: product.shopkey, // Set the shop key for the report
-                                        });
+                                        }); speak("Report this product");};
                                     }}
                                     >
                                         Report
@@ -477,16 +485,16 @@ export function Products() {
                                     {"★".repeat(filledStars)}{/* Solid stars */}
                                     {"☆".repeat(emptyStars)}{/* Hollow stars */}
                                 </span>
-                                <span className="text-muted ms-2">
+                                <span className="text-muted ms-2" onClick={() => speak(`Average rating is ${roundedAverageScore} out of 5`)}>
                                     {roundedAverageScore} / 5 ({filteredReviews.length} reviews)
                                 </span>
                             </p>
-                            <h3 className="text-danger mb-3">₱{product.pprice}</h3>
+                            <h3 className="text-danger mb-3"><span onClick={() => speak(product.pprice + "pesos")}>₱{product.pprice}</span></h3>
                             <div className="mb-3">
                                 <div className="d-flex align-items-center mb-1">
                                     <div style={{ width: "100px", fontWeight: 500 }}>Ship From</div>
                                     {filteredShop.map((shop) => (
-                                        <div className="text-muted ps-2">
+                                        <div className="text-muted ps-2" onClick={() => speak("Shipping location is " + (shop.shippinglocation || "Philippines"))} key={shop.shopid}>
                                             {"Philippines, " + shop.shippinglocation || "Philippines"}
                                         </div>
                                     ))}
@@ -494,7 +502,7 @@ export function Products() {
                             </div>
                             {/* Variation Selection */}
                             <div className="d-flex align-items-center mb-3" style={{ gap: "10px" }}>
-                                <div style={{ minWidth: "100px", fontWeight: 500 }}>Variation:</div>
+                                <div style={{ minWidth: "100px", fontWeight: 500 }} >Variation:</div>
                                 <div>
                                     {filteredVariation.length > 0 ? (
                                         filteredVariation.map((variation) => (
@@ -504,7 +512,7 @@ export function Products() {
                                                     selectedVariation === variation.pvid ? "active" : ""
                                                 }`}
                                                 key={variation.pvid}
-                                                onClick={() => setSelectedVariation(variation.pvid)}
+                                                onClick={() => {setSelectedVariation(variation.pvid); speak("Selected  " + variation.pvname);}}
                                             >
                                                 {variation.pvname}
                                             </button>
@@ -526,18 +534,19 @@ export function Products() {
                                         max={product?.stock || 1}
                                         onChange={(e) => setQuantity(Number(e.target.value))}
                                         style={{ width: "80px" }}
+                                        onClick={() => speak("Selected quantity " + quantity)}
                                     />
                                 </div>
                             </div>
                             <button className="btn me-2" style={{ background: "#FE7743", color: "#EFEEEA"  }}
                             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e8602c")}
                             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#FE7743")}
-                            onClick={handleAddToCart}>
+                            onClick={()=>{handleAddToCart(); speak("Added to cart")}}>
                                 Add to Cart
                             </button>
                             <button
                                 className="btn btn-success"
-                                onClick={handleBuyNow} // Call handleBuyNow on click
+                                onClick={()=>{handleBuyNow(); speak("Buying now")}} // Call handleBuyNow on click
                             >
                                 Buy Now
                             </button>
@@ -548,7 +557,7 @@ export function Products() {
                 {/* Shop Info */}
                 <div className="card mb-4 shadow-lg" id="seller-info">
                     {filteredShop.map((shop) => (
-                        <div className="card-body d-flex" style={{ cursor: 'pointer' }} onClick={() => navigate(`/shoppage/${shop.shopid}`)} key={shop.shopid}>
+                        <div className="card-body d-flex" style={{ cursor: 'pointer' }} onClick={() => {navigate(`/shoppage/${shop.shopid}`);speak("Opening "+ shop.shopname + "shop")}} key={shop.shopid}>
                             <img
                                 src={shop.shoplogo || "https://cdn-icons-png.flaticon.com/512/2474/2474161.png"}
                                 className="pfp me-3 rounded-circle"
@@ -573,7 +582,7 @@ export function Products() {
                 <div className="card mb-4 shadow-lg" id="product-information">
                     <div className="card-body">
                         <div className="row d-flex">
-                            <div className="col">
+                            <div className="col" onClick={() => speak("Product Information " + product.pdesc)}>
                                 <h5>Product Information</h5>
                             </div>
                             <div className="col text-end">
@@ -590,6 +599,7 @@ export function Products() {
                             </div>
                         </div>
                         <p className="text-muted">{product.pdesc}</p>
+                      
                         <div className="collapse" id="productInfoCollapse">
                             {   filteredImages.map((image) => (
                                 <img
@@ -625,6 +635,7 @@ export function Products() {
                                         className="btn btn-outline-success btn-sm"
                                         data-bs-toggle="modal"
                                         data-bs-target="#writeReviewModal"
+                                        onClick={() => speak("Write a review")}
                                     >
                                         Write a Review
                                     </button>
@@ -649,6 +660,7 @@ export function Products() {
                                     <div className="col-md-3" key={reviewId}>
                                         <div
                                             className="card p-2 shadow-lg"
+                                            onClick={() => speak("Review by " + (reviewer ? reviewer.consumerfirstname +" title "+ review.reviewtitle + "description" + review.reviewdesc: "Unknown Reviewer"))}
                                             style={{ minHeight: "200px", maxHeight: "200px", overflowY: "auto", overflowX: "hidden" }}
                                         >
                                             <div className="row">
@@ -671,7 +683,7 @@ export function Products() {
                                                     <div className="col-6 text-end pt-2 pe-3">
                                                         <button
                                                             className="btn btn-sm btn-outline-danger"
-                                                            onClick={() => handleDelete(review.previewsid)}
+                                                            onClick={() => {handleDelete(review.previewsid); speak("Review deleted")}}
                                                         >
                                                             <i className="bi bi-trash3"></i>
                                                         </button>
@@ -715,10 +727,10 @@ export function Products() {
                 {/* Recommendation */}
                 <div className="card mb-4 shadow-lg" id="recommendation">
                     <div className="card-body">
-                        <h5>Recommendation</h5>
+                        <h5>Other Products</h5>
                         <p className="text-muted">You might also like:</p>
                         <div className="row d-flex ms-1">
-                            <Productpreview filterTerm={product.pname} />
+                            <Productpreview/>
                         </div>
                     </div>
                 </div>

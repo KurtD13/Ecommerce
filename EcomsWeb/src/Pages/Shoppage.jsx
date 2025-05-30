@@ -2,7 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Footer } from "../Components/Footer";
 import { Navbar } from "../Components/Navbar"; 
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
+
+
 
 export function Shoppage() {
   const { shopid } = useParams();
@@ -10,6 +13,14 @@ export function Shoppage() {
   const [shopData, setShopData] = useState([]);
   const [product, setProduct] = useState([]);
   const shopKey = shopid;
+  
+const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
+    const speak = (text) => {
+      if (!isTTSEnabled) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    };
+
 
   useEffect(() => {
     const fetchshopData = async () => {
@@ -47,195 +58,132 @@ export function Shoppage() {
     setCurrentSlide((prev) => (prev - 1 + product.length) % product.length);
   };
 
-  const cardStyle = {
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
-    padding: '24px',
-    marginBottom: '16px'
-  };
-
   return (
     <>
-    <Navbar />
-    <div style={{
-      backgroundColor: "#EFEEEA",
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      padding: '20px',
-      overflow: 'auto'
-    }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ flex: '1 1 60%', minWidth: '300px' }}>
-          <div style={cardStyle}>
-            <h5 style={{ margin: '0', fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Banner</h5>
-            {shopData.map((shop) => (
-              <>
-                <div style={{
-                  width: '100%',
-                  height: '200px',
-                  backgroundColor: '#e9ecef',
-                  borderRadius: '8px',
-                  marginBottom: '24px',
-                  overflow: 'hidden',
-                  position: 'relative'
-                }}>
-                  <img
-                    src={shop.shopbanner}
-                    alt="Profile Banner"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      objectPosition: 'center'
-                    }}
-                  />
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
-                  <div style={{ position: 'relative', marginRight: '16px' }}>
-                    <img
-                      src={shop.shoplogo}
-                      alt="Profile"
-                      style={{
-                        width: '60px',
-                        height: '60px',
-                        borderRadius: '50%',
-                        objectFit: 'cover'
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <h5 style={{ margin: '0', fontSize: '20px', fontWeight: '600' }}>{shop.shopname}</h5>
-                    <div style={{ display: 'flex', alignItems: 'center', color: '#6c757d' }}>
-                      <div style={{ marginRight: '8px' }}>
-                        {roundedAverageScore + " "}
-                        <span style={{ color: "#FE7743" }}>
-                          {"★".repeat(Math.floor(roundedAverageScore))} {/* Solid stars */}
-                        </span>
+      <Navbar />
+      <div className="d-flex flex-column pt-4">
+        <div className="container">
+          <div className="row">
+            {/* Left Column: Banner */}
+            <div className="col-md-6">
+              <div className="card mb-4 shadow-sm shadow-lg" >
+      
+                  <h5 className="card-title mb-0 m-3">Banner</h5>
+              
+                <div className="card-body">
+                  {shopData.map((shop) => (
+                    <div key={shop.shopid} onClick={() => speak("Welcome to "+ shop.shopname)}>
+                      <div className="mb-3">
+                        <img
+                          src={shop.shopbanner || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMa-rZMEw5mFIOl2Is7nTQsQUQ5fS8qAAVsQ&s"}
+                          alt="Profile Banner"
+                          className="img-fluid rounded"
+                          style={{ minheight: "300px", maxheight: "300px", width: "100%" }}
+                        />
                       </div>
-                    </div>
-                  </div>
-                </div>
-              </>
-            ))}
-            <div style={{ display: 'flex', textAlign: 'center' }}>
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ marginRight: '8px', fontSize: '18px' }}>📦</span>
-                <div>
-                  <div style={{ fontWeight: '600', fontSize: '16px' }}> {product.length}</div>
-                  <div style={{ fontSize: '12px', color: '#6c757d' }}>Products</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div style={cardStyle}>
-            <h5 style={{ margin: '0', fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Highlight</h5>
-            <div style={{ position: 'relative', overflow: 'hidden' }}>
-              <div style={{ display: 'flex', transition: 'transform 0.3s ease', transform: `translateX(-${currentSlide * 33.333}%)` }}>
-                {product.map((products) => (
-                  <div className="card p-3 shadow" style={{ flex: '0 0 200px', marginRight: '16px' }}>
-                    <div style={{
-                      backgroundColor: 'white',
-                      borderRadius: '8px',
-                      overflow: 'hidden'
-                    }}>
-                      <img
-                        src={products.pimageurl}
-                        style={{
-                          width: '100%',
-                          height: '120px',
-                          objectFit: 'cover'
-                        }}
-                      />
-                      {products.pname}
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <strong className="pe-1">{products.pratings}</strong>
-                            <span style={{ color: "#FE7743" }}>
-                              {"★".repeat(products.pratings)} {/* Solid stars */}
+                      <div className="d-flex align-items-center mb-3">
+                        <img
+                          src={shop.shoplogo}
+                          alt="Profile"
+                          className="rounded-circle me-3"
+                          style={{ width: "60px", height: "60px" }}
+                        />
+                        <div>
+                          <h5 className="mb-0">{shop.shopname}</h5>
+                          <small className="text-muted">
+                            {roundedAverageScore}{" "}
+                            <span className="text-warning">
+                              {"★".repeat(Math.floor(roundedAverageScore))}
                             </span>
-                          </div>
+                          </small>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Description and Highlight */}
+            <div className="col-md-6 mb-4">
+              {/* Description */}
+              <div className="card mb-4 shadow-lg">
+        
+                  <h5 className="card-title mb-0 m-3">Description</h5>
+           
+                <div className="card-body">
+                  {shopData.map((shop) => (
+                    <div key={shop.shopid} onClick={() => speak("Ship from "+ shop.shippinglocation + "Description: " + shop.shopdesc)}>
+                      <p className="mb-2">
+                        <span className="fw-bold">📍 Shipping Location:</span>{" "}
+                        {shop.shippinglocation}
+                      </p>
+                      <p className="text-muted">{shop.shopdesc}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <button
-                style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '-15px',
-                  transform: 'translateY(-50%)',
-                  backgroundColor: 'white',
-                  border: '1px solid #dee2e6',
-                  borderRadius: '50%',
-                  width: '32px',
-                  height: '32px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '14px',
-                  zIndex: 10
-                }}
-                onClick={prevSlide}
-              >
-                ‹
-              </button>
-              <button
-                style={{
-                  position: 'absolute',
-                  top: '50%',
-                  right: '-15px',
-                  transform: 'translateY(-50%)',
-                  backgroundColor: 'white',
-                  border: '1px solid #dee2e6',
-                  borderRadius: '50%',
-                  width: '32px',
-                  height: '32px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '14px',
-                  zIndex: 10
-                }}
-                onClick={nextSlide}
-              >
-                ›
-              </button>
+              {/* Highlight */}
+              <div className="card shadow-lg">
+      
+                  <h5 className="card-title m-3 mb-0">Highlight</h5>
+     
+                <div className="card-body">
+                  <div className="d-flex overflow-hidden">
+                    <div
+                      className="d-flex"
+                      style={{
+                        transform: `translateX(-${currentSlide * 33.333}%)`,
+                        transition: "transform 0.3s ease",
+                      }}
+                    >
+                      {product.map((products) => (
+                        <Link
+                          to={`/products/${products.pid}`}
+                          key={products.pid}
+                          onClick={() => speak("Opening " + products.pname)}
+                          className="card me-3 shadow-sm"
+                          style={{ flex: "0 0 200px", textDecoration: "none", color: "inherit" }}
+                        >
+                          <img
+                            src={products.pimageurl}
+                            alt={products.pname}
+                            className="card-img-top"
+                            style={{ height: "180px", objectFit: "cover" }}
+                          />
+                          <div className="card-body">
+                            <h6 className="card-title">{products.pname}</h6>
+                            <div className="d-flex align-items-center">
+                              <strong className="me-1">{(products.pratings == 0) ? (<span className="fw-normal">No Ratings Yet</span>):(products.pratings)}</strong>
+                              <span className="text-warning">
+                                {"★".repeat(products.pratings)}
+                              </span>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    className="btn btn-outline-secondary border-0 position-absolute top-50 start-0 translate-middle-y"
+                    onClick={prevSlide}
+                  >
+                  <i class="bi bi-arrow-left-circle"></i>
+                  </button>
+                  <button
+                    className="btn btn-outline-secondary border-0 position-absolute top-50 end-0 translate-middle-y"
+                    onClick={nextSlide}
+                  >
+                   <i class="bi bi-arrow-right-circle"></i>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-          <div style={{ flex: '1 1 35%', minWidth: '280px' }}>
-          <div style={cardStyle}>
-            <h5 style={{ margin: '0', fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Description</h5>
-            {shopData.map((shop) => (
-              <>
-                <div style={{ marginBottom: '24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ marginRight: '8px', fontSize: '16px' }}>📍</span>
-                    <span style={{ color: '#6c757d' }}>Shipping Location: {shop.shippinglocation}</span>
-                  </div>
-                </div>
-                <div style={{ color: '#6c757d', lineHeight: '1.5' }}>
-                  <p>{shop.shopdesc}</p>
-                </div>
-              </>
-            ))}
-          </div>
         </div>
-        </div>
-
-        
       </div>
-    </div>
-     </>
+      <Footer />
+    </>
   );
-  
 }

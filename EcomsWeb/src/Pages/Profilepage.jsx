@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { use } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTTS } from '../TTSContext';
 
 export function Profilepage(){
    const userkey = localStorage.getItem("userkey");
    const shopkey = localStorage.getItem("shopkey");
    let profilekey = userkey;
+   
    
 
     return(
@@ -16,6 +18,9 @@ export function Profilepage(){
         
         <Navbar/>
         <div className="container">
+          <div>
+               
+              </div>
             <ProfilePage userkey={profilekey}/>
         </div>
 
@@ -32,6 +37,24 @@ const ProfileSection = ({ onEdit, userKey }) => {
   const [userData, setUserdata] = useState([]);
   let userkey = userKey;
   const shopkey = localStorage.getItem("shopkey");
+   const [isTTSEnabled, setIsTTSEnabled] = useState(() => {
+    // Retrieve the TTS state from localStorage or default to false
+    return JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
+  });
+  const toggleTTS = () => {
+    const newState = !isTTSEnabled;
+    setIsTTSEnabled(newState);
+    localStorage.setItem("isTTSEnabled", JSON.stringify(newState)); // Save the state in localStorage
+  };
+   const speak = (text) => {
+  if (isTTSEnabled) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    speechSynthesis.speak(utterance);
+  }
+  
+};
+  
+   
   const [newShop, setNewShop] = useState({
     sellername: "",
     shippinglocation: "",
@@ -141,21 +164,35 @@ const ProfileSection = ({ onEdit, userKey }) => {
                     width="100"
                     height="100"
                     alt="Profile"
+                     onClick={() => speak(userInfo.consumerusername + " profile picture")}
                   />
                   <div>
-                    <h5 className="mb-0 fw-bold">{userInfo.consumerfirstname}</h5>
+                    <h5 className="mb-0 fw-bold">{userInfo.consumerfirstname} {userInfo.consumermiddlename} {userInfo.consumerlastname}</h5>
                   </div>
                 </div>
-                <p><strong>Username:</strong> {userInfo.consumerusername}</p>
-                <p><strong>Email:</strong> {userInfo.consumeremail}</p>
-                <p><strong>Birthdate:</strong> {userInfo.consumerbirthdate.substring(0, 10)}</p>
-                <p><strong>Phone Number:</strong> {userInfo.consumerphone}</p>
+                <p onClick={() => speak(userInfo.consumerusername)}><strong>Username:</strong> {userInfo.consumerusername}</p>
+                <p onClick={() => speak(userInfo.consumeremail)}><strong>Email:</strong> {userInfo.consumeremail}</p>
+                <p onClick={() => speak(userInfo.consumerbirthdate.substring(0, 10))}><strong>Birthdate:</strong> {userInfo.consumerbirthdate.substring(0, 10)}</p>
+                <p onClick={() => speak(userInfo.consumerphone)}><strong>Phone Number:</strong> {userInfo.consumerphone}</p>
+                <label className="d-flex align-items-center">
+                <input
+                  type="checkbox"
+                  className="form-check me-2"
+                  checked={isTTSEnabled}
+                  onChange={toggleTTS}
+                />
+                Enable Text to Speech
+              </label>
+                 
               </div>
               <div className="text-end ">
                 <div className="row">
                   
                 </div>
-                <button onClick={onEdit} className="btn btn-warning px-3"><i class="bi bi-pencil-square"></i></button>
+                <button onClick={() => {
+                  onEdit();
+                  speak("Edit Profile");
+                }} className="btn btn-warning px-3"><i class="bi bi-pencil-square"></i></button>
                 <button
                     className="btn btn-danger text-start ms-1 px-4"
                    
@@ -444,6 +481,12 @@ const [showPassword, setShowPassword] = useState(false);
 const AddressSection = ({ userKey }) => {
   const [userAddress, setUserAddress] = useState([]);
   const [editAddress, setEditAddress] = useState(null); // State to hold the address being edited
+  const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
+     const speak = (text) => {
+      if (!isTTSEnabled) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    };
   const [newAddress, setNewAddress] = useState({
     country: "Philippines", // Default to Philippines
     region: "",
@@ -628,6 +671,7 @@ const AddressSection = ({ userKey }) => {
             className="btn btn-success"
             data-bs-toggle="modal"
             data-bs-target="#addAddressModal"
+            onClick={() => speak("Adding Address")}
           >
             Add Address
           </button>
@@ -641,7 +685,7 @@ const AddressSection = ({ userKey }) => {
         userAddress.map((address) => (
           <div className="card p-4 mb-3 shadow-sm" key={address.addressid}>
             <div className="d-flex justify-content-between align-items-center">
-              <span>
+              <span  onClick={() => speak(address.housenumber + " " + address.building + ", " + address.streetname + ", " + address.barangay + ", " + address.city + ", " + address.province + ", " + address.region + ", " + address.postalcode + ", " + address.country)}>  
                 {address.housenumber} {address.building}, {address.streetname}, {address.barangay},{" "}
                 {address.city}, {address.province}, {address.region}, {address.postalcode},{" "}
                 {address.country}
@@ -650,13 +694,13 @@ const AddressSection = ({ userKey }) => {
                 <div className="col text-end pe-1">
                   <button
                 className="btn btn-sm btn-danger me-2 p-2 px-3"
-                onClick={() => handleDeleteAddress(address.addressid)}
+                onClick={() => {handleDeleteAddress(address.addressid); speak("Address deleted successfully");} }
                   >
                     ✕
                   </button>
                   <button
                     className="btn btn-sm btn-warning  p-2 px-3 "
-                    onClick={() => setEditAddress(address)} // Open the edit modal
+                    onClick={() => {setEditAddress(address); speak("Editing Address")}} // Open the edit modal
                     data-bs-toggle="modal"
                     data-bs-target="#editAddressModal"
                   >
@@ -1183,6 +1227,12 @@ const PaymentSection = ({ userKey }) => {
   const [userEpayment, setUserEpayment] = useState([]);
   const [userCard, setUserCard] = useState([]);
   const [editPayment, setEditPayment] = useState(null); // State to hold the payment being edited
+  const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
+    const speak = (text) => {
+      if (!isTTSEnabled) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    };
   const [newEwallet, setNewEwallet] = useState({
     epaymenttype: "",
     epaymentphone: "",
@@ -1331,7 +1381,7 @@ const PaymentSection = ({ userKey }) => {
               className="list-group-item d-flex justify-content-between align-items-center shadow-sm"
               key={ewallet.epaymentid}
             >
-              <div>
+              <div onClick={() => speak(`eWallet Type: ${ewallet.epaymenttype === 1 ? "GCash" : ewallet.epaymenttype === 2 ? "Maya" : "Others"}, Phone: ${ewallet.epaymentphone}`)}>
                 <strong>
                   {ewallet.epaymenttype === 1
                     ? "GCash"
@@ -1344,13 +1394,14 @@ const PaymentSection = ({ userKey }) => {
               </div>
               <div className="col text-end">
               <button className="btn btn-danger me-2 btn-sm"
-                      onClick={() => handleDeleteEwallet(ewallet.epaymentid)}
+                      onClick={() => {handleDeleteEwallet(ewallet.epaymentid); speak("Editing eWallet")}}
                       >✕</button>
               <button
                   className="btn btn-sm btn-warning "
-                  onClick={() => setEditPayment({ type: "ewallet", data: ewallet })}
+                  onClick={() => {setEditPayment({ type: "ewallet", data: ewallet }); speak("Editing eWallet")}}
                   data-bs-toggle="modal"
                   data-bs-target="#editPaymentModal"
+               
                 >
                   ✎
               </button>
@@ -1364,20 +1415,21 @@ const PaymentSection = ({ userKey }) => {
           className="btn btn-success btn-sm"
           data-bs-toggle="modal"
           data-bs-target="#addEwalletModal"
+          onClick={() => speak("Adding eWallet")}
         >
           Add Wallet
         </button>
       </div>
 
       <div className="card p-4 shadow-lg">
-        <h5 className="mb-3">Credit / Debit Cards</h5>
+        <h5 className="mb-3"  onClick={() => speak("Add Debit/Credit Card")}>Credit / Debit Cards</h5>
         <ul className="list-group mb-3">
           {userCard.map((card) => (
             <li
               className="list-group-item d-flex justify-content-between align-items-center mb-1"
               key={card.paymentid}
             >
-              <div>
+              <div  onClick={() => speak("Bank Name: " + card.bankname + ", Card Number: " + formatCardNumber(card.cardnumber) + ", Expiry Date: " + (card.expirydate).substring(0, 10))}>
                 <strong>{card.bankname}</strong>
                 <br />
                 Card Number: {formatCardNumber(card.cardnumber)}
@@ -1386,12 +1438,12 @@ const PaymentSection = ({ userKey }) => {
               </div>
               <div className="col text-end">
                 <button className="btn btn-danger btn-sm me-2"
-                        onClick={() => handleDeleteCard(card.paymentid)}
+                        onClick={() => {handleDeleteCard(card.paymentid); speak("Card deleted successfully")}}
                 >✕
                 </button>
                   <button
                   className="btn btn-sm btn-warning "
-                  onClick={() => setEditPayment({ type: "card", data: card })}
+                  onClick={() => {setEditPayment({ type: "card", data: card }); speak("Editing Card")}}
                   data-bs-toggle="modal"
                   data-bs-target="#editPaymentModal"
                 >
@@ -1407,6 +1459,7 @@ const PaymentSection = ({ userKey }) => {
           className="btn btn-success btn-sm"
           data-bs-toggle="modal"
           data-bs-target="#addCardModal"
+           onClick={() => speak("Adding Debit/Credit Card")}
         >
           Add Card
         </button>
@@ -1467,7 +1520,7 @@ const PaymentSection = ({ userKey }) => {
                 </div>
             </div>
             <div className="modal-footer">
-              <button type="submit" className="btn btn-warning">
+              <button type="submit" className="btn btn-warning" onClick={() => speak("Added eWallet Succesfully")}>
                 Add Wallet
               </button>
               <button
@@ -1493,7 +1546,7 @@ const PaymentSection = ({ userKey }) => {
         <div className="modal-dialog">
           <form className="modal-content" onSubmit={handleAddCard}>
             <div className="modal-header">
-              <h5 className="modal-title" id="addCardModalLabel">
+              <h5 className="modal-title" id="addCardModalLabel" >
                 Add Debit/Credit Card
               </h5>
               <button
@@ -1803,6 +1856,14 @@ const PurchaseSection = ({ userKey, status, productStatus }) => {
   const [variationData, setVariationData] = useState([]); 
   const navigate = useNavigate();
   
+  const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
+    const speak = (text) => {
+      if (!isTTSEnabled) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    };
+
+  
   useEffect(() => {
     const fetchUserPurchase = async () => {
       try {
@@ -1917,7 +1978,7 @@ const handlebuyagain = async (productID) => {
       <h2>{productStatus}</h2>
       {enrichedPurchases.length > 0 ? (
         enrichedPurchases.map((purchase) => (
-          <div className="card mb-3 p-3" key={purchase.id}>
+          <div className="card mb-3 p-3" key={purchase.id} onClick={() => speak(`Product Name: ${purchase.productName}, Price: ₱${purchase.productPrice}, Quantity: ${purchase.itemQuantity}, Variation: ${purchase.variation}, Contact: ${purchase.contactinfo}, Shipping Address: ${purchase.shippinglocation}`)}>
             <div className="row g-3 align-items-center">
               <div className="col-md-2">
                 <img
@@ -1958,7 +2019,7 @@ const handlebuyagain = async (productID) => {
                 
                  {(status === 1 || status === 2) && (
                   <button className="btn btn-outline-danger btn-sm px-1 mb-1"
-                          onClick={() => handleCancelOrder(purchase.purchase.pstatusid)}
+                          onClick={() => {handleCancelOrder(purchase.purchase.pstatusid); speak("Order cancelled successfully")}}
                           >
                     Cancel Order
                   </button>
@@ -1966,14 +2027,14 @@ const handlebuyagain = async (productID) => {
                 
                 {(status === 4 || status === 5) && (
                   <button className="btn btn-outline-primary btn-sm"
-                          onClick={() => handlebuyagain(purchase.productID)}>
+                          onClick={() => {handlebuyagain(purchase.productID); speak("Buying again")}}>
                     Buy Again
                   </button>
                 )}
                   <br/>
                 {(status === 1) && (
                   <button className="btn btn-outline-success btn-sm px-2 mb-1"
-                  onClick={() => handlePaynow(purchase.purchase.pstatusid)}>
+                  onClick={() => {handlePaynow(purchase.purchase.pstatusid); speak("Order paid successfully")}}>
                     Pay product
                   </button>
                 )}

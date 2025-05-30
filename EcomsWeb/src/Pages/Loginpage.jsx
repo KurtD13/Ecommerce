@@ -114,26 +114,18 @@ export function Loginpage() {
                 )}
 
                 <div className="form-check d-flex justify-content-between align-items-center mb-3">
-                  <div>
-                    <input type="checkbox" className="form-check-input" id="remember" />
-                    <label className="form-check-label" htmlFor="remember">Remember me</label>
-                  </div>
-                  <a href="#" className="text-decoration-none">Forgot password?</a>
+                
+          
                 </div>
 
                 <button type="submit" className="btn btn-login text-white w-100 mb-3">Sign In</button>
               </form>
               <div className="divider text-center my-3">
-                <span>or continue with</span>
+                
               </div>
 
               <div className="social-login d-flex justify-content-between mb-3">
-                <button type="button" className="btn btn-social w-48">
-                  <i className="fab fa-google me-2"></i>Google
-                </button>
-                <button type="button" className="btn btn-social w-48">
-                  <i className="fab fa-facebook-f me-2"></i>Facebook
-                </button>
+             
               </div>
 
               <div className="register-link text-center" data-bs-dismiss="modal">

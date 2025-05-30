@@ -2,6 +2,13 @@ import { Link } from "react-router-dom";
 import React from "react";
 
 const Sidebar = () => {
+  const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
+    const speak = (text) => {
+      if (!isTTSEnabled) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    };
+
   const linkStyle = {
     display: "block",
     padding: "8px 12px",
@@ -30,8 +37,8 @@ const Sidebar = () => {
       {[
         { to: "/sellerdash", label: "Dashboard"},
         { to: "/sellershop", label: "My Shop" },
-        { to: "/sellerproducts", label: "My Products" },
-        { to: "/sellerorders", label: "Orders" }
+        { to: "/sellerproducts", label: "My Products"},
+        { to: "/sellerorders", label: "Orders"},
       ].map(({ to, label }, i) => (
         <Link
           key={to}
@@ -43,6 +50,12 @@ const Sidebar = () => {
           }
           onMouseEnter={() => setHovered(i)}
           onMouseLeave={() => setHovered(null)}
+          onClick={() => {
+            speak(label);
+            if (typeof label.onclick === "function") {
+              label.onclick();
+            }
+          }}
         >
           {label}
         </Link>

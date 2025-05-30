@@ -4,12 +4,23 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
+
 export function Cartpage() {
   const [cartProducts, setCartProducts] = useState([]);
   const [error, setError] = useState(null);
   const userkey = localStorage.getItem("userkey"); // Get user key from localStorage
   const navigate = useNavigate();
   const [selectedProducts, setSelectedProducts] = useState([]);
+ 
+const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
+    const speak = (text) => {
+      if (!isTTSEnabled) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    };
+
+
+    
 
 useEffect(() => {
   const fetchCartData = async () => {
@@ -183,6 +194,7 @@ const handleVariationChange = async (cartId, newVariationKey) => {
                 className="me-2 mt-1"
                 checked={selectedProducts.includes(product.cartid)}
                 onChange={() => handleProductSelection(product.cartid)}
+                onClick={() => speak("Selected " + product.productName)}
               />
               <img
                 src={product.productImage}
@@ -195,21 +207,22 @@ const handleVariationChange = async (cartId, newVariationKey) => {
                   maxHeight: "100px",
                   objectFit: "fill",
                 }}
+                onClick={() => speak(product.productName)}
               />
               <div>
-                <div>{product.productName}</div>
-                <small className="text-muted">{product.productDesc}</small>
+                <div  onClick={() => speak(product.productName)}>{product.productName}</div>
                 <div>
                   <select
                     className="form-select form-select-sm w-auto mt-1"
                     value={product.variation || ""}
                     onChange={(e) =>
                       handleVariationChange(product.cartid, e.target.value)
+                      
                     }
                   >
                     {product.availableVariations.length > 0 ? (
                       product.availableVariations.map((variation) => (
-                        <option key={variation.pvid} value={variation.pvid}>
+                        <option key={variation.pvid} value={variation.pvid} >
                           {variation.pvname}
                         </option>
                       ))
@@ -220,12 +233,12 @@ const handleVariationChange = async (cartId, newVariationKey) => {
                 </div>
               </div>
             </div>
-            <div className="col-2 text-center">₱ {product.productPrice.toFixed(2)}</div>
+            <div className="col-2 text-center" onClick={() => speak(product.productPrice.toFixed(2) + "pesos")}>₱ {product.productPrice.toFixed(2)}</div>
             <div className="col-2 text-center">
               <div className="input-group input-group-sm justify-content-center">
                 <button
                   className="btn btn-outline-secondary"
-                  onClick={() => handleQuantityChange(product.cartid, -1)}
+                  onClick={() => {handleQuantityChange(product.cartid, -1); speak("Decreased quantity to " + product.pquantity )}}
                 >
                   -
                 </button>
@@ -237,21 +250,20 @@ const handleVariationChange = async (cartId, newVariationKey) => {
                 />
                 <button
                   className="btn btn-outline-secondary"
-                  onClick={() => handleQuantityChange(product.cartid, 1)}
+                  onClick={() => {handleQuantityChange(product.cartid, 1); speak("Increased quantity to" + product.pquantity)}}
                 >
                   +
                 </button>
               </div>
             </div>
-            <div className="col-1 text-center">₱ {Number(product.ptotal).toFixed(2)}</div>
+            <div className="col-1 text-center" onClick={()=> speak("Total Price is "+ Number(product.ptotal).toFixed(2))}>₱ {Number(product.ptotal).toFixed(2)}</div>
             <div className="col-1 text-center">
               <button
                 className="btn btn-outline-danger btn-sm me-1"
-                onClick={() => handleDelete(product.cartid)}
+                onClick={() => {handleDelete(product.cartid); speak("Deleted " + product.productName)}}
               >
                 Delete
               </button>
-              <button className="btn btn-outline-secondary btn-sm">Similar</button>
             </div>
           </div>
         </div>
@@ -271,6 +283,7 @@ const handleVariationChange = async (cartId, newVariationKey) => {
                     setSelectedProducts([]);
                   }
                 }}
+                onClick={() => speak("Selected all products")}
                 checked={selectedProducts.length === cartProducts.length && cartProducts.length > 0}
               />
             Select All

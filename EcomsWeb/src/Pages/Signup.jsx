@@ -112,6 +112,10 @@ function CreateAccount({ onNext, userdata, setUserdata }) {
               className="form-control"
               placeholder="Create your password"
               type={showPassword ? "text" : "password"}
+              pattern="^9[0-9]{9}$"
+              maxLength="10"
+              title="Please enter exactly 10 digits starting with 9."
+              required
               value={userdata.consumerpassword}
               onChange={(e) => setUserdata({ ...userdata, consumerpassword: e.target.value })}
             />
@@ -131,6 +135,10 @@ function CreateAccount({ onNext, userdata, setUserdata }) {
               placeholder="Confirm your password"
               type={showConfirm ? "text" : "password"}
               value={passwordConfirm}
+              pattern="^9[0-9]{9}$"
+              maxLength="10"
+              title="Please enter exactly 10 digits starting with 9."
+              required
               onChange={(e) => setPasswordConfirm(e.target.value)}
             />
             <button

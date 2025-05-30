@@ -3,6 +3,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Contexts/AuthContext";
 import axios from "axios";
+import { useTTS } from '../TTSContext';
+
+
 
 export function Navbar() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -10,6 +13,14 @@ export function Navbar() {
   const [isSeller, setIsSeller] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [smallAdmin, setIsSmallAdmin] = useState(false);
+  const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
+     const speak = (text) => {
+      if (!isTTSEnabled) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    };
+  
+  
   
   const navigate = useNavigate();
   const userkey = localStorage.getItem("userkey");
@@ -65,6 +76,7 @@ export function Navbar() {
             e.currentTarget.style.transform = "scale(1.0)";
             e.currentTarget.style.fontSize = "1.5rem";
           }}
+          onClick={() => speak("EXOtic Dashboard")}
         >
           EXOtique
         </a>
@@ -93,6 +105,7 @@ export function Navbar() {
               style={{ background: "#FE7743", color: "#EFEEEA" }}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e8602c")}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#FE7743")}
+              onClick={() => speak("Searching for " + searchTerm)}
             >
               <i className="bi bi-search"></i>
             </button>
@@ -104,8 +117,10 @@ export function Navbar() {
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e8602c")}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#FE7743")}
             className="btn me-2"
+            onClick={() => speak("Cart Page")}
+            
           >
-            <i className="bi bi-cart-fill"></i>
+            <i className="bi bi-cart-fill" ></i>
           </Link>
 
           {/* Conditionally render login button based on login state */}
@@ -117,30 +132,19 @@ export function Navbar() {
               data-bs-target="#loginModal"
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e8602c")}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#FE7743")}
+              onClick={() => speak("Login")}
             >
               Login
             </button>
           )}
 
-          {isLoggedIn && (
-            <>
-             <Link
-              to="/profilepage"
-              style={{ background: "#FE7743", color: "#EFEEEA" }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e8602c")}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#FE7743")}
-              className="btn me-2"
-            >
-              <i className="bi bi-person-fill"></i>
-            </Link>
-
-            </>
-          )}
+          
           {isSeller &&(
               <Link
                   to="/sellerdash"
                   className="btn me-2"
                   style={{ background: "#FE7743", color: "#EFEEEA" }}
+                  onClick={() => speak("Seller Dashboard")}
                 >
               Shop
             </Link>
@@ -151,9 +155,26 @@ export function Navbar() {
                   to="/adminpage"
                   className="btn me-2"
                   style={{ background: "#FE7743", color: "#EFEEEA" }}
+                  onClick={() => speak("Admin Page")}
                 >
               Admin
             </Link>
+          )}
+
+          {isLoggedIn && (
+            <>
+             <Link
+              to="/profilepage"
+              style={{ background: "#FE7743", color: "#EFEEEA" }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e8602c")}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#FE7743")}
+              className="btn me-2"
+              onClick={() => speak("Profile")}
+            >
+              <i className="bi bi-person-fill"></i>
+            </Link>
+
+            </>
           )}
             
             

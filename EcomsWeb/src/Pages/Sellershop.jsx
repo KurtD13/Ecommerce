@@ -2,7 +2,8 @@ import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Sellerheader";
 import React, { useEffect, useState } from 'react';
 import axios from "axios";
-
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export function Sellershop(){
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -12,6 +13,13 @@ export function Sellershop(){
   const shopKey = localStorage.getItem("shopkey");
   const userkey = localStorage.getItem("userkey");
   const [isSeller, setIsSeller] = useState(false);
+  const navigate = useNavigate();
+  const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
+    const speak = (text) => {
+      if (!isTTSEnabled) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    };
 
 
   useEffect(() => {
@@ -225,7 +233,7 @@ export function Sellershop(){
                 data-bs-toggle="modal"
                 data-bs-target="#editShopModal"
                 style={buttonStyle}
-                onClick={() => handleEditShopClick(shop.shopid)} // Pass the shop ID
+                onClick={() => {handleEditShopClick(shop.shopid); speak("Editing Shop")}} // Pass the shop ID
               >
                 ✏️
               </button>
@@ -243,7 +251,9 @@ export function Sellershop(){
               marginBottom: '24px',
               overflow: 'hidden',
               position: 'relative'
-            }}>
+            }}
+            onClick={() => speak(shop.shopname+"Banner")}
+            >
               <img 
                 src={shop.shopbanner}
                 alt="Profile Banner"
@@ -313,19 +323,19 @@ export function Sellershop(){
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ marginRight: '8px', fontSize: '18px' }}>📦</span>
                 
-                <div>
+                <div onClick={() => speak(product.length + "Products")}>
                   <div style={{ fontWeight: '600', fontSize: '16px' }}> {product.length}</div>
-                  <div style={{ fontSize: '12px', color: '#6c757d' }}>Products</div>
+                  <div style={{ fontSize: '12px', color: '#6c757d' }} >Products</div>
                 </div>
               </div>
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => speak(profileData.followers + "Followers")}>
                 <span style={{ marginRight: '8px', fontSize: '18px' }}>👥</span>
                 <div>
                   <div style={{ fontWeight: '600', fontSize: '16px' }}>{profileData.followers}</div>
                   <div style={{ fontSize: '12px', color: '#6c757d' }}>Followers</div>
                 </div>
               </div>
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => speak("Joined "+shopData[0].create_timestamp.substring(0, 4))}>
                 <span style={{ marginRight: '8px', fontSize: '18px' }}>👤</span>
                 {shopData.map((shop) => (
                 <div>
@@ -346,7 +356,7 @@ export function Sellershop(){
             <div  style={{ position: 'relative', overflow: 'hidden' }}>
               <div style={{ display: 'flex', transition: 'transform 0.3s ease', transform: `translateX(-${currentSlide * 33.333}%)` }}>
                 {product.map((products) => (
-                  <div className="card p-3 shadow" style={{ flex: '0 0 200px', marginRight: '16px' }}>
+                  <Link  to={`/products/${products.pid}`} className="card p-3 shadow" style={{ flex: '0 0 200px', marginRight: '16px', textDecoration: 'none', color: 'inherit' }} key={products.pid} onClick={() => speak("Opening " + products.pname)}>
                     <div style={{ 
                       backgroundColor: 'white',
                       borderRadius: '8px',
@@ -373,7 +383,7 @@ export function Sellershop(){
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
               
@@ -435,18 +445,18 @@ export function Sellershop(){
              
               <div style={{ marginBottom: '24px' }}>
                  {shopData.map((shop) => (
-                <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }} onClick={() => speak(shop.sellername)}>
                   <span style={{ marginRight: '8px', fontSize:"20px"}}><i class="bi bi-person-fill"></i></span>
                   <span style={{ color: '#6c757d', fontSize:"16px" }}>{shop.sellername} </span>
                 </div>
                 ))}
                 {consumerData.map((consumer) => (
                   <>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }} onClick={() => speak("Phone Number."+ consumer.consumerphone)}>  
                       <span style={{ marginRight: '8px',  fontSize:"20px"}}><i class="bi bi-telephone-fill"></i></span>
                       <span style={{ color: '#6c757d', fontSize:"16px" }}>{"+63 "+consumer.consumerphone}</span><br/>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }} onClick={() => speak("Email Address."+ consumer.consumeremail)}>
                       <span style={{ marginRight: '8px',  fontSize:"20px"}}><i class="bi bi-envelope-fill"></i></span>
                       <span style={{ color: '#6c757d', fontSize:"16px" }}>{consumer.consumeremail}</span><br/>
                     </div>
@@ -461,7 +471,7 @@ export function Sellershop(){
             </div>
              {shopData.map((shop) => (
               <>
-            <div style={cardStyle}>
+            <div style={cardStyle} onClick={() => speak("Description of " + shop.shopname + ",Shipping Location: " + shop.shippinglocation + "Description: " + shop.shopdesc)}> 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <h5 style={{ margin: '0', fontSize: '18px', fontWeight: '600' }}>Description</h5>
                

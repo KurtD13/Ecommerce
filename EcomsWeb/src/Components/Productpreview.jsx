@@ -6,6 +6,13 @@ export function Productpreview({ filterTerm = "" }) {
   const [productData, setProductData] = useState([]);
   const [shopData, setShopData] = useState([]);
   const [error, setError] = useState(null);
+  
+const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
+    const speak = (text) => {
+      if (!isTTSEnabled) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -66,8 +73,10 @@ export function Productpreview({ filterTerm = "" }) {
                 boxShadow:
                   "0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
                 minHeight:
-                  "18rem"
+                  "18rem",
+                maxHeight: "18rem",
               }}
+              onClick={() => speak("Opening" + productInfo.pname)} // Speak the product name on click
               
             >
               <img
@@ -87,14 +96,15 @@ export function Productpreview({ filterTerm = "" }) {
                 </div>
                 <div className="row">
                     <div className="col-8 px-0">
+                      
                     <div
-                      className="card-text text-start"
+                      className="card-text text-start text-warning"
                       style={{ fontSize: "15px" }}
                     >
+                      <span className="text-dark">{productInfo.pratings > 0 ? (productInfo.pratings+" ") : ("No ratings yet")}</span>
                       {(productInfo.pratings > 0) ?
-                     ( productInfo.pratings + " " +
-                       "★".repeat(productInfo.pratings))
-                      : "No ratings yet"}
+                     ("★".repeat(productInfo.pratings))
+                      : ""}
                     </div>
                      </div>
                 </div>
@@ -112,7 +122,7 @@ export function Productpreview({ filterTerm = "" }) {
                   <div className="col-4 px-0">
                     <div
                       className="card-text text-end"
-                      style={{ fontSize: "15px" }}
+                      style={{ fontSize: "12px" }}
                     >
                       {productInfo.ptotalsales} sold
                     </div>

@@ -23,6 +23,12 @@ export function SellerDashboard() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isSeller, setIsSeller] = useState(false);
   const userkey = localStorage.getItem("userkey");
+  const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
+    const speak = (text) => {
+      if (!isTTSEnabled) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -123,7 +129,7 @@ export function SellerDashboard() {
         reportId: report.reportid,
         reportTitle: report.reporttitle,
         consumerId: consumer?.consumerid || null,
-        consumerFirstName: consumer?.consumerfirstname || "Unknown",
+        consumerFirstName: consumer?.consumerusername || "Unknown",
         shopName: shop?.shopname || "Unknown Shop",
         productName: product?.pname || "Unknown Product",
         reportdescription: report.reportdescription,
@@ -275,9 +281,9 @@ export function SellerDashboard() {
       >
         <Sidebar />
         <div style={{ flex: 3, display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <section className="p-3 rounded mt-4" style={cardStyle}>
+          <section className="p-3 rounded mt-4" style={cardStyle} >
           <h5>Shop Status</h5>
-          <div className="d-flex justify-content-between text-center mt-3">
+          <div className="d-flex justify-content-between text-center mt-3" onClick={() => speak("Shop Status Summary. " + shopStatus.completedOrders + " completed orders, " + shopStatus.ongoingDeliveries + " ongoing deliveries, " + shopStatus.refundedOrders + " refunded orders, and " + shopStatus.reviews + " reviews")}>
             <div>
               <strong>{shopStatus.completedOrders}</strong>
               <br />
@@ -311,7 +317,7 @@ export function SellerDashboard() {
                     (report.shopkey == shopKey) && (
                      
                         <div className="col-6">
-                            <div className="card p-2 my-1 rounded shadow">
+                            <div className="card p-2 my-1 rounded shadow" onClick={() => speak("Report from " + report.consumerFirstName + " regarding " + report.productName + ". " + report.reportTitle)}>
                               <div className="d-flex align-items-center mb-2 pt-1 ps-1">
                                 <div className="fw-bold" style={{fontSize:"10px"}}>
                                   <img
@@ -325,7 +331,7 @@ export function SellerDashboard() {
                                </div>
                               </div>
                             
-                              <div className="card p-1" style={{ height: 60, fontSize: "0.8rem" }}>
+                              <div className="card p-1" style={{ height: 60, fontSize: "0.8rem" }} onClick={() => speak(report.reportdescription)}>
                                 <span className="text-secondary" style={{fontSize:"0.5rem"}}>Description</span>{report.reportdescription  }
                               </div>
                               {report.reportImsg && (
@@ -350,7 +356,7 @@ export function SellerDashboard() {
                 <span className="text-secondary">Admin Notification</span>
                 {adminReports.map((report) => (
                     (report.shopkey == shopKey) && (
-                      <div className="card p-2 m-1 rounded shadow">
+                      <div className="card p-2 m-1 rounded shadow" onClick={() => speak("Admin Report: " + report.reportname + ". " + report.reportdesc)}>
                         <div className="d-flex align-items-center mb-2 pt-1 ps-1">
                           <div className="fw-bold">{report.reportname}</div>
                         </div>
@@ -376,6 +382,7 @@ export function SellerDashboard() {
                   key={review.previewsid}
                   className="card p-2 m-1 rounded shadow"
                   style={{ width: "30%", backgroundColor: "#EFEEEA" }}
+                  onClick={() => speak("Review from " + review.consumerfirstname + ". " + review.reviewtitle + ". " + review.reviewdesc)}
                 >
                   <div className="d-flex align-items-center mb-2 pt-1 ps-1">
                     <img
@@ -420,6 +427,7 @@ export function SellerDashboard() {
               <div
                 className="align-items-center justify-content-between my-2 p-2 bg-white rounded"
                 style={cardStyle}
+                onClick={() => speak("Delivery Status: " + d.pname + ". " + (d.pstatus === 1 ? "To Pay" : d.pstatus === 2 ? "Shipped" : "To be Received") + " by " + d.consumerfirstname)}
               >
                 <div className="row m-1">
                   <div className="col-10">

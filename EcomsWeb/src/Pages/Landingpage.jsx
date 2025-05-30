@@ -6,6 +6,7 @@ import { Categorycard } from "../Components/CategoryCard";
 import { Productpreview } from "../Components/Productpreview";
 import { Footer } from "../Components/Footer";
 import '../index.css';
+ 
 
 export function Landingpage(){
     return(

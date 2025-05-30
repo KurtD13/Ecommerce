@@ -22,6 +22,13 @@ export function Sellerproducts(){
     const [selectedPreviews, setSelectedPreviews] = useState(null);
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [isSeller, setIsSeller] = useState(false);
+    
+const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
+    const speak = (text) => {
+      if (!isTTSEnabled) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    };
   
 
     useEffect(() => {
@@ -416,7 +423,7 @@ useEffect(() => {
         
                 
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h4 className="mb-0" style={{ fontWeight: 'bold', color: '#333', fontSize: '24px' }}>
+          <h4 className="mb-0" style={{ fontWeight: 'bold', color: '#333', fontSize: '24px' }} onClick={() => speak("Manage Products")}>
             Manage Products
           </h4>
           <button 
@@ -432,6 +439,7 @@ useEffect(() => {
             }}
              data-bs-toggle="modal"
              data-bs-target="#createProduct"
+            onClick={() => { speak("Add Product") }}
           >
             Add Product
           </button>
@@ -454,6 +462,7 @@ useEffect(() => {
                   height: '38px',
                   border: '1px solid #ddd'
                 }}
+                onClick={() => speak("Search Products")}
               />
               <i 
                 className="fas fa-search position-absolute" 
@@ -464,6 +473,7 @@ useEffect(() => {
                   color: '#999',
                   fontSize: '14px'
                 }}
+
               />
             </div>
           </div>
@@ -478,6 +488,7 @@ useEffect(() => {
                 height: '38px',
                 border: '1px solid #ddd'
               }}
+              onClick={() => speak("Filter by Price")}
             >
               <option value="">Price</option>
               <option value="low-to-high">Low to High</option>
@@ -498,6 +509,7 @@ useEffect(() => {
                   border: '1px solid #ddd',
                   paddingLeft: '35px'
                 }}
+                onClick={() => speak("Filter by Date")}
               >
                 <option value="">Filter</option>
                 <option value="newest">Newest</option>
@@ -519,11 +531,11 @@ useEffect(() => {
           <div>
             <button 
               className="btn btn-outline-secondary"
-              onClick={() => {
+              onClick={() => {{
                 setSearchTerm('');
                 setPriceFilter('');
                 setCategoryFilter('');
-                setFilterOption('');
+                setFilterOption(''); speak("Filters Reset");}
               }}
               style={{ 
                 fontSize: '14px',
@@ -550,7 +562,7 @@ useEffect(() => {
                 padding: '6px 12px',
                 border: 'none',
               }}
-              onClick={handleActivateProducts}
+              onClick={()=> {handleActivateProducts(); speak("Activating Selected Products")}}
               disabled={selectedProducts.length === 0} // Disable if no products are selected
             >
               Activate
@@ -564,7 +576,7 @@ useEffect(() => {
                 padding: '6px 12px',
                 border: 'none',
               }}
-              onClick={handleDeactivateProducts}
+              onClick={()=> {handleDeactivateProducts(); speak("Deactivating Selected Products")}}
               disabled={selectedProducts.length === 0} // Disable if no products are selected
             >
               Deactivate
@@ -578,7 +590,7 @@ useEffect(() => {
                 padding: '6px 12px',
                 border: 'none',
               }}
-              onClick={handleDeleteSelectedProducts}
+              onClick={()=> {handleDeleteSelectedProducts(); speak("Deleting Selected Products")}}
               disabled={selectedProducts.length === 0} // Disable if no products are selected
             >
               Delete
@@ -625,7 +637,7 @@ useEffect(() => {
             <tbody>
   {filteredProducts.map((product) => (
     <React.Fragment key={product.pid}>
-      <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
+      <tr style={{ borderBottom: '1px solid #f0f0f0' }} >
         <td style={{ padding: '16px 12px', verticalAlign: 'middle' }}>
           <input
             type="checkbox"
@@ -634,7 +646,7 @@ useEffect(() => {
             onChange={() => handleSelectProduct(product.pid)}
           />
         </td>
-        <td style={{ padding: '16px 12px', verticalAlign: 'middle' }}>
+        <td style={{ padding: '16px 12px', verticalAlign: 'middle' }} onClick={() => speak(`Product: ${product.pname}, Price: ${formatPrice(product.pprice)}, Stock: ${product.stock}`)}>
           <div className="d-flex align-items-center">
             <img
               className="me-3"
@@ -691,7 +703,7 @@ useEffect(() => {
                       className="dropdown-item"
                       data-bs-toggle="modal"
                       data-bs-target="#createVariation"
-                      onClick={() => setSelectedPid(product.pid)}
+                      onClick={() => {setSelectedPid(product.pid);speak("Adding Variation")}}
                     >
                       Add
                     </button>
@@ -704,7 +716,7 @@ useEffect(() => {
                       className="dropdown-item text-danger"
                       data-bs-toggle="modal"
                       data-bs-target="#deleteVariation"
-                      onClick={() => setSelectedPid(product.pid)}
+                      onClick={() => {setSelectedPid(product.pid); speak("Deleting Variation")}}
                     >
                       Delete
                     </button>
@@ -782,6 +794,7 @@ useEffect(() => {
                     onClick={() => {
                       handleEditButtonClick(product);
                       setSelectedPid(product.pid);
+                      speak("Editing Product");
                     }}
                   >
                     Edit
@@ -796,6 +809,7 @@ useEffect(() => {
                     onClick={() => {
                       handleDeleteProducts();
                       setSelectedPid(product.pid);
+                      speak("Deleting Product");
                     }}
                   >
                     Delete

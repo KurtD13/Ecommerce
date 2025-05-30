@@ -25,6 +25,12 @@ export function Adminpage() {
   const [disableproduct, setdisableproduct] = useState({
     is_available: false
   });
+  const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
+    const speak = (text) => {
+      if (!isTTSEnabled) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    };
 
   useEffect(() => {
       const fetchData = async () => {
@@ -77,9 +83,9 @@ export function Adminpage() {
         }
     };
 
-    const handlerDeleteUser = async (userid) => {
+    const handlerDeleteUser = async () => {
         try {
-            await axios.delete(`http://localhost:3000/api/user/${userid}`);    
+            await axios.delete(`http://localhost:3000/api/user/${selectedDelete}`);    
             alert("user deleted successfully.");
             fetchProduct();
         } catch (err) {
@@ -164,70 +170,80 @@ export function Adminpage() {
     {(isAdmin || smallAdmin) ? (
     <div className="min-vh-100">
       <div className="container py-4">
-         <h1>Admin Shop Management</h1>
-        <div className="row">
-          {/* Upcoming Reports */}
-          <div className="col-md-6 mb-4">
-            <div className="card shadow">
-              <div className="card-header fw-bold">Upcoming Reports</div>
-              <ul className="list-group list-group-flush overflow-auto" style={{height:"200px"}}>
-                {enrichedReports.map((reports) => (
-                  <li
-                    key={reports.reportId}
-                    className="list-group-item d-flex justify-content-between align-items-center"
-                  >Reported by: {reports.consumerFirstName} ID: {reports.consumerId}
-                    <span className="fw-bold">"{""+reports.reportTitle}"</span>
-                    <button
-                      className="btn btn-sm btn-primary"
-                      data-bs-toggle="modal"
-                      data-bs-target="#reportModal"
-                      onClick={() => {setSelectedReport(reports.reportId)}}
-                    >
-                      View Details
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="card shadow mt-2">
-              <div className="card-header d-flex justify-content-between align-items-center ">
-                <span className="fw-bold">Shops</span>
-               
+  <h1>Admin Shop Management</h1>
+  <div className="row">
+    {/* Upcoming Reports */}
+    <div className={isAdmin ? "col-md-6 mb-4" : "col-md-12 mb-4"}>
+      <div className="card shadow">
+        <div className="card-header fw-bold">Upcoming Reports</div>
+        <ul className="list-group list-group-flush overflow-auto" style={{ height: "200px" }}>
+          {enrichedReports.map((reports) => (
+            <li
+              key={reports.reportId}
+              className="list-group-item d-flex justify-content-between align-items-center"
+              onClick={() => speak(`Reported by ${reports.consumerFirstName} with ID ${reports.consumerId}. Report title is ${reports.reportTitle}`)}
+            >
+              Reported by: {reports.consumerFirstName} ID: {reports.consumerId}
+              <span className="fw-bold">"{"" + reports.reportTitle}"</span>
+              <button
+                className="btn btn-sm btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#reportModal"
+                onClick={() => {
+                  setSelectedReport(reports.reportId);
+                  speak(`Report details: ${reports.reportdescription}. Reported product is ${reports.productName} from shop ${reports.shopName}`);
+                }}
+              >
+                <i className="bi bi-arrows-angle-expand"></i>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="card shadow mt-2">
+        <div className="card-header d-flex justify-content-between align-items-center">
+          <span className="fw-bold">Shops</span>
+        </div>
+        <ul
+          className="list-group list-group-flush overflow-auto shadow"
+          style={{ height: "250px" }}
+        >
+          {reportedShops.map((shop) => (
+            <li
+              key={shop.shopid}
+              className="list-group-item d-flex justify-content-between align-items-center"
+            >
+              <div>
+                <img
+                  src={
+                    shop.shoplogo ||
+                    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT6AgT5iH1yzqRI0zQnln2KSFF5iBdytal_UA&s"
+                  }
+                  alt="Shop"
+                  style={{ width: "50px", height: "50px", borderRadius: "50%" }}
+                  className="me-2"
+                />
+                {shop.shopname}
               </div>
-              <ul className="list-group list-group-flush overflow-auto shadow" style={{height:"250px"}}>
-                {reportedShops.map((shop) => (
-                  <li
-                    key={shop.shopid}
-                    className="list-group-item d-flex justify-content-between align-items-center"
-                  >
-                    <div>
-                    <img
-                        src={shop.shoplogo || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT6AgT5iH1yzqRI0zQnln2KSFF5iBdytal_UA&s"}
-                        alt="Shop"
-                        style={{ width: '50px', height: '50px', borderRadius: '50%' }}  
-                        className="me-2"
-                      />{shop.shopname}
-                    </div>
 
-                     
-                    <button
-                       className={`btn btn-sm ${
-                        shop.shopstatus ? "btn-success" : "btn-danger"
-                      }`}
-                      data-bs-toggle="modal"
-                      data-bs-target="#shopModal"
-                      onClick={() => {
-                        setShopReport({ ...shopReport, shopkey: shop.shopid });
-                      }}
-                    >
-                      Shop Status
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          {/* Report Modal */}
+              <button
+                className={`btn btn-sm ${
+                  shop.shopstatus ? "btn-success" : "btn-danger"
+                }`}
+                data-bs-toggle="modal"
+                data-bs-target="#shopModal"
+                onClick={() => {
+                  setShopReport({ ...shopReport, shopkey: shop.shopid });
+                }}
+              >
+                Shop Status
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+     {/* Report Modal */}
       <div
         className="modal fade"
         id="reportModal"
@@ -263,7 +279,7 @@ export function Adminpage() {
                         />
                     </div>
                     <div className="col-11 ps-5 mb-3">
-                      <strong>{report.consumerFirstName}</strong><br/> <span className="text-secondary small">Id: 00000{report.consumerId}</span>
+                      <strong>{report.consumerFirstName}</strong><br/> <span className="text-secondary small">Id: {report.consumerId}</span>
                     </div>
                   </div>
                   <div className="fw-bold mb-1">"{report.reportTitle}"</div>
@@ -326,45 +342,157 @@ export function Adminpage() {
         </div>
       </div>
 
-          {/* User */}
-          <div className="col-md-6 mb-4">
-            <div className="card shadow">
-              <div className="card-header fw-bold">Users</div>
-              <ul className="list-group list-group-flush overflow-auto" style={{height:"500px"}}>
-                {user.map((user) => (
-                  <li
-                    key={user.consumerid}
-                    className="list-group-item d-flex justify-content-between align-items-center">
-                      <div className="
-                      ">
-                         User: {user.consumerfirstname} {user.consumerlastname} <br/>
-                        <span className="small text-secondary">Id: {user.consumerid}</span>    
-                      </div>
-                     
-                   <div>
+    {/* User Section */}
+    {isAdmin && (
+      <div className="col-md-6 mb-4">
+        <div className="card shadow">
+          <div className="card-header fw-bold">Users</div>
+          <ul className="list-group list-group-flush overflow-auto" style={{ height: "500px" }}>
+            {user.map((user) => (
+              <li
+                key={user.consumerid}
+                className="list-group-item d-flex justify-content-between align-items-center"
+              >
+                <div>
+                  User: {user.consumerfirstname} {user.consumerlastname} <br />
+                  <span className="small text-secondary">Id: {user.consumerid}</span>
+                </div>
 
-                      <button
-                      className={`btn btn-sm me-2 ${
-                        user.smalladmin ? "btn-success" : "btn-danger"
-                      }`}
-                      onClick={() => handleUserAdmin(user.consumerid, user.smalladmin)}
-                      
-                    >
-                      Admin
-                    </button>
-                    <button
-                      className="btn btn-sm btn-primary"
-                      data-bs-toggle="modal"
-                      data-bs-target="#deletemodal"
-                      onClick={() => setselectedDelete(user.consumerid)}
-                      
-                    >
-                      Delete
-                    </button>
-                        
-                   </div>
+                <div>
+                  <button
+                    className={`btn btn-sm me-2 ${
+                      user.smalladmin ? "btn-success" : "btn-danger"
+                    }`}
+                    onClick={() =>{ handleUserAdmin(user.consumerid, user.smalladmin); speak(`User ${user.consumerfirstname} admin status changed to ${!user.smalladmin}`); }}
+                  >
+                    Admin
+                  </button>
+                  <button
+                    className="btn btn-danger btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deletemodal"
+                    onClick={() => {setselectedDelete(user.consumerid); speak(`User ${user.consumerfirstname} with ID ${user.consumerid} will be deleted`);}}
+                  >
+                    <i className="bi bi-person-dash"></i>
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    )}
+  </div>
+</div>
 
-                   {/* Delete Modal */}
+      
+
+      {/* Shop Modal */}
+      <div
+        className="modal fade"
+        id="shopModal"
+        tabIndex="-1"
+        aria-labelledby="shopModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog">
+          <form
+  className="modal-content"
+  onSubmit={(e) => {
+    e.preventDefault(); // Prevent default form submission
+    const form = e.target;
+
+    // Check if the form is valid
+    if (!form.checkValidity()) {
+      form.reportValidity(); // Show validation messages
+      return;
+    }
+
+    // If the form is valid, proceed with submission
+    handleReportShop(e);
+  }}
+>
+  <div className="modal-header">
+    <h5 className="modal-title" id="shopModalLabel">
+      Edit Shop Details
+    </h5>
+    <button
+      type="button"
+      className="btn-close"
+      data-bs-dismiss="modal"
+      aria-label="Close"
+    ></button>
+  </div>
+  <div className="modal-body">
+    <div className="mb-3">
+      <label htmlFor="shopName" className="form-label">
+        Shop Name
+      </label>
+      <input
+        type="text"
+        className="form-control"
+        value={shopReport.reportname}
+        id="reportname"
+        onChange={(e) =>
+          setShopReport({ ...shopReport, reportname: e.target.value })
+        }
+        required
+      />
+    </div>
+    <div className="mb-3">
+      <label htmlFor="shopDescription" className="form-label">
+        Shop Details
+      </label>
+      <textarea
+        className="form-control"
+        id="shopDescription"
+        value={shopReport.reportdesc}
+        onChange={(e) =>
+          setShopReport({ ...shopReport, reportdesc: e.target.value })
+        }
+        required
+      ></textarea>
+    </div>
+  </div>
+  <div className="modal-footer d-flex">
+    <div>
+      <button
+        type="button"
+        className="btn btn-danger"
+        data-bs-dismiss="modal"
+        onClick={() => {
+          handleShopStatusChange(shopReport.shopkey, false);
+          speak("Shop Status Deactivate");
+        }}
+      >
+        Disable
+      </button>
+    </div>
+    <div>
+      <button
+        type="button"
+        data-bs-dismiss="modal"
+        className="btn btn-success me-2"
+        onClick={() => {
+          handleShopStatusChange(shopReport.shopkey, true);
+          speak("Shop status Activate");
+        }}
+      >
+        Enable
+      </button>
+      <button
+        type="submit"
+        className="btn btn-outline-primary"
+        onClick={() => speak("Warning: Report Submitted")}
+      >
+        Contact
+      </button>
+    </div>
+  </div>
+</form>
+        </div>
+      </div>
+      {/* Delete Modal */}
                   <div
                     className="modal fade"
                     id="deletemodal"
@@ -376,7 +504,7 @@ export function Adminpage() {
                       <div className="modal-content">
                         <div className="modal-header">
                           <h5 className="modal-title" id="reportModalLabel">
-                            Are you sure you want to delete user: {user.consumerfirstname}
+                            Are you sure you want to delete user
                           </h5>
                           <button
                             type="button"
@@ -398,7 +526,7 @@ export function Adminpage() {
                             </button>
                             <button
                             className="btn btn-danger px-5"
-                            onClick={() => handlerDeleteUser(selectedDelete)}
+                            onClick={() => handlerDeleteUser()}
                             >
                               Yes
                             </button>
@@ -406,96 +534,8 @@ export function Adminpage() {
                       </div>
                     </div>
                   </div>
-                          
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-      
-
-      {/* Shop Modal */}
-      <div
-        className="modal fade"
-        id="shopModal"
-        tabIndex="-1"
-        aria-labelledby="shopModalLabel"
-        aria-hidden="true"
-      >
-        <div className="modal-dialog">
-          <form className="modal-content" onSubmit={handleReportShop}>
-            <div className="modal-header">
-              <h5 className="modal-title" id="shopModalLabel">
-                Edit Shop Details
-              </h5>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              ></button>
-            </div>
-            <div className="modal-body">
-              <div className="mb-3">
-                <label htmlFor="shopName" className="form-label">
-                  Shop Name
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={shopReport.reportname}
-                  id="reportname"
-                  onChange={(e) =>
-                    setShopReport({ ...shopReport, reportname: e.target.value })
-                  }
-                />
-              </div>
-              <div className="mb-3">
-                <label htmlFor="shopDescription" className="form-label">
-                  Shop Details
-                </label>
-                <textarea
-                  className="form-control"
-                  id="shopDescription"
-                  value={shopReport.reportdesc}
-                  onChange={(e) =>
-                    setShopReport({ ...shopReport, reportdesc: e.target.value })
-                  }
-                ></textarea>
-              </div>
-            </div>
-            <div className="modal-footer d-flex">
-              <div>
-                <button
-                    type="button"
-                    className="btn btn-danger"
-                    data-bs-dismiss="modal"
-                    onClick={() => handleShopStatusChange(shopReport.shopkey, false)} // Disable shop
-                  >
-                    Disable
-                  </button>
-                </div>
-                <div>
-                  <button
-                    type="button"
-                    data-bs-dismiss="modal"
-                    className="btn btn-success me-2"
-                    onClick={() => handleShopStatusChange(shopReport.shopkey, true)} // Enable shop
-                  >
-                    Enable
-                  </button>
-                 <button type="submit" className="btn btn-outline-primary" data-bs-dismiss="modal">
-                  Contact
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
     </div>
+
     ) : (
       <h1 className="text-center mt-5">
            Please Login
