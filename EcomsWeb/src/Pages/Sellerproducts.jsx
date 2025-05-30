@@ -21,6 +21,26 @@ export function Sellerproducts(){
     const [selectedImageId, setSelectedImageId] = useState(null);
     const [selectedPreviews, setSelectedPreviews] = useState(null);
     const [filteredProducts, setFilteredProducts] = useState([]);
+    const [isSeller, setIsSeller] = useState(false);
+  
+
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const response = await axios.get(`http://localhost:3000/api/user/seller/${userkey}`);
+          setIsSeller(response.data.consumersellerstatus); 
+        } catch (err) {
+          console.error("Error fetching seller status:", err.message);
+        }
+      };
+
+
+        if (userkey) {
+        fetchData(); // Call the function
+      }
+      
+    }, [userkey]);
+
    
     const handleSelect = (pimageid) => {
             setSelectedImageId(pimageid === selectedImageId ? null : pimageid); // toggle selection
@@ -381,7 +401,11 @@ useEffect(() => {
 };
 
     return(
+      
         <>
+        {(isSeller)?(
+          <>
+
         <Header />
         
         <div style={{ backgroundColor: "#EFEEEA", height: '100vh', padding: '0', display: 'flex' }}>
@@ -1417,9 +1441,11 @@ useEffect(() => {
                   </form>
                 </div>
               </div>
-             
+             </>
 
-          
+          ):(<h1 className="text-center mt-5">
+           Please Login
+      </h1>)}
 
               
         

@@ -168,6 +168,19 @@ export function Products() {
             alert("Error submitting review.");
         }
         };
+        const handleUpdateReviewClick = (userReview) => {
+            setUpdateReview({
+                reviewtitle: userReview.reviewtitle,
+                reviewdesc: userReview.reviewdesc,
+                reviewimage1: userReview.reviewimage1,
+                reviewimage2: userReview.reviewimage2,
+                reviewimage3: userReview.reviewimage3,
+                reviewimage4: userReview.reviewimage4,
+                reviewscore: userReview.reviewscore,
+                productkey: productId, // assumes productId is from useParams()
+                userkey: userKey,
+            });
+            };
 
         const [updateReview, setUpdateReview] = useState({
         reviewtitle: "",
@@ -190,6 +203,8 @@ export function Products() {
             const modalEl = document.getElementById("updateReviewModal");
             const modal = bootstrap.Modal.getInstance(modalEl);
             modal.hide();
+            fetchData();
+
             
         } catch (err) {
             console.error("Error submitting review:", err);
@@ -262,7 +277,7 @@ export function Products() {
         fetchData();
     }, []);
 
-    useEffect(() => {
+    
         const fetchData = async () => {
             try {
                 const response = await axios.get("http://localhost:3000/api/reviews");
@@ -273,7 +288,7 @@ export function Products() {
         };
 
         fetchData();
-    }, []);
+   
 
     useEffect(() => {
         const fetchData = async () => {
@@ -600,6 +615,8 @@ export function Products() {
                                         className="btn btn-outline-primary btn-sm"
                                         data-bs-toggle="modal"
                                         data-bs-target="#updateReviewModal"
+                                        onClick={() => handleUpdateReviewClick(userReview)}
+
                                     >
                                         Update Review
                                     </button>

@@ -11,6 +11,26 @@ export function Sellershop(){
   const [consumerData, setConsumerData] = useState([]);
   const shopKey = localStorage.getItem("shopkey");
   const userkey = localStorage.getItem("userkey");
+  const [isSeller, setIsSeller] = useState(false);
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3000/api/user/seller/${userkey}`);
+        setIsSeller(response.data.consumersellerstatus); 
+      } catch (err) {
+        console.error("Error fetching seller status:", err.message);
+      }
+    };
+
+
+      if (userkey) {
+      fetchData(); // Call the function
+    }
+    
+  }, [userkey]);
+
   
   useEffect(() => {
       const fetchshopData = async () => {
@@ -177,7 +197,8 @@ export function Sellershop(){
   };
     return(
         <>
-        
+        {(isSeller)?(
+          <>
         <Header />
         
         <div style={{ 
@@ -590,6 +611,10 @@ export function Sellershop(){
     </form>
   </div>
 </div>
+</>
+):(<h1 className="text-center mt-5">
+           Please Login
+      </h1>)}
 
     
     </>

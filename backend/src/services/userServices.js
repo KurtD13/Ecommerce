@@ -152,3 +152,23 @@ export const getUserAdmin = async (consumerid) => {
   );
   return rows[0]; // Return the first matching row
 };
+
+export const updateAdminStatus = async (userInfo, consumerid) => {
+  const {smalladmin} = userInfo;
+  const { rows } = await query(
+    `UPDATE consumer_profile SET smalladmin = $1 WHERE consumerid = $2 RETURNING *`,
+    [smalladmin, consumerid]
+  );
+
+  console.log("Query result:", rows);
+
+  return rows;
+};
+
+export const getSmallAdmin = async (consumerid) => {
+  const { rows } = await query(
+    'SELECT smalladmin FROM consumer_profile WHERE consumerid = $1',
+    [consumerid]
+  );
+  return rows[0]; // Return the first matching row
+};

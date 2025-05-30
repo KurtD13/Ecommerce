@@ -2,7 +2,7 @@ import axios from "axios";
 import { Navbar } from "../Components/Navbar";
 import React, { use } from "react";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
 
 export function Adminpage() {
@@ -14,11 +14,41 @@ export function Adminpage() {
   const [selectedReport, setSelectedReport] = useState(null);
   const navigate = useNavigate(); // Initialize navigate
   const [selectedShop, setSelectedShop] = useState(null);
+  const [selectedDelete, setselectedDelete] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [smallAdmin, setIsSmallAdmin] = useState(false);
   const [shopReport, setShopReport] = useState({
     reportname: "",
     reportdesc: "",
     shopkey: "",
   });
+  const [disableproduct, setdisableproduct] = useState({
+    is_available: false
+  });
+
+  useEffect(() => {
+      const fetchData = async () => {
+        try {
+  
+          const userAdminresponse = await axios.get(`http://localhost:3000/api/user/admin/${userkey}`);
+          setIsAdmin(userAdminresponse.data.consumerstatus); // Correctly set the admin status
+          
+          const smallAdminresponse = await axios.get(`http://localhost:3000/api/user/smalladmin/${userkey}`);
+          setIsSmallAdmin(smallAdminresponse.data.smalladmin); // Correctly set the admin status
+  
+        } catch (err) {
+          console.error("Error fetching seller status:", err.message);
+        }
+      };
+  
+  
+        if (userkey) {
+        fetchData(); // Call the function
+      }
+      
+    }, [userkey]);
+  
+
 
   const handleReportShop = async (e) => {
         e.preventDefault();
@@ -29,26 +59,52 @@ export function Adminpage() {
             const modalEl = document.getElementById("shopModal");
             const modal = bootstrap.Modal.getInstance(modalEl);
             modal.hide();
+            fetchProduct();
         } catch (err) {
             console.error("Error submitting report:", err);
             alert("Error submitting report.");
         }
     };
 
+    const handleUserAdmin = async (userid, status) => {
+        try {
+            await axios.put(`http://localhost:3000/api/user/smalladmin/${userid}`, {smalladmin: status? false: true });    
+            alert("status set successfully.");
+            fetchProduct();
+        } catch (err) {
+            console.error("Error status set:", err);
+            alert("Error status set.");
+        }
+    };
+
+    const handlerDeleteUser = async (userid) => {
+        try {
+            await axios.delete(`http://localhost:3000/api/user/${userid}`);    
+            alert("user deleted successfully.");
+            fetchProduct();
+        } catch (err) {
+            console.error("Error deleting user", err);
+            alert("Error deleting user.");
+        }
+    };
+
+
     const handleShopStatusChange = async (shopId, status) => {
       try {
         await axios.put(`http://localhost:3000/api/shop/shopstatus/${shopId}`, { shopstatus: status });
+        await axios.put(`http://localhost:3000/api/product/shopkey/${shopId}`, { is_available: status});  
         alert(`Shop has been ${status ? "enabled" : "disabled"} successfully.`);
         // Refresh the shop data after the status change
         const shopsResponse = await axios.get(`http://localhost:3000/api/shop`);
         setReportedShops(shopsResponse.data);
+        fetchProduct();
       } catch (err) {
         console.error(`Error updating shop status:`, err);
         alert(`Failed to ${status ? "enable" : "disable"} the shop. Please try again.`);
       }
       };
 
-   useEffect(() => {
+  
         const fetchProduct = async () => {
             try {
                 const response = await axios.get(`http://localhost:3000/api/report`);
@@ -64,7 +120,7 @@ export function Adminpage() {
             }
         };
         fetchProduct();
-    }, []);
+   
 
     const enrichedReports = userReports.map((report) => {
       const shop = reportedShops.find((shop) => shop.shopid === report.shopkey);
@@ -92,7 +148,7 @@ export function Adminpage() {
         const modalElement = document.querySelector('.modal.show');
         if (modalElement) {
           const modalInstance = bootstrap.Modal.getInstance(modalElement);
-          modalInstance.hide();
+          modalInstance.hide(); 
         }
         navigate(`/shoppage/${shopKey}`); // Navigate to the shop details page
       };
@@ -103,19 +159,18 @@ export function Adminpage() {
 
     return (
       <>
-      
         <Navbar />
-        
-    <div className="bg-light min-vh-100">
+
+    {(isAdmin || smallAdmin) ? (
+    <div className="min-vh-100">
       <div className="container py-4">
          <h1>Admin Shop Management</h1>
         <div className="row">
           {/* Upcoming Reports */}
           <div className="col-md-6 mb-4">
-           
-            <div className="card">
+            <div className="card shadow">
               <div className="card-header fw-bold">Upcoming Reports</div>
-              <ul className="list-group list-group-flush">
+              <ul className="list-group list-group-flush overflow-auto" style={{height:"200px"}}>
                 {enrichedReports.map((reports) => (
                   <li
                     key={reports.reportId}
@@ -129,6 +184,43 @@ export function Adminpage() {
                       onClick={() => {setSelectedReport(reports.reportId)}}
                     >
                       View Details
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="card shadow mt-2">
+              <div className="card-header d-flex justify-content-between align-items-center ">
+                <span className="fw-bold">Shops</span>
+               
+              </div>
+              <ul className="list-group list-group-flush overflow-auto shadow" style={{height:"250px"}}>
+                {reportedShops.map((shop) => (
+                  <li
+                    key={shop.shopid}
+                    className="list-group-item d-flex justify-content-between align-items-center"
+                  >
+                    <div>
+                    <img
+                        src={shop.shoplogo || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT6AgT5iH1yzqRI0zQnln2KSFF5iBdytal_UA&s"}
+                        alt="Shop"
+                        style={{ width: '50px', height: '50px', borderRadius: '50%' }}  
+                        className="me-2"
+                      />{shop.shopname}
+                    </div>
+
+                     
+                    <button
+                       className={`btn btn-sm ${
+                        shop.shopstatus ? "btn-success" : "btn-danger"
+                      }`}
+                      data-bs-toggle="modal"
+                      data-bs-target="#shopModal"
+                      onClick={() => {
+                        setShopReport({ ...shopReport, shopkey: shop.shopid });
+                      }}
+                    >
+                      Shop Status
                     </button>
                   </li>
                 ))}
@@ -234,48 +326,94 @@ export function Adminpage() {
         </div>
       </div>
 
-          {/* Shops */}
+          {/* User */}
           <div className="col-md-6 mb-4">
-            <div className="card">
-              <div className="card-header d-flex justify-content-between align-items-center">
-                <span className="fw-bold">Shops</span>
-               
-              </div>
-              <ul className="list-group list-group-flush">
-                {reportedShops.map((shop) => (
+            <div className="card shadow">
+              <div className="card-header fw-bold">Users</div>
+              <ul className="list-group list-group-flush overflow-auto" style={{height:"500px"}}>
+                {user.map((user) => (
                   <li
-                    key={shop.shopid}
-                    className="list-group-item d-flex justify-content-between align-items-center"
-                  >
-                    <div>
-                    <img
-                        src={shop.shoplogo || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT6AgT5iH1yzqRI0zQnln2KSFF5iBdytal_UA&s"}
-                        alt="Shop"
-                        style={{ width: '50px', height: '50px', borderRadius: '50%' }}  
-                        className="me-2"
-                      />{shop.shopname}
-                    </div>
-
+                    key={user.consumerid}
+                    className="list-group-item d-flex justify-content-between align-items-center">
+                      <div className="
+                      ">
+                         User: {user.consumerfirstname} {user.consumerlastname} <br/>
+                        <span className="small text-secondary">Id: {user.consumerid}</span>    
+                      </div>
                      
-                    <button
-                       className={`btn btn-sm ${
-                        shop.shopstatus ? "btn-success" : "btn-danger"
+                   <div>
+
+                      <button
+                      className={`btn btn-sm me-2 ${
+                        user.smalladmin ? "btn-success" : "btn-danger"
                       }`}
-                      data-bs-toggle="modal"
-                      data-bs-target="#shopModal"
-                      onClick={() => {
-                        setShopReport({ ...shopReport, shopkey: shop.shopid });
-                      }}
+                      onClick={() => handleUserAdmin(user.consumerid, user.smalladmin)}
+                      
                     >
-                      Shop Status
+                      Admin
                     </button>
-                  </li>
-                ))}
-              </ul>
+                    <button
+                      className="btn btn-sm btn-primary"
+                      data-bs-toggle="modal"
+                      data-bs-target="#deletemodal"
+                      onClick={() => setselectedDelete(user.consumerid)}
+                      
+                    >
+                      Delete
+                    </button>
+                        
+                   </div>
+
+                   {/* Delete Modal */}
+                  <div
+                    className="modal fade"
+                    id="deletemodal"
+                    tabIndex="-1"
+                    aria-labelledby="reportModalLabel"
+                    aria-hidden="true"
+                  >
+                    <div className="modal-dialog">
+                      <div className="modal-content">
+                        <div className="modal-header">
+                          <h5 className="modal-title" id="reportModalLabel">
+                            Are you sure you want to delete user: {user.consumerfirstname}
+                          </h5>
+                          <button
+                            type="button"
+                            className="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                          ></button>
+                          <div>
+                          </div>
+                        </div>
+                        <div className="modal-body text-center">
+                          <button
+                            className="btn btn-secondary me-3 px-5"
+                            type="button"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                            >
+                              No
+                            </button>
+                            <button
+                            className="btn btn-danger px-5"
+                            onClick={() => handlerDeleteUser(selectedDelete)}
+                            >
+                              Yes
+                            </button>
+                            </div>
+                      </div>
+                    </div>
+                  </div>
+                          
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
 
       
 
@@ -358,9 +496,13 @@ export function Adminpage() {
         </div>
       </div>
     </div>
-  
-
-export default AdminPage;
+    ) : (
+      <h1 className="text-center mt-5">
+           Please Login
+      </h1>
+     
+    )
+    }
 
       </>
     );

@@ -161,3 +161,37 @@ export const getUserAdmin = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
+
+export const updateAdminStatus = async (req, res) => {
+    try{
+        console.log("REQ BODY:", req.body);
+        const consumerid = req.params.consumerid;
+        const userinfo = req.body;   
+        const updatedUser = await Service.updateAdminStatus(userinfo, consumerid)
+        if(!updatedUser){
+            return res.status(404).json({message: 'User not found'});
+        }
+        res.status(200).json(updatedUser);
+
+    }catch(err){
+        
+        console.error("Error updating User: ", err);
+        res.status(500).json({message: 'Internal Server Error'});
+    }
+};
+
+export const getSmallAdmin = async (req, res) => {
+  try {
+    const consumerid = req.params.q; // Extract consumerid from the route parameter
+    const userAdmin = await Service.getSmallAdmin(consumerid);
+    if (!userAdmin) {
+      return res.status(404).json({ message: "userAdmin not found" });
+    }
+    res.status(200).json(userAdmin);
+  } catch (err) {
+    console.error("Error fetching userAdmin:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

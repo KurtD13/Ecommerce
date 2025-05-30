@@ -14,6 +14,8 @@ router.get('/user/seller/:q', controller.getuserSellerstatus)
 router.get('/user/review/:q', controller.getUserNameImage)
 router.put('/user/sellerstatus/:consumerid', controller.updateSellerStatus)
 router.get('/user/admin/:q', controller.getUserAdmin);
+router.get('/user/smalladmin/:q', controller.getSmallAdmin);
+router.put('/user/smalladmin/:consumerid', controller.updateAdminStatus);
 
 
 

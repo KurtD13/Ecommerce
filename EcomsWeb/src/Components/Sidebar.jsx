@@ -11,6 +11,7 @@ const Sidebar = () => {
     marginBottom: "8px",
     transition: "all 0.2s ease",
   };
+  
 
   const linkHoverStyle = {
     color: "#FE7743",

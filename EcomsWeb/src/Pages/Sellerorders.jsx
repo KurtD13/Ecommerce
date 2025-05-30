@@ -11,6 +11,26 @@ export function Sellerorders() {
   const shopKey = localStorage.getItem("shopkey");
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
+  const [isSeller, setIsSeller] = useState(false);
+  const userkey = localStorage.getItem("userkey");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3000/api/user/seller/${userkey}`);
+        setIsSeller(response.data.consumersellerstatus); 
+      } catch (err) {
+        console.error("Error fetching seller status:", err.message);
+      }
+    };
+
+
+      if (userkey) {
+      fetchData(); // Call the function
+    }
+    
+  }, [userkey]);
+
 
 const handleArrangeStatus = async () => {
   console.log("Selected Product ID:", selectedProductId); // Debugging log
@@ -139,6 +159,8 @@ const handleArrangeStatus = async () => {
  
 
   return (
+    <>
+    {(isSeller) ? (
     <div className="d-flex flex-column vh-100">
       <Header />
 
@@ -382,5 +404,9 @@ const handleArrangeStatus = async () => {
         </main>
       </div>
     </div>
+    ):(<h1 className="text-center mt-5">
+           Please Login
+      </h1>)}
+    </>
   );
 }

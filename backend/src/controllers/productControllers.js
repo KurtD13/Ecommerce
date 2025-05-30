@@ -137,3 +137,24 @@ export const updateProductAvailability = async (req, res) => {
     }
 };
 
+
+
+export const updateAvailabilityShop = async (req, res) => {
+    try{
+        console.log("REQ BODY:", req.body);
+        const shopkey = req.params.shopkey;
+        const productinfo = req.body;   
+        const updatedProduct = await Service.updateAvailabilityShop(productinfo, shopkey)
+        if(!updatedProduct){
+            return res.status(404).json({message: 'Product not found'});
+        }
+        res.status(200).json(updatedProduct);
+
+    }catch(err){
+        
+        console.error("Error updating product: ", err);
+        res.status(500).json({message: 'Internal Server Error'});
+    }
+};
+
+

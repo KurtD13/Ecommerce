@@ -77,3 +77,13 @@ export const updateProductAvailability = async(productinfo, pid) => {
     );
     return rows[0];
 }
+
+
+export const updateAvailabilityShop = async(productinfo, shopkey) => {
+    const{ is_available } = productinfo;
+    const { rows } = await query (
+        'UPDATE products_info SET is_available = $1 WHERE shopkey = $2 RETURNING *',
+        [is_available, shopkey ]
+    );
+    return rows;
+}
