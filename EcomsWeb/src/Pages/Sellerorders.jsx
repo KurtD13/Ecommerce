@@ -12,7 +12,7 @@ export function Sellerorders() {
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [isSeller, setIsSeller] = useState(false);
-  const userkey = localStorage.getItem("userkey");
+  const userkey = localStorage.getItem("userke  y");
   const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
     const speak = (text) => {
       if (!isTTSEnabled) return;
@@ -273,12 +273,12 @@ const handleArrangeStatus = async () => {
                   >
                     📦
                   </div>
-                  <div style={{ fontSize: "1rem", maxWidth:"250px" }}>
+                  <div style={{ fontSize: "1rem", maxWidth:"250px", minWidth: "250px" }}>
                     <div>{product.name}</div>
                     <small className="text-muted">{product.variation}</small>
                   </div>
                 </div>
-                <div style={{ width: "10%", fontSize: "0.9rem" }}>
+                <div className="text-center" style={{ width: "10%", fontSize: "0.9rem" }}>
                   {product.quantity}
                 </div>
                 <div style={{ width: "15%", fontSize: "0.9rem" }}>
