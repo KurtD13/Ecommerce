@@ -319,7 +319,7 @@ export function SellerDashboard() {
                     (report.shopkey == shopKey) && (
                      
                         <div className="col-6">
-                            <div className="card p-2 my-1 rounded shadow" onClick={() => speak("Report from " + report.consumerFirstName + " regarding " + report.productName + ". " + report.reportTitle)}>
+                            <div className="card p-2 my-1 rounded shadow overflow-auto"  style={{maxHeight:"150px", minHeight:"150px"}} onClick={() => speak("Report from " + report.consumerFirstName + " regarding " + report.productName + ". " + report.reportTitle)}>
                               <div className="d-flex align-items-center mb-2 pt-1 ps-1">
                                 <div className="fw-bold" style={{fontSize:"10px"}}>
                                   <img
@@ -358,7 +358,7 @@ export function SellerDashboard() {
                 <span className="text-secondary">Admin Notification</span>
                 {adminReports.map((report) => (
                     (report.shopkey == shopKey) && (
-                      <div className="card p-2 m-1 rounded shadow bg-warning-subtle" onClick={() => speak("Admin Report: " + report.reportname + ". " + report.reportdesc)}>
+                      <div className="card p-2 m-1 rounded shadow bg-warning-subtle overflow-auto"  style={{maxHeight:"150px"}} onClick={() => speak("Admin Report: " + report.reportname + ". " + report.reportdesc)}>
                         <div className="d-flex align-items-center mb-2 pt-1 ps-1">
                           <div className="fw-bold">{report.reportname}</div>
                         </div>
