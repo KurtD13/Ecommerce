@@ -1,6 +1,22 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 
 export function Carouselprods(){
+    const[shopbanners, setshopbanners] = useState([]);
+    useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/shop/banners');
+        setshopbanners(response.data); // Set the data from the local host
+      } catch (err) {
+        console.error(err.message);
+      }
+    };
+
+    fetchData();
+  }, []);
+  console.log("shopbanner:", shopbanners);
     return(
         <>
         <div id="carouselExampleCaptions" className="carousel slide h-50" data-bs-ride="carousel">
@@ -12,22 +28,17 @@ export function Carouselprods(){
             <div className="carousel-inner" >
                 <div className="carousel-item active">
                 <img src="https://cf.shopee.ph/file/ph-11134258-7rase-m81cw67d8dy639_xxhdpi" style={{maxHeight:'400px', objectFit:"cover"}} className="d-block w-100" alt="..."></img>
-                <div className="carousel-caption d-none d-md-block">
+                <div className="carousel-caption d-none d-md-block"></div>
+                </div>
                 
-                </div>
-                </div>
+                {shopbanners.map((banner)=>(
                 <div className="carousel-item">
-                <img src="https://img.lazcdn.com/g/tps/imgextra/i3/O1CN01mNRsAq1TQiVT5IuIH_!!6000000002377-0-tps-1976-688.jpg_2200x2200q80.jpg_.avif" style={{maxHeight:'400px', objectFit:"cover"}} className="d-block w-100" alt="..."></img>
+                <img src={banner.shopbanner}   style={{maxHeight:'400px', objectFit:"cover"}} className="d-block w-100" alt="..."></img>
                 <div className="carousel-caption d-none d-md-block">
                    
                 </div>
                 </div>
-                <div className="carousel-item">
-                <img src="https://www.shutterstock.com/image-vector/computer-shop-various-parts-on-600nw-569212921.jpg" style={{maxHeight:'400px',  objectFit:"cover"}} className="d-block w-100" alt="..."></img>
-                <div className="carousel-caption d-none d-md-block">
-                    
-                </div>
-                </div>
+                ))}
             </div>
             <button className="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
                 <span className="carousel-control-prev-icon" aria-hidden="true"></span>

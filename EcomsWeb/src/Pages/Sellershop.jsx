@@ -100,33 +100,34 @@ export function Sellershop(){
 
 
   // Calculate the average product rating
-  const shopReviewScore = product
-        .map((item) => Number(item.pratings)) // Convert to number
-        .filter((score) => typeof score === "number" && !isNaN(score)); // Ensure valid numeric scores
+  // Calculate the average product rating
+const shopReviewScore = product
+  .map((item) => Number(item.pratings)) // Convert to number
+  .filter((score) => typeof score === "number" && !isNaN(score) && score > 0); // Ensure valid numeric scores and exclude 0 or no ratings
 
-    const shopAverageReviewScore =
-        shopReviewScore.length > 0
-            ? shopReviewScore.reduce((sum, score) => sum + score, 0) / shopReviewScore.length
-            : 0;
+const shopAverageReviewScore =
+  shopReviewScore.length > 0
+    ? shopReviewScore.reduce((sum, score) => sum + score, 0) / shopReviewScore.length
+    : 0;
 
-    // Round the average score to one decimal place
-    const roundedAverageScore = Math.round(shopAverageReviewScore * 10) / 10;
-  
-  // Update shop rating whenever roundedAverageScore (and shopkey) changes
-      useEffect(() => {
-          if (shopKey) {
-              const updateShopRatings = async () => {
-                  try {
-                      await axios.put(`http://localhost:3000/api/shop/shopratings/${shopKey}`, {
-                          shopratings: roundedAverageScore,
-                      });
-                  } catch (err) {
-                      console.error("Error updating shop rating:", err);
-                  }
-              };
-              updateShopRatings();
-          }
-      }, [roundedAverageScore, shopKey]);
+// Round the average score to one decimal place
+const roundedAverageScore = Math.round(shopAverageReviewScore * 10) / 10;
+
+// Update shop rating whenever roundedAverageScore (and shopKey) changes
+useEffect(() => {
+  if (shopKey) {
+    const updateShopRatings = async () => {
+      try {
+        await axios.put(`http://localhost:3000/api/shop/shopratings/${shopKey}`, {
+          shopratings: roundedAverageScore,
+        });
+      } catch (err) {
+        console.error("Error updating shop rating:", err);
+      }
+    };
+    updateShopRatings();
+  }
+}, [roundedAverageScore, shopKey]);
   
   const profileData = {
     avatar: '',

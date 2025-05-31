@@ -67,3 +67,10 @@ export const updateShopStatus = async(shopinfo, shopid) => {
     return rows[0];
 }
 
+
+export const getShopBanner = async () => {
+  const { rows } = await query(
+    'SELECT shopbanner FROM shop_profile LIMIT 3'
+  );
+  return rows;
+};
