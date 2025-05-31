@@ -62,13 +62,14 @@ const handleArrangeStatus = async () => {
           : status
       );
       setProductStatus(updatedProductStatus);
+      fetchData();
     }
   } catch (err) {
     console.error("Error updating status:", err);
     alert("Failed to update status. Please try again.");
   }
 };
-  useEffect(() => {
+  
     const fetchData = async () => {
       try {
         // Fetch products under the shop
@@ -97,7 +98,7 @@ const handleArrangeStatus = async () => {
       }
     };
     fetchData();
-  }, [shopKey]);
+  
 
   const ordersSummaryData = {
     shipWithin24: 25,
@@ -250,17 +251,15 @@ const handleArrangeStatus = async () => {
                 }}
                 onClick={() => {speak(`Selected order for ${product.name } with status ${product.status} `);}}
               >
-                <div style={{ width: "4%" }}>
-                  
-                </div>
+              
                 <div
                   style={{ flexGrow: 1, minWidth: "250px" }}
-                  className="d-flex align-items-center gap-3"
+                  className="d-flex align-items-center gap-3 text-start"
                 >
                   <div
                     style={{
-                      width: 50,
-                      height: 50,
+                      width: 80,
+                      height: 80,
                       backgroundColor: "#b2b2b2",
                       borderRadius: 8,
                       display: "flex",
@@ -274,7 +273,7 @@ const handleArrangeStatus = async () => {
                   >
                     📦
                   </div>
-                  <div style={{ fontSize: "1rem" }}>
+                  <div style={{ fontSize: "1rem", maxWidth:"250px" }}>
                     <div>{product.name}</div>
                     <small className="text-muted">{product.variation}</small>
                   </div>

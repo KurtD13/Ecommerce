@@ -13,4 +13,6 @@ router.get('/product/shop/:q', controller.getShopProducts);
 router.put('/product/pratings/:pid', controller.updateProductRatings);
 router.put('/product/available/:pid', controller.updateProductAvailability);
 router.put('/product/shopkey/:shopkey', controller.updateAvailabilityShop);
+router.put('/product/sales/:pid', controller.updateTotalSales);
+router.get('/product/getsales/:pid', controller.getTotalSales);
 export default router;

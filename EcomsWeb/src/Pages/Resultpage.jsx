@@ -22,7 +22,7 @@ export function Resultpage(){
                     <div className="">
                          <div className="card p-2">
                             <div className="container">
-                                <p className="py-3">Search Results for:  {query}</p>
+                                <h5 className="py-3">Search Results for:  {query}</h5>
                             </div>
                         </div>
                         <div className="card mt-2 p-2 d-flex" style={{minHeight: "410px"}}>

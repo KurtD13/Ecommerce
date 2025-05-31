@@ -104,12 +104,36 @@ const handlePlaceOrder = async () => {
     // Send data to the backend
     await axios.post("http://localhost:3000/api/pstatus", orderData);
 
+    // Update the total sales for each product
+    for (const item of checkoutDetails) {
+      const product = productData.find((p) => p.pname === item.productName);
+      if (product) {
+        const pid = product.pid;
+
+        // Fetch the current total sales
+        const response = await axios.get(`http://localhost:3000/api/product/getsales/${pid}`);
+        const currentSales = response.data.ptotalsales || 0;
+
+        // Calculate the new total sales
+        const updatedSales = currentSales + item.quantity;
+
+        // Upload the updated total sales
+        await axios.put(`http://localhost:3000/api/product/sales/${pid}`, {
+          ptotalsales: updatedSales,
+        });
+
+        console.log(`Updated total sales for product ${pid}: ${updatedSales}`);
+      }
+    }
+
     alert("Order placed successfully!");
   } catch (err) {
     console.error("Error placing order:", err.message);
     alert("Failed to place order. Please try again.");
   }
 };
+
+
  
   const handleRemoveProduct = (index) => {
     setCheckoutDetails((prevDetails) => {

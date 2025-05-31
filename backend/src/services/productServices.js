@@ -87,3 +87,18 @@ export const updateAvailabilityShop = async(productinfo, shopkey) => {
     );
     return rows;
 }
+
+export const getTotalSales = async (productId) => {
+    const { rows } = await query('SELECT ptotalsales FROM products_info WHERE pid = $1', [productId]);
+    return rows[0];
+};
+
+
+export const updateTotalSales = async(productinfo, pid) => {
+    const{ ptotalsales } = productinfo;
+    const { rows } = await query (
+        'UPDATE products_info SET ptotalsales = $1 WHERE pid = $2 RETURNING *',
+        [ptotalsales, pid ]
+    );
+    return rows;
+}

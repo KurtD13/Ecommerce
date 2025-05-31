@@ -92,7 +92,7 @@ const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
         const response = await axios.post("http://localhost:3000/api/product", newProduct);
         if (response.status === 200) {
           alert("Product created successfully!");
-
+fetchshopData();
         }
       } catch (err) {
         console.error("Error creating shop:", err);
@@ -107,7 +107,7 @@ const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
         const response = await axios.post("http://localhost:3000/api/variation", newVariation);
         if (response.status === 200) {
           alert("Variation created successfully!");
-
+fetchshopData();
         }
       } catch (err) {
         console.error("Error creating Variation:", err);
@@ -128,7 +128,7 @@ const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
         const response = await axios.post("http://localhost:3000/api/image", newImage);
         if (response.status === 200) {
           alert("Image created successfully!");
-
+fetchshopData();
         }
       } catch (err) {
         console.error("Error creating Image:", err);
@@ -149,7 +149,7 @@ const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
         const response = await axios.post("http://localhost:3000/api/preview", newPreview);
         if (response.status === 200) {
           alert("Image created successfully!");
-
+fetchshopData();
         }
       } catch (err) {
         console.error("Error creating Image:", err);
@@ -224,6 +224,7 @@ const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
               if (productResponse.status === 200) {
               alert("Product is deleted successfully!");
             }
+            fetchshopData();
             }
           } catch (err) {
           console.error("Error deleting image:", err);
@@ -239,6 +240,7 @@ const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
               if (productResponse.status === 200) {
               alert("Product image is deleted successfully!");
             }
+            fetchshopData();
             }
           } catch (err) {
           console.error("Error deleting image:", err);
@@ -255,7 +257,7 @@ const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
         const productResponse = await axios.put(`http://localhost:3000/api/product/${selectedPid}`, updateProduct);
         if (productResponse.status === 200) {
           alert("Product is updated successfully!");
-
+          fetchshopData();
         }
       } catch (err) {
         console.error("Error updating Product:", err);
@@ -268,7 +270,7 @@ const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
         const productResponse = await axios.delete(`http://localhost:3000/api/product/${selectedPid}`);
         if (productResponse.status === 200) {
           alert("Product is deleted successfully!");
-
+          fetchshopData();
         }
       } catch (err) {
         console.error("Error deleting Product:", err);
@@ -281,6 +283,7 @@ const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
         const productResponse = await axios.delete(`http://localhost:3000/api/variation/${selectedpvid}`);
         if (productResponse.status === 200) {
           alert("Variation is deleted successfully!");
+          fetchshopData();
 
         }
       } catch (err) {
@@ -646,8 +649,8 @@ useEffect(() => {
             onChange={() => handleSelectProduct(product.pid)}
           />
         </td>
-        <td style={{ padding: '16px 12px', verticalAlign: 'middle' }} onClick={() => speak(`Product: ${product.pname}, Price: ${formatPrice(product.pprice)}, Stock: ${product.stock}`)}>
-          <div className="d-flex align-items-center">
+        <td style={{ padding: '16px 12px', verticalAlign: 'middle', maxWidth:"300px" }} onClick={() => speak(`Product: ${product.pname}, Price: ${formatPrice(product.pprice)}, Stock: ${product.stock}`)}>
+          <div className="d-flex align-items-center" >
             <img
               className="me-3"
               src={product.pimageurl}
@@ -726,7 +729,7 @@ useEffect(() => {
             </div>
             <div className="col-5">
               <select
-                className="form-select form-select-sm w-auto"
+                className="form-select form-select-sm w-auto ms-1"
                 value={product.variation || ''}
               >
                 {product.variations && product.variations.length > 0 ? (

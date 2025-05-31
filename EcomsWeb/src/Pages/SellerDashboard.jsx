@@ -45,7 +45,9 @@ export function SellerDashboard() {
       fetchData(); // Call the function
     }
     
-  }, [userkey]);
+  }, [shopID]);
+
+  console.log("Shopid is: "+ shopID)
 
 
   const shopkey = shopKey;
@@ -236,10 +238,10 @@ export function SellerDashboard() {
 
   useEffect(() => {
     setShopStatus({
-      completedOrders: 35,
-      ongoingDeliveries: 5,
-      refundedOrders: 6,
-      reviews: 12,
+      completedOrders: 0,
+      ongoingDeliveries: 0,
+      refundedOrders: 0,
+      reviews: 0,
     });
 
     setBusinessAnalytics({
@@ -356,7 +358,7 @@ export function SellerDashboard() {
                 <span className="text-secondary">Admin Notification</span>
                 {adminReports.map((report) => (
                     (report.shopkey == shopKey) && (
-                      <div className="card p-2 m-1 rounded shadow" onClick={() => speak("Admin Report: " + report.reportname + ". " + report.reportdesc)}>
+                      <div className="card p-2 m-1 rounded shadow bg-warning-subtle" onClick={() => speak("Admin Report: " + report.reportname + ". " + report.reportdesc)}>
                         <div className="d-flex align-items-center mb-2 pt-1 ps-1">
                           <div className="fw-bold">{report.reportname}</div>
                         </div>
@@ -394,10 +396,10 @@ export function SellerDashboard() {
                     <div className="ms-2 fw-bold">{review.consumerfirstname}</div>
                   </div>
                   <div className="ms-1 small fw-bold">{review.reviewtitle}</div>
-                  <div className="card p-1" style={{ height: 60, marginBottom: 10, fontSize: "0.8rem" }}>
+                  <div className="card p-1 overflow-auto" style={{ height: 80, marginBottom: 10, fontSize: "0.8rem" }}>
                     <span className="text-secondary" style={{fontSize:"0.5rem"}}>Description</span>{review.reviewdesc}
                   </div>
-                  <div className="d-flex justify-content-between align-items-center">
+                  <div className="d-flex justify-content-between align-items-center" >
                     <div>
                       {review.reviewscore} <span style={{ color: "#FE7743" }}>
                         {"★".repeat(review.reviewscore)}{/* Solid stars */}
