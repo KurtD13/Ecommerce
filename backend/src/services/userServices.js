@@ -19,40 +19,31 @@ export const createUser = async(userInfo) => {
 export const updateUser = async (consumerid, userInfo) => {
   const {
     consumerusername,
-    consumerpassword,
-    consumerfirstname,
-    consumermiddlename,
-    consumerlastname,
+    consumerpassword, 
     consumerbirthdate,
     consumerimage,
     consumerphone,
-    consumeremail,
+    consumeremail
   } = userInfo;
 
   const { rows } = await query(
     `UPDATE consumer_profile 
      SET consumerusername = $1, 
          consumerpassword = $2, 
-         consumerfirstname = $3, 
-         consumermiddlename = $4, 
-         consumerlastname = $5, 
-         consumerbirthdate = $6, 
-         consumerimage = $7, 
-         consumerphone = $8, 
-         consumeremail = $9 
-     WHERE consumerid = $10 
+         consumerbirthdate = $3, 
+         consumerimage = $4, 
+         consumerphone = $5, 
+         consumeremail = $6 
+     WHERE consumerid = $7
      RETURNING *`,
     [
       consumerusername,
-      consumerpassword || null, // Allow null if password is not updated
-      consumerfirstname,
-      consumermiddlename,
-      consumerlastname,
+      consumerpassword, // Allow null if password is not updated
       consumerbirthdate,
       consumerimage,
       consumerphone,
       consumeremail,
-      consumerid,
+      consumerid
     ]
   );
   return rows[0];

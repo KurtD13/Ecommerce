@@ -345,6 +345,7 @@ const ProfileSection = ({ onEdit, userKey }) => {
 };
 
 const EditProfileSection = ({ userKey }) => {
+
   const [userData, setUserData] = useState({
     consumerusername: "",
     consumeremail: "",
@@ -365,7 +366,7 @@ const [showPassword, setShowPassword] = useState(false);
             consumeremail: user.consumeremail,
             consumerbirthdate: user.consumerbirthdate.substring(0, 10),
             consumerphone: user.consumerphone,
-            consumerpassword: "",
+            consumerpassword: user.consumerpassword,
             consumerimage: user.consumerimage,
           });
         }
@@ -1160,7 +1161,7 @@ const AddressEditSection = ({ address, setEditAddress, userAddress, setUserAddre
                 <input
                   type="text"
                   className="form-control"
-                  value={editedAddress.postalcode}
+               
                   onChange={(e) =>
                     setEditedAddress({ ...editedAddress, postalcode: e.target.value })
                   }
