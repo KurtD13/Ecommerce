@@ -34,6 +34,11 @@ const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
     const navigate = useNavigate(); // Initialize navigate
 
         const handleBuyNow = () => {
+            if (!userKey || userKey === "0") {
+            alert("Please login first!");
+            return;
+            }
+            
             if (!product) {
             alert("Product not found.");
             return;
@@ -63,7 +68,7 @@ const isTTSEnabled = JSON.parse(localStorage.getItem("isTTSEnabled")) || false;
         const handleAddToCart = async () => {
         if (!userKey || userKey === "0") {
             alert("Please login first!");
-            navigate("/login");
+           
             return;
         }
         if (!product) {

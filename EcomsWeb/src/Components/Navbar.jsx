@@ -111,6 +111,7 @@ export function Navbar() {
             </button>
           </form>
 
+          {isLoggedIn && (
           <Link
             to="/Cartpage"
             style={{ background: "#FE7743", color: "#EFEEEA" }}
@@ -122,7 +123,7 @@ export function Navbar() {
           >
             <i className="bi bi-cart-fill" ></i>
           </Link>
-
+      )}
           {/* Conditionally render login button based on login state */}
           {!isLoggedIn && (
             <button
